@@ -1,0 +1,707 @@
+---
+title: "bcwr07"
+author: "Robert A. Stevens"
+date: "December 7, 2015"
+output: html_document
+---
+
+*Bayesian Computation with R* by Jim Albert (Second Edition)
+
+```{r, comment=NA}
+library(LearnBayes)
+library(lattice)
+```
+
+# 7 Hierarchical Modeling
+
+## 7.1 Introduction
+
+In this chapter, we illustrate the use of R to summarize an exchangeable hierarchical model. We begin by giving a brief introduction to hierarchical modeling. Then we consider the simultaneous estimation of the true mortality rates from heart transplants for a large number of hospitals. Some of the individual estimated mortality rates are based on limited data, and it may be desirable to combine the individual rates in some way to obtain more accurate estimates. We describe a two-stage model, a mixture of gamma distributions, to represent prior beliefs that the true mortality rates are exchangeable. We describe the use of R to simulate from the posterior distribution. We first use contour graphs and simulation to learn about the posterior distribution of the hyperparameters. Once we simulate hyperparameters, we can simulate from the posterior distributions of the true mortality rates from gamma distributions. We conclude by illustrating how the simulation of the joint posterior can be used to perform different types of inferences in the heart transplant application.
+
+## 7.2 Three Examples
+
+In many statistical problems, we are interested in learning about many parameters that are connected in some way. To illustrate, consider the following three problems described in this chapter and the chapters to follow.
+
+1. Simultaneous estimation of hospital mortality rates
+
+In the main example of this chapter, one is interested in learning about the mortality rates due to heart transplant surgery for 94 hospitals. Each hospital has a true mortality rate λi, and so one wishes to simultaneously estimate the 94 rates λ1, ..., λ94. It is reasonable to believe a priori that the true rates are similar in size, which implies a dependence structure between the parameters. If one is told some information about a particular hospital’s true rate, that information would likely affect one’s belief about the location of a second hospital’s rate.
+
+2. Estimating college grade point averages
+
+In an example in Chapter 10, admissions people at a particular university collect a table of means of freshman grade point averages (GPA) organized by the student’s high school rank and his or her score on a standardized test. One wishes to learn about the collection of population mean GPAs, with the ultimate goal of making predictions about the success of future students that attend the university. One believes that the population GPAs can be represented as a simple linear function of the high school rank and standardized test score.
+
+3. Estimating career trajectories
+
+In an example in Chapter 11, one is learning about the pattern of performance of athletes as they age during their sports careers. In particular, one wishes to estimate the career trajectories of the batting performances of a number of baseball players. For each player, one fits a model to estimate his career trajectory, and Figure 7.1 displays the fitted career trajectories for nine players. Note that the shapes of these trajectories are similar; a player generally will increase in performance until his late 20s or early 30s and then decline until retirement. The prior belief is that the true trajectories will be similar between players, which again implies a prior distribution with dependence.
+
+In many-parameter situations such as the ones described here, it is natural to construct a prior distribution in a hierarchical fashion. In this type of model, the observations are given distributions conditional on parameters, and the parameters in turn have distributions conditional on additional parameters called hyperparameters. Specifically, we begin by specifying a data distribution
+
+y ∼ f(y|θ),
+
+and the prior vector θ will be assigned a prior distribution with unknown hyperparameters λ:
+
+θ ∼ g1(θ|λ).
+
+The hyperparameter vector λ in turn will be assigned a distribution
+
+λ ∼ g2(λ).
+
+One general way of constructing a hierarchical prior is based on the prior belief of exchangeability. A set of parameters θ = (θ1, ..., θk) is exchangeable if the distribution of θ is unchanged if the parameter components are permuted. This implies that one’s prior belief about θj, say, will be the same as one’s belief about θh. One can construct an exchangeable prior by assuming that the components of θ are a random sample from a distribution g1:
+
+θ1, ..., θk random sample from g1(θ|λ)
+
+```{r, comment=NA}
+str(sluggerdata)
+
+# fit logistic model for home run data for a particular player
+logistic.fit <- function(player) {
+  d <- subset(sluggerdata, Player == player)
+  x <- d$Age
+  x2 <- d$Age^2
+  response <- cbind(d$HR, d$AB - d$HR)
+  list(Age = x, p = glm(response ~ x + x2, family = binomial)$fitted)
+}
+
+names <- unique(sluggerdata$Player)
+newdata <- NULL
+for (j in 1:9) {
+  fit <- logistic.fit(as.character(names[j]))
+  newdata <- rbind(newdata, data.frame(as.character(names[j]), fit$Age, fit$p))
+}
+names(newdata) <- c("Player", "Age", "Fitted")
+xyplot(Fitted ~ Age | Player, data = newdata, type = "l", lwd = 3, col = "black",
+       layout = c(3, 3))
+```
+
+Fig. 7.1. Plots of fitted career trajectories for nine baseball players as a function of their age.
+
+and the unknown hyperparameter vector λ is assigned a known prior at the second stage:
+
+λ ∼ g2(λ)
+
+This particular form of hierarchical prior will be used for the mortality rates example of this chapter and the career trajectories example of Chapter 11.
+
+## 7.3 Individual and Combined Estimates
+
+Consider again the heart transplant mortality data discussed in Chapter 3. The number of deaths within 30 days of heart transplant surgery is recorded for each of 94 hospitals. In addition, we record for each hospital an expected number of deaths called the exposure, denoted by e. We let yi and ei denote the respective observed number of deaths and exposure for the ith hospital. In R, we read in the relevant dataset hearttransplants in the LearnBayes package.
+
+```{r, comment=NA}
+str(hearttransplants)
+```
+
+A standard model assumes that the number of deaths yi follows a Poisson distribution with mean eiλi and the objective is to estimate the mortality rate per unit exposure λi. The fraction yi/ei is the number of deaths per unit exposure and can be viewed as an estimate of the death rate for the ith hospital. In Figure 7.2, we plot the ratios {yi/ei} against the logarithms of the exposures {log(ei)} for all hospitals, where each point is labeled by the number of observed deaths yi.
+
+```{r, comment=NA}
+with(hearttransplants, plot(log(e), y/e, xlim = c(6, 9.7), 
+                            xlab = "log(e)", ylab = "y/e"))
+with(hearttransplants, text(log(e), y/e, labels = as.character(y), pos = 4))
+```
+
+Fig. 7.2. Plot of death rates against log exposure for all hospitals. Each point is labeled by the number of observed deaths.
+
+Note that the estimated rates are highly variable, especially for programs with small exposures. The programs experiencing no deaths (a plotting label of 0) also are primarily associated with small exposures.
+
+Suppose we are interested in simultaneously estimating the true mortality rates {λi} for all hospitals. One option is simply to estimate the true rates by using the individual death rates
+
+y1/e1, ..., y94/e94
+
+Unfortunately, these individual rates can be poor estimates, especially for the hospitals with small exposures. In Figure 7.2, we saw that some of these hospitals did not experience any deaths and the individual death rate yi/ei = 0 would likely underestimate the hospital’s true mortality rate. Also, it is clear from the figure that the rates for the hospitals with small exposures have high variability.
+
+Since the individual death rates can be poor, it seems desirable to combine the individual estimates in some way to obtain improved estimates. Suppose we can assume that the true mortality rates are equal across hospitals; that is,
+
+λ1 = ... = λ94.
+
+Under this “equal-means” Poisson model, the estimate of the mortality rate for the ith hospital would be the pooled estimate
+
+sum(yj, j = 1:94)/sum(ej, j = 1:94)
+
+But this pooled estimate is based on the strong assumption that the true mortality rate is the same across hospitals. This is questionable since one would expect some variation in the true rates.
+
+We have discussed two possible estimates for the mortality rate of the ith hospital: the individual estimate yi/ei and the pooled estimate sum(yj)/sum(ej). A third possibility is the compromise estimate
+
+(1 − λ)*yi/ei + λ*sum(yj, j = 1:94)/sum(ej, j = 1:94) 
+
+This estimate shrinks or moves the individual estimate yi/ei toward the pooled estimate sum(yj)/sum(ej) where the parameter 0 < λ < 1 determines the size of the shrinkage. We will see that this shrinkage estimate is a natural by-product of the application of an exchangeable prior model to the true mortality rates.
+
+## 7.4 Equal Mortality Rates?
+
+Before we consider an exchangeable model, let’s illustrate fitting and checking the model where the mortality rates are assumed equal. Suppose yi is distributed as Poisson(eiλ), i = 1,...,94, and the common mortality rate λ is assigned a standard noninformative prior of the form
+
+g(λ) ∝ 1/λ
+
+Then the posterior density of λ is given by
+
+g(λ|data) ∝ λ  prod((λ^(yj))*exp(−ej*λ), j = 1:94) 
+= λ^(sum(yj −1, j = 1:94)*exp(−sum(ej*λ, j = 1:94)
+
+which is recognized as a gamma density with parameters sum(yj, j = 1:94) and sum(ej, j = 1:94). For our data, we compute
+
+```{r, comment=NA}
+sum(hearttransplants$y)
+sum(hearttransplants$e)
+```
+
+and so the posterior density for the common rate λ is gamma(277, 294681). 
+
+One general Bayesian method of checking the suitability of a fitted model such as this is based on the posterior predictive distribution. Let yi∗ denote the number of transplant deaths for hospital i with exposure ei in a future sample. Conditional on the true rate λ, yi∗ has a Poisson distribution with mean ei*λ. Our current beliefs about the ith true rate are contained in the posterior density g(λ|y). The unconditional distribution of yi∗, the posterior predictive density, is given by
+
+f(yi∗|ei, y) = integral(fP(yi∗|ei*λ)g(λ|y)dλ)
+
+where fP(y|λ) is the Poisson sampling density with mean λ. The posterior predictive density represents the likelihood of future observations based on our fitted model. For example, the density f(yi∗|ei, y) represents the number of transplant deaths that we would predict in the future for a hospital with exposure ei. If the actual number of observed deaths yi is in the middle of this predictive distribution, then we can say that our observation is consistent with our model fit. On the other hand, if the observed yi is in the extreme tails of the distribution f(yi∗|ei, y), then this observation indicates that the model is inadequate in fitting this observation.
+
+To illustrate the use of the posterior predictive distribution, consider hospital 94, which had 17 transplant deaths, that is, y94 = 17. Did this hospital have an unusually high number of deaths? To answer this question, we simulate 1000 values from the posterior predictive density of y94*.
+
+To simulate from the predictive distribution of y94∗, we first simulate 1000 draws of the posterior density of λ
+
+```{r, comment=NA}
+lambda <- rgamma(1000, shape = 277, rate = 294681)
+```
+
+and then simulate draws of y94∗ from a Poisson distribution with mean (e94)*λ.
+
+```{r, comment=NA}
+ys94 <- rpois(1000, hearttransplants$e[94]*lambda)
+```
+
+Using the following R code, Figure 7.3 displays a histogram of this posterior predictive distribution, and the actual number of transplant deaths y94 is shown by a vertical line.
+
+```{r, comment=NA}
+hist(ys94, breaks = seq(0.5, max(ys94) + 0.5))
+with(hearttransplants, lines(c(y[94], y[94]), c(0, 120), lwd = 3))
+```
+
+Fig. 7.3. Histogram of simulated draws from the posterior predictive distribution of y9∗4. The actual number of transplant deaths is shown by a vertical line.
+
+Since the observed yj is in the tail portion of the distribution, it seems inconsistent with the fitted model – it suggests that this hospital actually has a higher true mortality rate than estimated from this equal-rates model.
+
+We can check the consistency of the observed yi with its posterior predictive distribution for all hospitals. For each distribution, we compute the probability that the future observation yi∗ is at least as extreme as yi:
+
+min{P(yi∗ ≤ yi), P(yi∗ ≥ yi)}
+
+The following R code computes the probabilities of “at least as extreme” for all observations and places the probabilities in the vector pout. Note that we first write a short function prob.out that computes this probability for a single subscript and then use sapply to apply this function for all indices.
+
+```{r, comment=NA}
+lambda <- rgamma(1000, shape = 277, rate = 294681)
+prob.out <- function(i) {
+  ysi <- rpois(1000, hearttransplants$e[i]*lambda)
+  pleft  <- sum(ysi <= hearttransplants$y[i])/1000
+  pright <- sum(ysi >= hearttransplants$y[i])/1000
+  min(pleft, pright)
+}
+pout <- sapply(1:94, prob.out)
+```
+
+We plot the probabilities against the log exposures and display this in Figure 7.4.
+
+```{r, comment=NA}
+plot(log(hearttransplants$e), pout, ylab = "Prob(extreme)")
+```
+
+Fig. 7.4. Scatterplot of predictive probabilities of “at least as extreme” against log exposures for all observations.
+
+Note that a number of these tail probabilities appear small (15 are smaller than 0.10), which means that the “equal-rates” model is inadequate for explaining the distribution of mortality rates for the group of 94 hospitals. We will have to assume differences between the true mortality rates, which will be modeled by the exchangeable model described in the next section.
+
+## 7.5 Modeling a Prior Belief of Exchangeability
+
+At the first stage of the prior, the true death rates λ1,...,λ94 are assumed to be a random sample from a gamma(α,α/μ) distribution of the form
+
+g(λ|α, μ) = ((α/μ)^α)(λ^(α − 1))*exp(−α*λ/μ)/Γ(α), λ > 0
+
+The prior mean and variance of λ are given by μ and μ2/α, respectively. At the second stage of the prior, the hyperparameters μ and α are assumed independent, with μ assigned an inverse gamma(a, b) distribution with density (μ^(−a − 1))*exp(−b/μ) and α the density g(α).
+
+This prior distribution induces positive correlation between the true death rates. To illustrate this, we focus on the prior for two particular rates, λ1 and λ2. Suppose one assigns the hyperparameter μ an inverse gamma(a, b) distribution and sets the hyperparameter α equal to a fixed value α0. (This is equivalent to assigning a density g(α) that places probability 1 on the value α0.) It is possible to integrate out μ from the prior, resulting in the following distribution for the true rates:
+
+g(λ1, λ2|α0) ∝ ((λ1*λ2)^(α0 − 1))/((α0(λ1 + λ2) + b)^(2α0 + a))
+
+The function pgexchprior is written to compute the log prior density. The arguments are the vector of true rates lambda and a vector pars consisting of the prior parameters α0, a, and b.
+
+```{r, comment=NA}
+pgexchprior <- function(lambda, pars) {
+  alpha <- pars[1]
+  a <- pars[2]
+  b <- pars[3]
+  (alpha - 1)*log(prod(lambda)) - (2*alpha + a)*log(alpha*sum(lambda) + b)
+}
+```
+
+We assign μ an inverse gamma(10, 10) distribution (a = 10, b = 10). In the following R code, we construct contour plots of the joint density of (λ1, λ2) for the values α0 equal to 5, 20, 80, and 400. (See Figure 7.5.)
+
+```{r, comment=NA}
+alpha <- c(5, 20, 80, 400)
+par(mfrow = c(2, 2))
+for (j in 1:4)
+  mycontour(pgexchprior, c(0.001, 5, 0.001, 5), c(alpha[j], 10, 10),
+            main = paste("ALPHA = ", alpha[j]), 
+            xlab = "LAMBDA 1", ylab = "LAMBDA 2")
+```
+
+Since μ is assigned an inverse gamma(10, 10) distribution, both the true rates λ1 and λ2 are centered about the value 1. The hyperparameter α is a precision parameter that controls the correlation between the parameters. For the fixed value α = 400, note that λ1 and λ2 are concentrated along the line λ1 = λ2. As the precision parameter α approaches infinity, the exchangeable prior places all of its mass along the space where λ1 = ... = λ94.
+
+Fig. 7.5. Contour graphs of the exchangeable prior on (λ1, λ2) when μ has an inverse gamma(10, 10) distribution and for values of the precision parameter α = 5, 20, 80, and 400.
+
+Although we used subjective priors to illustrate the behavior of the prior distribution, in practice vague distributions can be chosen for the hyperparameters μ and α. In this example, we assign the mean parameter the typical vague prior of the form
+
+g(μ)∝ 1/μ, μ > 0
+
+The precision parameter α assigned the proper, but relatively flat, prior density of the form
+
+g(α) = z0/(α + z0)^2, α > 0
+
+The user will specify a value of the parameter z0 that is the median of α. In this example, we let z0 = 0.53.
+
+## 7.6 Posterior Distribution
+
+Owing to the conditionally independent structure of the hierarchical model and the choice of a conjugate prior form at stage 2, there is a relatively simple posterior analysis. Conditional on values of the hyperparameters μ and α, the rates λ1, ..., λ94 have independent posterior distributions. The posterior distribution of λi is gamma(yi + α, ei + α/μ). The posterior mean of λi, conditional on α and μ, can be written as
+
+E(λi|y, α, μ) = (yi + α)/(ei + α/μ) = (1 − Bi)*yi/ei + Bi*μ
+
+where
+
+Bi = α/(α + ei*μ)
+
+The posterior mean of the true rate λi can be viewed as a shrinkage estimator, where Bi is the shrinkage fraction of the posterior mean away from the usual estimate yi/ei toward the prior mean μ.
+
+Also, since a conjugate model structure was used, the rates λi can be integrated out of the joint posterior density, resulting in the marginal posterior density of (α,μ),
+
+p(α, μ|data) = K*(1/Γ^94(α))*prod(((α/μ)^α)*Γ(α + yi)/((α/μ + ei)^(α + yi)), j = 1:94)*(z0/((α + z0)^2))*(1/μ) 
+
+where K is a proportionality constant.
+
+## 7.7 Simulating from the Posterior
+
+In the previous section, the posterior density of all parameters was expressed as
+
+g(hyperparameters|data)*g(true rates|hyperparameters, data)
+
+where the hyperparameters are (μ, α) and the true rates are (λ1, ..., λ94). By using the composition method, we can simulate a random draw from the joint posterior by
+
+- simulating (μ,α) from the marginal posterior distribution
+
+- simulating λ1, ..., λ94 from their distribution conditional on the values of the simulated μ and α
+
+First we need to simulate from the marginal density of the hyperparameters μ and α. Since both parameters are positive, a good first step in this simulation process is to transform each to the real-valued parameters
+
+θ1 = log(α)
+θ2 = log(μ)
+
+The marginal posterior of the transformed parameters is given by
+
+p(θ1, θ2|data) = K*(1/Γ^94(α))*prod((((α/μ)^α)*Γ(α + yi))/((α/μ + ei)^(α + yi)), j = 1:94)*z0α/((α + z0)^2)
+
+The following R function poissgamexch contains the definition of the log posterior of θ1 and θ2.
+
+poissgamexch=function (theta, datapar) {
+y = datapar$data[, 2]
+e = datapar$data[, 1]
+z0 = datapar$z0
+alpha = exp(theta[1])
+mu = exp(theta[2])
+beta = alpha/mu
+logf = function(y, e, alpha, beta)
+lgamma(alpha + y) - (y + alpha) * log(e + beta) + alpha * log(beta) - lgamma(alpha)
+val = sum(logf(y, e, alpha, beta))
+val = val + log(alpha) - 2 * log(alpha + z0) return(val)
+}
+
+Note that this function has two inputs:
+
+- theta – a vector corresponding to a value of (θ1,θ2)
+
+- datapar – an R list with two components, the data and the value of the hyperparameter z0
+
+Note that we use the function lgamma, which computes the log of the gamma function, log Γ (x).
+
+Using the R function laplace, we find the posterior mode and associated variance-covariance matrix. The Nelder and Mead algorithm is run using the starting value (θ1, θ2) = (2, −7). The output of laplace includes the mode and the corresponding estimate at the variance-covariance matrix.
+
+```{r, comment=NA}
+datapar <- list(data = hearttransplants, z0 = 0.53)
+start <- c(2, -7)
+fit <- laplace(poissgamexch, start, datapar)
+fit
+```
+
+This output gives us information about the location of the posterior density. By trial and error, we use the function mycontour to find a grid that contains the posterior density of (θ1,θ2). The resulting graph is displayed in Figure 7.6.
+
+```{r, comment=NA}
+par(mfrow = c(1, 1))
+mycontour(poissgamexch, c(0, 8, -7.3, -6.6), datapar, 
+          xlab = "log alpha", ylab = "log mu")
+```
+
+Fig. 7.6. Contour plot of the posterior density of (log α, log μ) for the heart transplant example. Contour lines are drawn at 10%, 1%, and .1% of the modal value.
+
+Inspecting Figure 7.6, we see that the posterior density for (θ1,θ2) is nonnormal shaped, especially in the direction of θ1 = log(α). Since the normal approximation to the posterior is inadequate, we obtain a simulated sample of (θ1, θ2) by using the “Metropolis within Gibbs” algorithm in the function gibbs. In this Gibbs sampling algorithm, we start at the value (θ1, θ2) = (4, −7) and iterate through 1000 cycles with Metropolis scale parameters c1 = 1, c2 = .15. As the output indicates, the acceptance rates in the simulation of the two conditional distributions are each about 30%.
+
+```{r, comment=NA}
+start <- c(4, -7)
+fitgibbs <- gibbs(poissgamexch, start, 1000, c(1, 0.15), datapar)
+fitgibbs$accept
+```
+
+Figure 7.7 shows a simulated sample of size 1000 placed on top of the contour graph. Note that most of the points fall within the first two contour lines of the graph, indicating that the algorithm appears to give a representative sample from the marginal posterior distribution of θ1 and θ2.
+
+```{r, comment=NA}
+mycontour(poissgamexch, c(0, 8, -7.3, -6.6), datapar, 
+          xlab = "log alpha", ylab = "log mu")
+points(fitgibbs$par[ , 1], fitgibbs$par[ , 2])
+```
+
+Fig. 7.7. Contour plot of the posterior density of (log(α), log(μ)) for the heart transplant example with a sample of simulated values placed on top.
+
+Figure 7.8 shows a kernel density estimate of the simulated draws from the marginal posterior distribution of the precision parameter θ1 = log(α).
+
+```{r, comment=NA}
+plot(density(fitgibbs$par[ , 1], bw = 0.2), main = "")
+abline(h = 0, col = "grey")
+```
+
+Fig. 7.8. Density estimate of simulated draws from the marginal posterior of log α. 
+
+We can learn about the true mortality rates λ1, ..., λ94 by simulating values from their posterior distributions. Given values of the hyperparameters α and μ, the true rates have independent posterior distributions with λi distributed as gamma(yi + α, ei + α/μ). For each rate, we use the rgamma function in R to obtain a sample from the gamma distribution, where the gamma parameters are functions of the simulated values of α and μ. For example, one can obtain a sample from the posterior distribution of λ1 using the R code
+
+```{r, comment=NA}
+alpha <- exp(fitgibbs$par[ , 1])
+mu <- exp(fitgibbs$par[ , 2])
+lam1 <- with(hearttransplants, rgamma(1000, y[1] + alpha, e[1] + alpha/mu))
+```
+
+After we obtain a simulated sample of size 1000 for each true rate λi, we can summarize each sample by computing the 5th and 95th percentiles. The interval from these two percentiles constitutes an approximate 90% probability interval for λi. We graph these 90% probability intervals as vertical lines on our original graph of the log exposures and the individual rates in Figure 7.9. In contrast to the wide variation in the observed death rates, note the similarity in the locations of the probability intervals for the true rates. This indicates that these Bayesian estimates are shrinking the individual rates toward the pooled estimate.
+
+```{r, comment=NA}
+alpha <- exp(fitgibbs$par[ , 1])
+mu <- exp(fitgibbs$par[ , 2])
+with(hearttransplants, plot(log(e), y/e, pch = as.character(y)))
+for (i in 1:94) {
+  lami <- with(hearttransplants, rgamma(1000, y[i] + alpha, e[i] + alpha/mu))
+  probint <- quantile(lami, c(0.05, 0.95))
+  lines(log(hearttransplants$e[i]) * c(1, 1), probint)
+}
+```
+
+Fig. 7.9. Plot of observed death rates against log exposures together with intervals representing 90% posterior probability bands for the true rates {λi}.
+
+## 7.8 Posterior Inferences
+
+Once a simulated sample of true rates {λi} and the hyperparameters μ and α has been generated from the joint posterior distribution, we can use this sample to perform various types of inferences.
+
+### 7.8.1 Shrinkage
+
+The posterior mean of the ith true mortality rate λi can be approximated by
+
+E(λi|data) ≈ (1 − E(Bi|data))(yi/ei) + E(Bi|data)*sum(yj, j = 1:94)/sum(ej, j = 1:94)
+
+where Bi = α/(α + eiμ) is the size of the shrinkage of the ith observed rate yi/ei toward the pooled estimate sum(yj, j = 1:94)/sum(ej, j = 1:94). In the following R code, we compute the posterior mean of the shrinkage sizes {Bi} for all 94 components. In Figure 7.10, we plot the mean shrinkages against the logarithms of the exposures. For the hospitals with small exposures, the Bayesian estimate shrinks the individual estimate by 90% toward the combined estimate. In contrast, for large hospitals with high exposures, the shrinkage size is closer to 50%.
+
+```{r, comment=NA}
+shrink <- function(i) mean(alpha/(alpha + hearttransplants$e[i] * mu))
+shrinkage <- sapply(1:94, shrink)
+plot(log(hearttransplants$e), shrinkage, ylim = c(0, 1))
+```
+
+Fig. 7.10. Plot of the posterior shrinkages against the log exposures for the heart transplant example.
+
+### 7.8.2 Comparing Hospitals
+
+Suppose one is interested in comparing the true mortality rates of the hospitals. Specifically, suppose one wishes to compare the “best hospital” with the other hospitals. First, we find the hospital with the smallest estimated mortality rate. In the following R output, we compute the posterior mean of the mortality rates, where the posterior mean of the true rate for hospital i is given by
+
+E((yi + α)/(ei + α/μ) 
+
+where the expectation is taken over the marginal posterior distribution of (α, μ):
+
+```{r, comment=NA}
+mrate <- function(i) 
+  with(hearttransplants, mean(rgamma(1000, y[i] + alpha, e[i] + alpha/mu)))
+hospital <- 1:94
+meanrate <- sapply(hospital, mrate)
+hospital[meanrate == min(meanrate)]
+```
+
+We identify hospital 85 as the one with the smallest true mortality rate. 
+
+Suppose we wish to compare hospital i with hospital j. One first obtains simulated draws from the marginal distribution of (λi, λj). Then the probability that hospital i has a smaller mortality rate, P(λi < λj), can be estimated by the proportion of simulated (λi, λj) pairs where λi is smaller than λj. In the following R code, we first simulate the posterior distribution for all true rates λ1 , ..., λ94 and store the simulated draws in the matrix LAM. Using a simple function compare.rates (supplied by Maria Rizzo), we compute the comparison probabilities for all pairs of hospitals and store the results in the matrix better. The probability that hospital is rate is smaller than hospital js rate is stored in the ith row and jth element of better.
+
+```{r, comment=NA}
+sim.lambda <- function(i) 
+  with(hearttransplants, rgamma(1000, y[i] + alpha, e[i] + alpha/mu))
+LAM <- sapply(hospital, sim.lambda)
+
+compare.rates <- function(x) {
+  nc <- NCOL(x)
+  ij <- as.matrix(expand.grid(1:nc, 1:nc))
+  m <- as.matrix(x[ , ij[ , 1]] > x[ , ij[ ,2]]) 
+  matrix(colMeans(m), nc, nc, byrow = TRUE)
+}
+better <- compare.rates(LAM)
+```
+
+To compare the best hospital, 85, with the remaining hospitals, we display the 85th column of the matrix better. This gives the probabilities P(λi < λ85) for all i. We display these probabilities for the first 24 hospitals. Note that hospital 85 is better than most of these hospitals since most of the posterior probabilities are close to zero.
+
+```{r, comment=NA}
+better[1:24, 85]
+```
+
+## 7.9 Bayesian Sensitivity Analysis
+
+In any Bayesian analysis, it is important to assess the sensitivity of any inferences with respect to changes in the model assumptions, including assumptions about the sampling density f(y|θ) and the prior density g(θ). Here we briefly explore the sensitivity of our posterior inferences with respect to the choice of parameters in the prior distribution.
+
+In our prior, we assumed the true mortality rates {λi} were a random sample from a gamma(α, α/μ) distribution, where the common mean μ was assigned a noninformative prior proportional to 1/μ and α was assigned the proper density z0/(α + z0)2, where the user assesses the median z0. Since the parameter α controls the shrinkage of the individual estimates toward the pooled estimate in the posterior analysis, it is natural to wonder about the sensitivity of the posterior of α with respect to changes in the specification of z0.
+
+We focus on the posterior of θ1 = logα since the distribution of this transformed parameter is approximately symmetric and more amenable to inspection. The prior for θ1 has the form
+
+g(θ1|z0) = z0*exp(θ1)/(z0 + exp(θ1))^2
+
+Suppose that instead of the choice z0 = 0.53, the user decides on using the value z0 = 5. Will this change, a tenfold increase in the prior median of α, have a substantial impact on the posterior distribution of log α?
+
+The SIR algorithm, described in Section 5.10, provides a convenient way of converting simulated draws of θ1 from one posterior distribution to a new distribution. In this case, the weights would correspond to a ratio of the prior of θ1 at the new and current values of z0:
+
+w(θ1) = g(θ1|z0 = 5)/g(θ1|z0 = 0.53)
+
+We then resample from the original posterior sample of θ1 with sampling probabilities proportional to the weights to obtain the new posterior sample. 
+
+We write an R function sir.old.new that implements the SIR algorithm for a change of priors for a one-dimensional inference. The inputs are theta, a sample from the original posterior, prior, a function defining the original prior; and prior.new, a function defining the new prior. The output is a sample from the new posterior sample.
+
+```{r, comment=NA}
+sir.old.new <- function(theta, prior, prior.new) {
+  log.g <- log(prior(theta))
+  log.g.new <- log(prior.new(theta))
+  wt <- exp(log.g.new - log.g - max(log.g.new - log.g))
+  probs <- wt/sum(wt)
+  n <- length(probs)
+  indices <- sample(1:n, size = n, prob = probs, replace = TRUE)
+  theta[indices]
+}
+```
+
+To use this function, we write short functions defining the original and new prior densities for θ1 = log(α):
+
+```{r, comment=NA}
+prior <- function(theta)
+  0.53*exp(theta)/(exp(theta) + 0.53)^2
+prior.new <- function(theta)
+  5*exp(theta)/(exp(theta) + 5)^2
+```
+
+Then we apply the function sir.old.new using the simulated draws of log α from the posterior.
+
+```{r, comment=NA}
+log.alpha <- fitgibbs$par[ , 1]
+log.alpha.new <- sir.old.new(log.alpha, prior, prior.new)
+```
+
+The vector log.alpha.new contains a simulated sample of the posterior of log α using the new prior.
+
+Figure 7.11 illustrates the impact of the choice of prior on the posterior inference of the precision parameter log α. The thin solid and dotted lines show respectively the original and new priors, which are substantially different in location. The thick solid and dotted lines represent the corresponding posterior densities. Despite the fact that the priors are different, note that the posteriors of log α are similar in location. This indicates that the choice of z0 has only a modest effect on the posterior shrinkage of the model. In other words, this particular posterior inference appears to be robust to the change in prior specification of the median of α.
+
+```{r, comment=NA}
+# drawing figure
+draw.graph <- function() {
+  LOG.ALPHA <- data.frame("prior", log.alpha)
+  names(LOG.ALPHA) <- c("Prior", "log.alpha")
+  LOG.ALPHA.NEW <- data.frame("new.prior", log.alpha.new)
+  names(LOG.ALPHA.NEW) <- c("Prior", "log.alpha")
+  D <- densityplot(~log.alpha, group = Prior, 
+                   data = rbind(LOG.ALPHA, LOG.ALPHA.NEW), 
+                   plot.points = FALSE, 
+                   main = "Original Prior and Posterior (solid), New Prior and Posterior (dashed)",
+                   lwd = 4, adjust = 2, lty = c(1, 2), 
+                   xlab = "log alpha", xlim = c(-3, 5), col = "black")
+  update(D, panel = function(...) {
+    panel.curve(prior(x)    , lty = 1, lwd = 2, col = "black")
+    panel.curve(prior.new(x), lty = 2, lwd = 2, col = "black")
+    panel.densityplot(...)
+  })
+}
+
+draw.graph()
+```
+
+Fig. 7.11. Prior and posterior distributions of log α for the prior parameter choices z0 = 0.53 and z0 = 5 for the heart transplant problem.
+
+```{r, comment=NA}
+# does posterior on true rates depend on prior?
+
+prob.int.rate <- function(i, log.alpha) {
+  lami <- with(hearttransplants, rgamma(1000, y[i] + exp(log.alpha), 
+                                        e[i] + exp(log.alpha)/mu))
+  quantile(lami, c(0.05, 0.95))
+}
+
+ind <- c(1, 25, 57, 89)
+
+ci <- sapply(ind, prob.int.rate, log.alpha)
+matplot(matrix(log(hearttransplants$e[ind]), 2, length(ind), byrow = TRUE), 
+        ci, type = "l", lwd = 4, lty = 1, 
+        xlim = c(6, 9.7), ylim = c(0, 0.002), ylab = "True Rate", xlab = "log(e)")
+
+ci <- sapply(ind, prob.int.rate, log.alpha.new)
+matplot(matrix(log(hearttransplants$e[ind]), 2, length(ind), byrow = TRUE) + 0.05,
+        ci, type = "l", lwd = 4, lty = 3, add = TRUE)
+```
+
+## 7.10 Posterior Predictive Model Checking
+
+In Section 7.3, we used the posterior predictive distribution to examine the suitability of the “equal-rates” model where λ1 = ... = λ94, and we saw that the model seemed inadequate in explaining the number of transplant deaths for individual hospitals. Here we use the same methodology to check the appropriateness of the exchangeable model.
+
+Again we consider hospital 94, which experienced 17 deaths. Recall that simulated draws of the hyperparameters α and μ are contained in the vectors alpha and mu, respectively. To simulate from the predictive distribution of y9∗4, we first simulate draws of the posterior density of λ94
+
+```{r, comment=NA}
+lam94 <- with(hearttransplants, rgamma(1000, y[94] + alpha, e[94] + alpha/mu))
+```
+
+and then simulate draws of y94∗ from a Poisson distribution with mean e94*λ94. 
+
+```{r, comment=NA}
+ys94 <- rpois(1000, hearttransplants$e[94]*lam94)
+```
+
+Figure 7.12 displays the histogram of y94∗ and places a vertical line on top, corresponding to the value y94 = 17, using the commands
+
+```{r, comment=NA}
+hist(ys94, breaks = seq(-0.5, max(ys94) + 0.5))
+lines(hearttransplants$y[94]*c(1, 1), c(0, 100), lwd = 3)
+```
+
+Fig. 7.12. Histogram of the posterior predictive distribution of y94∗ for hospital 94 from the exchangeable model. The observed value of y94 is indicated by the vertical line.
+
+Note that in this case the observed number of deaths for this hospital is in the middle of the predictive distribution, which indicates agreement of this observation with the fitted model.
+
+Again this exchangeable model can check the consistency of the observed yi with its posterior predictive distribution for all hospitals. In the following R code, we compute the probability that the future observation yi∗ is at least as extreme as yi for all observations; the probabilities are placed in the vector pout.exchange.
+
+```{r, comment=NA}
+prob.out <- function(i) {
+  lami <- with(hearttransplants, rgamma(1000, y[i] + alpha, e[i] + alpha/mu))
+  ysi <- rpois(1000, hearttransplants$e[i]*lami)
+  pleft  <- sum(ysi <= hearttransplants$y[i])/1000
+  pright <- sum(ysi >= hearttransplants$y[i])/1000
+  min(pleft, pright)
+}
+pout.exchange <- sapply(hospital, prob.out)
+```
+
+Recall that the probabilities of “at least as extreme” for the equal-means model were contained in the vector pout. To compare the goodness of fits of the two models, Figure 7.13 shows a scatterplot of the two sets of probabilities with a comparison line y = x placed on top.
+
+```{r, comment=NA}
+par(pty = "s")
+plot(pout, pout.exchange, 
+     xlab = "P(extreme), equal means", ylab = "P(extreme), exchangeable")
+abline(0, 1)
+```
+
+Fig. 7.13. Scatterplot of posterior predictive probabilities of “at least as extreme” for the equal means and exchangeable models.
+
+Note that the probabilities of extreme for the exchangeable model are larger, indicating that the observations are more consistent with the exchangeable fitted model. Note that only two of the observations have a probability smaller than 0.1 for the exchangeable model, indicating general agreement of the observed data with this model.
+
+## 7.11 Further Reading
+
+Chapter 5 of Gelman et al. (2003) provides a good introduction to hierarchical models. Chapter 5 of Carlin and Louis (2009), introduces hierarchical modeling from an empirical Bayes perspective. Posterior predictive model checking is described as a general method for model checking in Chapter 6 of Gelman et al. (2003). The use of hierarchical modeling to analyze the heart transplant data is described in Christiansen and Morris (1995).
+
+## 7.12 Summary of R Functions
+
+poissgamexch – computes the logarithm of the posterior for the parameters (log(alpha), log(mu)) in a Poisson/gamma model
+
+Usage: poissgamexch(theta, datapar)
+
+Arguments: theta, matrix of parameter values, where each row represents a value of (log(alpha), log(mu)); datapar, list with components data (matrix with column of counts and column of exposures) and z0, the value of the second-stage hyperparameter
+
+Value: vector of values of the log posterior, where each value corresponds to each row of the parameters in theta
+
+## 7.13 Exercises
+
+### 1. Poisson/gamma exchangeable model
+
+Instead of using the parameterization of Section 7.5, suppose we model exchangeability by assuming that the true rates λ1, ..., λ94 are a random sample from a gamma(α, β) distribution of the form
+
+g(λ|α, β) = (λ^(α − 1)*exp(−βλ)/(Γ(α)*β^α), λ > 0
+
+At the second stage of the prior, assume that α and β are independent where
+
+g(α, β) = (1/(α + 1)^2)*(1/(β + 1)^2), α > 0, β > 0
+
+a) Construct an R function to compute the log posterior density of θ = (log(α), log(β)). For the heart transplant mortality data, use an MCMC algorithm to simulate a sample of size 1000 from the posterior density of θ.
+
+b) Using simulation, construct 90% interval estimates for the true rates.
+
+c) Compare the interval estimates computed in part (b) with the interval estimates obtained in Section 7.8. Is the posterior analysis sensitive
+with respect to the choice of exchangeable model?
+
+### 2. Normal/normal exchangeable model
+
+Suppose we have J independent experiments where in the jth experiment we observe the single observation yj, which is normally distributed with mean θj and known variance (σj)^2. Suppose the parameters θ1, ..., θJ are drawn from a normal population with mean μ and variance τ^2. The vector of hyperparameters (μ, τ) is assigned a uniform prior. Gelman et al. (2003) describe the posterior calculations for this model. To summarize:
+
+- Conditional on the hyperparameters μ and τ, the θj have independent posterior distributions, where (θj|μ, τ, y) is normally distributed with mean θˆj and variance Vj, where
+
+θˆj = (yj/(σj^2 + μ/τ^2)/(1/(σj)^2 + 1/τ^2)
+Vj = 1/(1/(σj)^2 + 1/τ^2)
+
+- The marginal posterior density of the hyperparameters (μ, τ) is given by
+
+g(μ, τ|y) ∝ prod(φ(yj|μ, sqrt((σj)^2 + τ^2)), j = 1:J)
+
+where φ(y|μ, σ) denotes the normal density with mean μ and standard deviation σ.
+
+To illustrate this model, Gelman et al. (2003) describe the results of independent experiments to determine the effects of special coaching programs on SAT scores. For the jth experiment, one observes an estimated coaching effect yj with associated standard error σj; the values of the effects and standard errors are displayed in Table 7.1. The objective is to combine the coaching estimates in some way to obtain improved estimates of the true effects θj.
+
+a) Write an R function to compute the logarithm of the posterior density of the hyperparameters μ and logτ. (Don’t forget to include the Jacobian term in the transformation to (μ, log(τ)).) Use a simulation algorithm such as Gibbs sampling (function gibbs), random walk Metropolis (function rwmetrop), or independence Metropolis (function indepmetrop) to obtain a sample of size 1000 from the posterior of (μ, log(τ)).
+
+b) Using the simulated sample from the marginal posterior of (μ, log(τ)), simulate 1000 draws from the joint posterior density of the means
+
+Table 7.1. Observed effects of special preparation on SAT scores in eight randomized experiments.
+
+School Treatment Effect yj Standard Error σj
+A      28                  15
+B       8                  10
+C      −3                  16
+D       7                  11
+E      −1                   9
+F       1                  11
+G      18                  10
+H      12                  18
+
+θ1, ..., θJ. Summarize the posterior distribution of each θj by computing a posterior mean and posterior standard deviation. 
+
+### 3. Normal/normal exchangeable model (continued)
+
+We assume that the sampling algorithm in Exercise 2 has been followed and one has simulated a sample of 1000 values from the marginal posterior of the hyperparameters μ and log(τ) and also from the posterior densities of θ1, ..., θJ.
+
+a) The posterior mean of θj, conditional on μ and τ, can be written as 
+
+E(θj|y, μ, τ) = (1 − Bj)yj + Bjμ
+
+where Bj = τ^(−2)/(τ^(−2) + (σj)^(−2)) is the size of the shrinkage of yj toward j the mean μ. For all observations, compute the shrinkage size E(Bj|y) from the simulated draws of the hyperparameters. Rank the schools from the largest shrinkage to the smallest shrinkage, and explain why there are differences.
+
+b) School A had the largest observed coaching effect, 28. From the simulated draws from the joint distribution of θ1, ..., θJ, compute the posterior probability P(θ1 > θj) for j = 2, ..., J.
+
+### 4. Beta/binomial exchangeable model
+
+In Chapter 5, we described the problem of simultaneously estimating the rates of death from stomach cancer for males at risk in the age bracket 45–64 for the largest cities in Missouri. The dataset is available as cancermortality in the LearnBayes package. Assume that the numbers of cancer deaths {yj} are independent, where yj is binomial with sample size nj and probability of death pj. To model a prior belief of exchangeability, it is assumed that p1, ..., p20 are a random sample from a beta distribution with parameters a and b. We reparameterize the beta parameters a and b to new values
+
+η = a/(a + b)
+K = a + b
+
+The hyperparameter η is the prior mean of each pj and K is a precision parameter. At the last stage of this model, we assign (η, K) the noninformative proper prior
+
+g(η, K) = 1/(1 + K)^2, 0 < η < 1, K > 0 
+
+Due to the conjugate form of the prior, one can derive the following posterior distributions.
+
+- Conditional on the values of the hyperparameters η and K, the probabilities p1, ..., p20 are independent, with pj distributed beta with parameters aj = Kη + yj and bj = K(1 − η) + nj − yj.
+
+- The marginal posterior density of (η,K) has the form
+
+g(η, K|y) ∝ (1/(1 + K)^2)*prod(B(Kη + yj, K(1 − η) + nj − yj)/B(Kη, K(1 − η), j = 1:20)
+
+where K > 0 and 0 < η < 1.
+
+a) To summarize the posterior distribution of the hyperparameters η and K, first transform the parameters to the real line using the reexpressions θ1 = log(K) and θ2 = log(η/(1 − η)). Write an R function to compute values of the log posterior of θ1 and θ2.
+
+b) Use a simulation algorithm such as Gibbs sampling (function gibbs), random walk Metropolis (function rwmetrop), or independence Metropolis (function indepmetrop) to obtain a sample of size 1000 from the posterior of (θ1, θ2). Summarize the posterior distributions of K and η using 90% interval estimates.
+
+c) Using the simulated sample from the marginal posterior of (θ1, θ2), simulate 1000 draws from the joint posterior density of the probabilities p1, ..., p20. Summarize the posterior distribution of each pj using a 90% interval estimate.
+
+### 5. Beta/binomial exchangeable model (continued)
+
+We assume that the sampling algorithm in Exercise 4 has been followed and one has simulated a sample of 1000 values from the marginal posterior of the hyperparameters K and m, and also from the posterior densities of p1, ..., p20.
+
+a) Let yj∗ denote the number of cancer deaths of a future sample of size nj from the jth city in Missouri. Conditional on the probability pj, the distribution of yj∗ is binomial(nj, pj). For city 1 (with nj = 1083 patients) and city 15 (with nj = 53637 patients), simulate a sample of 1000 values from the posterior predictive distribution of yj∗.
+
+b) For cities 1 and 15, the observed numbers of cancer deaths were 0 and 54, respectively. By comparing the observed values of yj against the respective predictive distributions, decide if these values are consistent with the beta/binomial exchangeable model.

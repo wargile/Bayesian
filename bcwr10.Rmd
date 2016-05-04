@@ -1,0 +1,734 @@
+---
+title: "bcwr10"
+author: "Robert A. Stevens"
+date: "December 7, 2015"
+output: html_document
+---
+
+*Bayesian Computation with R* by Jim Albert (Second Edition)
+
+```{r, comment=NA}
+library(LearnBayes)
+```
+
+# 10 Gibbs Sampling
+
+## 10.1 Introduction
+
+One attractive method for constructing an MCMC algorithm is Gibbs sampling, introduced in Chapter 6. To slightly generalize our earlier discussion, suppose that we partition the parameter vector of interest into p components θ = (θ1,..., θp), where θk may consist of a vector of parameters. The MCMC algorithm is implemented by sampling in turn from the p conditional posterior distributions
+
+[θ1|θ2, ..., θp], ..., [θp|θ1, ..., θp−1].
+
+Under general regularity conditions, draws from this Gibbs sampler will converge to the target joint posterior distribution [θ1, ..., θp] of interest.
+
+For a large group of inference problems, Gibbs sampling is automatic in the sense that all conditional posterior distributions are available or easy to simulate using standard probability distributions. There are several attractive aspects of “automatic” Gibbs sampling. First, one can program these simulation algorithms with a small amount of R code, especially when one can use vector and matrix representations for parameters and data. Second, unlike the more general Metropolis-Hastings algorithms described in Chapter 6, there are no tuning constants or proposal densities to define. Last, these Gibbs sampling algorithms provide a nice introduction to the use of more sophisticated MCMC algorithms in Bayesian fitting.
+
+We illustrate the use of R to write Gibbs sampling algorithms for several popular inferential models. We revisit the robust modeling example of Section 6.8, where we applied various computational algorithms to summarize the exact posterior distribution. In Section 10.2, we illustrate a simple Gibbs sampler by representing the t sampling model as a scale mixture of normal densities. In Section 10.3, we apply the idea of latent variables to simulate from a binary response model where a probit link is used. This algorithm is attractive in that one can simulate from this probit model by iterating between truncated normal and multivariate normal probability distributions.
+
+We conclude the chapter by considering a problem where one desires to smooth a two-way table of means. One model for these data is to assume that the underlying population means of the table follow a particular order restriction. A second model assumes that the population means follow a hierarchical regression model, where the population means are a linear function of row and column covariates. For both problems, R functions can be used to implement Gibbs sampling algorithms for simulating from the joint posterior of all parameters. These algorithms are automatic in that they are entirely based on standard probability distribution simulations.
+
+## 10.2 Robust Modeling
+
+We revisit the situation in Section 6.9 where we model data with a symmetric continuous distribution. When there is a possibility of outliers, a good strategy assumes the observations are distributed from a population with tails that are heavier than the normal form. One example of a heavy-tailed distribution is the t family with a small number of degrees of freedom.
+
+With this motivation, we suppose y1, ..., yn are a sample from a t distribution with location μ, scale parameter σ, and known degrees of freedom ν. If we assign the usual non-informative prior on (μ, σ),
+
+g(μ, σ) ∝ 1/σ
+
+the posterior density is given by
+
+g(μ, σ|y) ∝ prod((1/σ)(1 + ((yi − μ)^2)/σ^2)^(−(ν + 1)/2), i = 1:n)/σ
+
+In the case of Cauchy sampling (ν = 1), we illustrated in Section 6.9 the use of different computational algorithms to summarize this representation of the posterior density.
+
+By using a simple trick, we can implement an automatic Gibbs sampler for this problem. A t density with location μ, scale σ, and degrees of freedom ν can be represented as the following mixture:
+
+y|λ ∼ N(μ, σ/sqrt(λ))
+λ ∼ gamma(ν/2, ν/2)
+
+Suppose each observation yi is represented as a scale mixture of normals with the introduction of the scale parameter λi. Then we can write our model as
+
+yi|λi ∼ N(μ, σ/sqrt(λi)), i = 1:n 
+λi ∼ gamma(ν/2, ν/2), i = 1:n 
+(μ, σ) ∼ g(μ, σ) ∝ 1/σ
+
+In the following, it is convenient to express the posterior in terms of the variance σ^2 instead of the standard deviation σ. Using the scale-mixture representation, the joint density of all parameters (μ, σ^2, {λi}) is given by A*B*C, where
+
+A = prod(λi^(1/2)*exp(−λi*(yi − μ)^2/(2σ^2))/σ, i = 1:n)
+B = prod(λi^(ν/2 − 1)*exp(−νλi/2), i = 1:n)
+C = 1/σ^2
+
+On the surface, it appears that we have complicated the analysis through the introduction of the scale parameters {λi}. But Gibbs sampling is easy now since all of the conditional distributions have the following simple functional forms:
+
+1. Conditional on μ and σ2, λ1, ..., λn are independent where
+
+λi ∼ gamma((ν + 1)/2, (yi − μ)^2/(2*σ^2) + ν/2)
+
+2. Conditional on σ2 and {λi}, the mean μ has a normal distribution:
+
+μ ∼ N(sum(λi*yi, i = 1:n)/sum(λi, i = 1:n), /sqrt(sum(λi, i = 1:n)) n λ ,n
+
+3. Conditional on μ and {λi}, the variance σ2 has an inverse gamma distribution:
+
+σ^2 ∼ inv − gamma(n/2, sum(λi(yi − μ)^2, i = 1:n)/2)
+
+In R, we can let lam denote the vector {λi}, and mu and sig2 denote the values of μ and σ2. These three conditional distribution simulations can be implemented by the following R commands:
+
+```{r, comment=NA}
+lam <- rgamma(n, shape=(v + 1)/2, rate = v/2 + (y - mu)^2/2/sig2)
+mu <- rnorm(1, mean = sum(y*lam)/sum(lam), sd = sqrt(sig2/sum(lam)))
+sig2 <- rigamma(1, n/2, sum(lam*(y - mu)^2)/2)
+```
+
+Note that we are using the random gamma function rgamma using a vector rate parameter; due to the conditional independence property, λ1, ..., λn can be simultaneously simulated by a single command. Also we have defined the function rigamma in the LearnBayes package to simulate from the inverse gamma density y^(−a − 1)*exp(−b/y) with arguments a and b.
+
+The function robustt will implement this Gibbs sampling algorithm. The three arguments to this function are the data vector y, the degrees of freedom v, and the number of cycles of the Gibbs sampler m. The output of this function is a list with three components: mu is a vector of simulated draws of μ, s2 is a vector of simulated draws of σ^2, and lam is a matrix of simulated draws of {λi}, where each row corresponds to a single draw.
+
+We apply this algorithm to Darwin’s dataset of the differences of the heights of cross- and self-fertilized plants analyzed in Chapter 6. We model the observations with a t(4) density and run the algorithm for 10,000 cycles.
+
+```{r, comment=NA}
+#data(darwin)
+#attach(darwin)
+str(darwin)
+fit <- robustt(difference, 4, 10000)
+```
+
+We use the density estimation command density to construct a smooth estimate of the marginal posterior density of the location parameter μ. The resulting graph is shown in Figure 10.1.
+
+```{r, comment=NA}
+plot(density(fit$mu), xlab = "mu")
+```
+
+Fig. 10.1. Density estimate of a simulated sample of marginal posterior density of μ in the t modeling example.
+
+The {λi} parameters are interesting to examine since λi represents the weight of the observation yi in the estimation of the location and scale parameters of the t population. In the following R code, we compute the posterior mean of each λi and place the posterior means in the vector mean.lambda. Likewise, we compute the 5th and 95th percentiles of each simulated sample of {λi} (by using the apply command with the function quantile) and store these quantiles in the vectors lam5 and lam95. We first plot the posterior means of the {λi} against the observations {yi}, and then overlay lines that represent 90% interval estimates for these parameters (see Figure 10.2). Note that the location of the posterior density of λi tends to be small for the outlying observations; these particular observations are down-weighted in the estimation of the location and scale parameters.
+
+```{r, comment=NA}
+mean.lambda <- apply(fit$lam, 2, mean)
+lam5 <- apply(fit$lam, 2, quantile, 0.05)
+lam95 <- apply(fit$lam, 2, quantile, 0.95)
+plot(difference, mean.lambda, lwd = 2, ylim = c(0,3), ylab = "Lambda")
+for(i in 1:length(difference))
+  lines(c(1, 1)*difference[i], c(lam5[i], lam95[i]))
+points(difference, 0*difference - 0.05, pch = 19, cex = 2)
+```
+
+Fig. 10.2. Ninety percent posterior interval estimates of scale parameters {λi} plotted against the observations y. The observations are also plotted along the horizontal axis.
+
+## 10.3 Binary Response Regression with a Probit Link
+
+### 10.3.1 Missing Data and Gibbs Sampling
+
+In Section 4.4, we considered a regression problem where we modeled the probability of death as a function of the dose level of a compound. We now consider the more general case where a probability is represented as a function of several covariates. By regarding this problem as a missing-data problem, one can develop an automatic Gibbs sampling method described in Albert and Chib (1993) for simulating from the posterior distribution.
+
+Suppose one observes binary observations y1, ..., yn. Associated with the ith response, one observes the values of k covariates xi1, ..., xik. In the probit regression model, the probability that yi = 1, pi, is written as
+
+pi = P(yi = 1) = Φ(xi1*β1 + ... + xik*βk)
+
+where β = (β1, ..., βk) is a vector of unknown regression coefficients and Φ() is the cdf of a standard normal distribution. If we place a uniform prior on β, then the posterior density is given by
+
+g(β|y) ∝ prod(pi^yi*(1 − pi)^(1 − yi), i = 1:n)
+
+In the example to be discussed shortly, the binary response yi is an indicator of survival, where yi = 1 indicates the person survived the ordeal and yi = 0 indicates the person did not survive. Suppose that there exists a continuous measurement Zi of health such that if Zi is positive, then the person survives; otherwise the person does not survive. Moreover, the health measurement is related to the k covariates by the normal regression model
+
+Zi = xi1*β1 + ... + xik*βk + εi
+
+where ε1, ..., εn are a random sample from a standard normal distribution. It is a straightforward calculation to show that
+
+P(yi = 1) = P(Zi > 0) = Φ(xi1*β1 + ... + xik*βk)
+
+So we can regard this problem as a missing data problem where we have a normal regression model on latent data Z1, ..., Zn and the observed responses are missing or incomplete in that we only observe them if Zi > 0 (yi = 1) or Zi ≤ 0 (yi = 0).
+
+An automatic Gibbs sampling algorithm is constructed by adding the (unknown) latent data Z = (Z1, ..., Zn) to the parameter vector β and sampling from the joint posterior distribution of Z and β. Both conditional posterior distributions, [Z|β] and [β|Z], have convenient functional forms. If we are given a value of the vector of latent data Z, then it can be shown that the conditional posterior distribution of β is
+
+[β|Z, data] ∼ Nk((X′X)^(−1)X′Z, (X′X)^(−1))
+
+where X is the design matrix for the problem. If we are given a value of the regression parameter vector β, then Z1, ..., Zn are independent, with
+
+[Zi|β,data] ∼ N(xi*β, 1)I(Zi > 0), if yi = 1
+[Zi|β,data] ∼ N(xi*β, 1)I(Zi < 0), if yi = 0
+
+and xi denotes the vector of covariates for the ith individual. So given the value of β, we simulate the latent data Z from truncated normal distributions, where the truncation point is 0 and the side of the truncation depends on the values of the binary response.
+
+The function bayes.probit implements this Gibbs sampling algorithm for the probit regression model. The key lines in the R code of this function simulate from the two conditional distributions. To simulate a variate Z from a normal(μ, 1) distribution truncated on the interval (a, b), one uses the recipe
+
+Z = Φ^(−1)[Φ(a − μ) + U(Φ(b − μ) − Φ(a − μ))] + μ
+
+where Φ() and Φ^(−1)() are, respectively, the standard normal cdf and inverse cdf, and U is a uniform variate on the unit interval. In the following code, lp is the vector of linear predictors and y is the vector of binary responses. Then the latent data z are simulated by the following code:
+
+```{r, comment=NA}
+lp <- x %*% beta
+bb <- pnorm(-lp)
+tt <- (bb*(1  -y) + (1 - bb)*y)*runif(n) + bb*y
+z <- qnorm(tt) + lp
+```
+
+Given values of the latent data in the vector z and the design matrix in x, the following code simulates the vector data from the multivariate normal distribution:
+
+```{r, comment=NA}
+v <- solve(t(x) %*% x)
+mn <- solve(t(x) %*% x, t(x) %*% z)
+beta <- rmnorm(1, mean = c(mn), varcov = v)
+```
+
+To illustrate the use of the function bayes.probit, we consider a dataset on the Donner party, a group of wagon train emigrants who had difficulty in crossing the Sierra Nevada mountains in California and a large number starved to death. (See Grayson (1990) for more information about the Donner party.) The dataset donner in the LearnBayes package contains the age, gender, and survival status for 45 members of the party age 15 and older. For the ith member, we let yi denote the survival status (1 if survived, 0 if not survived), MALEi denote the gender (1 if male, 0 if female), and AGEi denote the age in years. We wish to fit the model
+
+P(yi = 1) = Φ(β0 + β1*MALEi + β2*AGEi)
+
+We read in the dataset that has variable names survival, male, and age. We create the design matrix and store it in the variable X.
+
+```{r, comment=NA}
+#data(donner)
+#attach(donner)
+str(donner)
+X <- cbind(1, age, male)
+```
+
+A maximum likelihood fit of the probit model can be found using the glm function with the family = binomial option, indicating by link = probit that a probit link is used.
+
+```{r, comment=NA}
+fit <- glm(survival ~ X - 1, family = binomial(link = probit))
+summary(fit)
+```
+
+To fit the posterior distribution of β by Gibbs sampling, we use the function bayes.probit. The inputs to this function are the vector of binary responses survival, the design matrix X, and the number of cycles of Gibbs sampling m.
+
+```{r, comment=NA}
+m <- 10000
+fit <- bayes.probit(survival, X, m)
+```
+
+The output of this function is a list with two components beta and log.marg. The matrix of simulated draws is contained in beta, where each row corresponds to a single draw of β. We can compute the posterior means and posterior standard deviations of the regression coefficients by use of the apply function.
+
+```{r, comment=NA}
+apply(fit$beta, 2, mean)
+apply(fit$beta, 2, sd)
+```
+
+The posterior mean and standard deviations are similar in value to the maximum likelihood estimates and their associated standard errors. This is expected since the posterior analysis was based on a non-informative prior on the regression vector β.
+
+Since both the age and gender variables appear to be significant in this study, it is interesting to explore the probability of survival
+
+p = P(y = 1) = Φ(β0 +β1*AGE + β2*MALE)
+
+as a function of these two variables. The function bprobit.probs is useful for computing a simulated posterior sample of probabilities for covariate sets of interest. For example, suppose we wish to estimate the probability of survival for males age 15 through 65. We construct a matrix of covariate vectors X1, where a row corresponds to the values of the covariates for a male of a particular age. The function bprobit.probs is used with inputs X1 and the simulated matrix of simulated regression coefficients from bayes.probit that is stored in fit$beta. The output is a matrix of simulated draws p.male, where each column corresponds to a simulated sample for a given survival probability.
+
+```{r, comment=NA}
+a <- seq(15, 65)
+X1 <- cbind(1, a, 1)
+p.male <- bprobit.probs(X1, fit$beta)
+```
+
+We can summarize the simulated matrix of probabilities by the apply command. We compute the 5th, 50th, and 95th percentiles of the simulated sample of
+
+p = Φ(β0 + β1*AGE + β2(MALE = 1))
+
+for each of the AGE values. In Figure 10.3, we graph these percentiles as a function of age. For each age, the solid line is the location of the median of the survival probability and the interval between the dashed lines corresponds to a 90% interval estimate for this probability. In Figure 10.4, we repeat this work to estimate the survival probabilities of females of different ages. These two figures clearly show how survival is dependent on the age and gender of the emigrant.
+
+```{r, comment=NA}
+plot(a, apply(p.male, 2, quantile, 0.5), type = "l", ylim  =c(0, 1),
+     xlab = "age", ylab = "Probability of Survival")
+lines(a, apply(p.male, 2, quantile, 0.05), lty = 2)
+lines(a, apply(p.male, 2, quantile, 0.95), lty = 2)
+```
+
+Fig. 10.3. Posterior distribution of probability of survival for males of different ages. For each age, the 5th, 50th, and 95th percentiles of the posterior are plotted.
+
+### 10.3.2 Proper Priors and Model Selection
+
+The previous section illustrated the use of an automatic Gibbs sampling algorithm for fitting a probit regression model with a non-informative prior placed on the regression vector β. With a small adjustment, this algorithm can also be used to sampling from the posterior distribution using an informative prior. Suppose β is assigned a multivariate normal prior with mean vector β0 and variance-covariance matrix V0. With the introduction of the latent data vector Z, the Gibbs sampling algorithm again iterates between sampling from the distributions of [Z|β] and [β|Z], where the conditional distribution of β has the slightly revised form
+
+[β|Z, data] ∼ Nk(β^1, V1),
+
+where the mean vector and variance-covariance matrix are given by
+
+β^1 = (X′X + V0^(−1))^(−1)(X′Z + V0^(−1)β^0)
+V1 = (X′X + V0^(−1))^(−1)
+
+With the introduction of proper priors, one may be interested in comparing Bayesian regression models by the use of Bayes factors. As described in Chapter 8, a Bayes factor calculation requires the evaluation of the marginal or predictive density value
+
+m(y) = integral(f(y|β)*g(β) dβ)
+
+where f(y|β) and g(β) are respectively the sampling density and prior corresponding to a particular Bayesian model.
+
+Fig. 10.4. Posterior distribution of probability of survival for females of different ages. For each age, the 5th, 50th, and 95th percentiles of the posterior are plotted.
+
+By use of Gibbs sampling, one can estimate the value of the marginal density from a simulated sample from the posterior distribution. In Section 3.3, we introduced the formula
+
+m(y) = f(y|β)*g(β)/g(β|y)
+
+where g(β|y) is the posterior density. Suppose we write this equation in the equivalent form
+
+log(m(y)) = log(f(y|β)) + log(g(β)) − log(g(β|y))
+
+In this probit modeling problem, both the sampling density and the prior density are known, and so the main task is to compute the logarithm of the posterior density logg(β|y) at a particular value of β, say β∗. Suppose we introduce the latent data Z into this computation problem. Then we write the posterior density of β at β = β∗ as
+
+g(β∗|y) = integral(g(β∗|Z, y)*g(Z|y) dZ)
+
+where g(β∗|Z, y) is the posterior density of β (evaluated at β∗) conditional on Z, and g(Z|y) is the marginal posterior density of Z. From our work above, we know that [β|Z, y] is N(β1, V1), and we can simulate from the marginal posterior density of Z. So a simulation-based estimate at the posterior density ordinate is
+
+g(β∗|y) ≈ sum(g(β∗|Z^j, y), j = 1:m)/m = sum(φ(β∗; β^1, V1), j = 1:m)/m
+
+where {Zj} is a simulated sample of m sets of latent data and φ(x;μ,V) is the multivariate normal density with mean μ and variance-covariance matrix V evaluated at x. An estimate at the logarithm of the marginal density is
+
+log(m(y)) ≈ log(f(y|β∗)) + log(g(β∗)) − sum(φ(β∗; β^1, V1), j = 1:m)/m
+
+Typically, one chooses the fixed value β∗ to be a value that is likely under the posterior distribution such as the posterior, the posterior mode, or the maximum likelihood estimate.
+
+The function bayes.probit will compute the log marginal density when a subjective prior is used. One inputs the prior by means of the optional argument prior, a list with components beta, the prior mean vector, and P, the prior precision matrix. (The precision matrix is the inverse of the variance-covariance matrix. The default value for P is a zero matrix which is equivalent to using a non-informative prior for β.) When a subjective prior is used, one component of the output of bayes.probit is log.marg, an estimate at the logarithm of the marginal density.
+
+To illustrate the computation of marginal density values and Bayes factors, suppose we wish to select the best regression for the Donner party example. A convenient choice for prior is given by a slight variation of the Zellner g prior introduced in Section 9.3. For the full regression model with all predictors, we let β have a normal distribution with mean vector 0 and variance-covariance matrix c(X′X)^(−1), where c is a large value, say c = 100 that reflects vague prior knowledge about the location of β. Then if βP represents a regression model with a subset of the predictors, we assign βP a prior of the same functional form with the same value of c.
+
+We begin by loading in the donner dataset, define the response vector y and covariate matrix X, and define the prior mean vector beta0 and prior precision matrix P0.
+
+```{r, comment=NA}
+#data(donner)
+str(donner)
+y <- donner$survival
+X <- cbind(1, donner$age, donner$male)
+beta0 <- c(0, 0, 0)
+c0 <- 100
+P0 <- t(X) %*% X/c0
+```
+
+Then we apply the bayes.probit function, finding respectively the log marginal density for the full model, the model with AGE excluded, the model with MALE excluded, and the model with both variables excluded.
+
+```{r, comment=NA}
+bayes.probit(y, X, 1000, list(beta = beta0, P = P0))$log.marg
+bayes.probit(y, X[ , -2], 1000, list(beta = beta0[-2], P = P0[-2, -2]))$log.marg
+bayes.probit(y, X[ , -3], 1000, list(beta = beta0[-3], P = P0[-3, -3]))$log.marg
+bayes.probit(y, X[ , -c(2, 3)], 1000, list(bet = beta0[-c(2, 3)], P = P0[-c(2, 3), -c(2, 3)]))$log.marg
+```
+
+Using these marginal likelihoods, one is able to compare any two of these models by using a Bayes factor. For example, suppose we wish to compare the “Age, Gender” model with the “Only Age” model. From our work, the log marginal densities of these two models are given respectively by −31.55607 and −32.77703, so the Bayes factor in support of the full model containing both variables is
+
+BF = exp(−31.55607)/exp(−32.77703) = 3.4
+
+indicating that there is support for including both variables in the model. Table 10.1 displays the Bayes factors comparing all pairs of models for this example. From the table, it is clear that Gender is a more important variable than Age in explaining the variation in the Survival variable.
+
+Table 10.1. Bayes factors comparing all possible models for the Donner party example. Each number represents the Bayes factor in support of Model 1 over Model 2.
+
+            Model 2
+Model 1     Age, Gender Only Age Only Gender Null
+Age, Gender 1.0         3.4      1.6         4.3 
+Only Age    0.3         1.0      0.5         1.3 
+Only Gender 0.6         2.0      1.0         2.6
+Null        0.2         0.8      0.4         1.0
+
+## 10.4 Estimating a Table of Means
+
+### 10.4.1 Introduction
+
+A university would like its students to be successful in their classes. Since not all students do well and some may eventually drop out, the admissions office is interested in understanding what measures of high school performance are helpful in predicting success in college. The standard measure of performance in university courses is the grade point average (GPA). The admissions people are interested in understanding the relationship between a student’s GPA and two particular high school measures: the student’s score on the ACT exam (a standardized test given to all high school juniors) and the student’s percentile rank in his or her high school class.
+
+The datafile iowagpa in the LearnBayes package contains the data for this problem. This dataset is a matrix of 40 rows, where a row contains the sample mean, the sample size, the high school rank percentile, and the ACT score. By using the R matrix command, these data are represented by the following two-way table of means. The row of the table corresponds to the high school rank (HSR) of the student, and the column corresponds to the level of the ACT score. The entry of the table is the mean GPA of all students with the particular high school rank and ACT score.
+
+```{r, comment=NA}
+#data(iowagpa)
+str(iowagpa)
+rlabels <- c("91-99", "81-90", "71-80", "61-70", "51-60", "41-50",
+            "31-40", "21-30")
+clabels <- c("16-18", "19-21", "22-24", "25-27", "28-30")
+gpa <- matrix(iowagpa[, 1], nrow = 8, ncol = 5, byrow = TRUE)
+dimnames(gpa) <- list(HSR = rlabels, ACTC = clabels)
+gpa
+```
+
+The following table gives the number of students in each level of high school rank and ACT score. Note that most of the students are in the upper right corner of the table corresponding to high values of both variables.
+
+```{r, comment=NA}
+samplesizes <- matrix(iowagpa[, 2], nrow = 8, ncol = 5, byrow = TRUE)
+dimnames(samplesizes) <- list(HSR = rlabels, ACTC = clabels)
+samplesizes
+```
+
+The admissions people at this university believe that both high school rank and ACT score are useful predictors of grade point average. One way of expressing this belief is to state that the corresponding population means of the table satisfy a particular order restriction. Let μij denote the mean GPA of the population of students with the ith level of HSR and jth level of ACT score. If one looks at the ith row of the table with a fixed HSR rank, it is reasonable to believe that the column means satisfy the order restriction
+
+μi1 ≤ μi2 ≤ ... ≤ μi5
+
+This expresses the belief that if you focus on students with a given high school rank, then students with higher ACT scores will obtain higher grade point averages. Likewise, for a particular ACT level (jth column), one may believe that students with higher percentile ranks will get higher grades, and thus the row means satisfy the order restriction
+
+μ1j ≤ μ2j ≤ ... ≤ μ9j
+
+The standard estimates of the population means are the corresponding observed sample means. Figure 10.5 displays the matrix of sample means using a series of line graphs where each row of means is represented by a single line. (This graph is created using the R function matplot.) Note from the figure that the sample means do not totally satisfy the order restrictions. For example, in the “31–40” row of HSR, the mean GPA for ACT score 19–21 is larger than the mean GPA in the same row for larger values of ACT. It is desirable to obtain smoothed estimates of the population means that more closely follow the belief in order restriction. See Robertson et al. (1988) for a description of frequentist methods for order restricted problems.
+
+```{r, comment=NA}
+act <- seq(17, 29, by = 3)
+matplot(act, t(gpa), type = "l", lwd = 3, xlim = c(17, 34), col = 1:8, lty = 1:8)
+legend(30, 3, lty = 1:8, lwd = 3, col=1:8,
+       legend = c("HSR = 9", "HSR = 8", "HSR = 7", "HSR = 6", "HSR = 5",
+                  "HSR = 4", "HSR = 3", "HSR = 2"))
+```
+
+Fig. 10.5. Sample mean GPAs of students for each level of high school rank (HSR) and ACT score.
+
+### 10.4.2 A Flat Prior Over the Restricted Space
+
+Suppose one is certain before sampling that the population means follow the order restriction but otherwise has little opinion about the location of the means. Then, if μ denotes the vector of population means, one could assign the flat prior
+
+g(μ) ∝ c, μ ∈ A
+
+where A is the space of values of μ that follow the order restrictions.
+
+Let yij and nij denote the sample mean GPA and sample size, respectively, of the (i, j) cell of the table. We assume that the observations y11, ..., y85 are independent with yij distributed normal with mean μij and variance σ^2/nij, where σ is known. The likelihood function of μ is then given by
+
+L(μ) = prod(prod(exp(−nij(yij − μij)^2/(2σ^2), j = 1:5), i = 1:8)
+
+Combining the likelihood with the prior, the posterior density is given by
+
+g(μ|y) ∝ L(μ), μ ∈ A
+
+This is a relatively complicated 40-dimensional posterior distribution due to the restriction of its mass to the region A. However, to implement the Gibbs sampler, one only requires the availability of the set of full conditional distributions. Here “available” means that the one-dimensional distributions have recognizable distributions that are easy to simulate. Note that the posterior distribution of μij, conditional on the remaining components of μ, has the truncated normal form  
+
+g(μij|y, {μjk, (j, k) != (i, j)}) ∝ exp(−nij*(yij − μij)^2/(2σ^2))
+
+where max{μ[i − 1, j], μ[i, j − 1]} ≤ μij ≤ min{μ[i, j + 1], μ[i + 1, j]}.
+
+The R function ordergibbs implements Gibbs sampling for this model. As mentioned earlier, we assume that the standard deviation σ is known, and the known value σ = 0.65 is assigned inside the function. To begin the algorithm, the program uses a starting value for the matrix of means μ that satisfies the order restriction. Also, for ease in programming, the means are embedded within a larger matrix augmented by two rows and two columns containing values of −∞ and +∞. Note that in this programming we have changed the ordering of the rows so that the means are increasing from the first to last rows.
+
+      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+ [1,] -Inf -Inf -Inf -Inf -Inf -Inf -Inf
+ [2,] -Inf 1.59 1.59 1.59 1.67 1.88  Inf
+ [3,] -Inf 1.85 1.85 1.85 1.88 1.88  Inf
+ [4,] -Inf 1.85 1.85 1.85 2.10 2.10  Inf
+ [5,] -Inf 2.04 2.11 2.11 2.33 2.33  Inf
+ [6,] -Inf 2.31 2.33 2.33 2.33 2.33  Inf
+ [7,] -Inf 2.37 2.47 2.64 2.66 2.66  Inf
+ [8,] -Inf 2.37 2.63 2.74 2.76 2.91  Inf
+ [9,] -Inf 2.64 3.02 3.02 3.07 3.34  Inf
+[10,] -Inf  Inf  Inf  Inf  Inf  Inf  Inf
+
+In the one main loop, the program goes sequentially through all entries of the population matrix μ, simulating at each step from the posterior of an individual cell mean conditional on the values of the remaining means of the table. The posterior density of μij is given by a truncated normal form, where the truncation points depend on the current simulated values of the means in a neighborhood of this (i, j) cell. For example, beginning with the starting value of μ, one would first simulate μ11 from a normal (y11, σ/sqrt(n11)) distribution truncated on the interval (−∞, min{1.59,  1.85}). As shown in this fragment of the function ordergibbs, a truncated normal simulation is accomplished by using the special R function rnormt.
+
+```{r, comment=NA}
+lo <- max(c(mu[i - 1, j], mu[i, j - 1]))
+hi <- min(c(mu[i + 1, j], mu[i, j + 1]))
+mu[i, j] <- rnormt(1, y[i - 1, j - 1], s/sqrt(n[i - 1, j - 1]), lo, hi)
+```
+
+Given the R matrix iowagpa containing two columns of sample means and sample sizes, the command s = ordergibbs(iowagpa, m) implements Gibbs sampling for m cycles and the matrix of simulated values is stored in the matrix MU. A column of the matrix represents an approximate random sample from the posterior distribution for a single cell mean. In the following, we use m = 5000 iterations.
+
+```{r, comment=NA}
+MU <- ordergibbs(iowagpa, 5000)
+```
+
+The apply command is used to find the posterior means of all cell means, and the collection of posterior means is placed in an 8-by-5 matrix. Figure 10.6 displays these posterior means. Note that since the prior support is entirely on the order-restricted space, these posterior means do follow the order restrictions.
+
+```{r, comment=NA}
+postmeans <- apply(MU, 2, mean)
+postmeans <- matrix(postmeans, nrow = 8, ncol = 5)
+postmeans <- postmeans[seq(8, 1, -1), ]
+dimnames(postmeans) <- list(HSR = rlabels, ACTC = clabels)
+round(postmeans, 2)
+matplot(act, t(postmeans), type = "l", lty=1:8, lwd = 3, col = 1, xlim = c(17, 34))
+legend(30, 3, lty = 1:8, lwd = 2, 
+       legend = c("HSR = 9", "HSR = 8", "HSR = 7", "HSR = 6", 
+                  "HSR = 5", "HSR = 4", "HSR = 3", "HSR = 2"))
+```
+
+Fig. 10.6. Plot of posterior means of GPAs using a non-informative prior on order-restricted space.
+
+One way of investigating the impact of the prior belief in order restriction on inference is to compute the posterior standard deviations of the cell means and compare these estimates with the classical standard errors. By using the apply command, we compute the posterior standard deviations:
+
+```{r, comment=NA}
+postsds <- apply(MU, 2, sd)
+postsds <- matrix(postsds, nrow = 8, ncol = 5)
+postsds <- postsds[seq(8, 1, -1), ]
+dimnames(postsds) <- list(HSR = rlabels, ACTC = clabels)
+round(postsds, 3)
+```
+
+The standard error of the observed sample mean yij is given by SE(yij) = σ/sqrt(nij), where we assume that σ = 0.65. The following table computes the ratios {SD(μij|y)/SE(yij)} for all cells. Note that most of the ratios are in the 0.5 to 0.7 range, indicating that we are adding significant prior information using of this order-restricted prior.
+
+```{r, comment=NA}
+s <- 0.65
+se <- s/sqrt(samplesizes)
+round(postsds/se, 2)
+```
+
+### 10.4.3 A Hierarchical Regression Prior
+
+The use of the flat prior over the restricted space A resembles a frequentist analysis where one would find the maximum likelihood estimate. However, from a subjective Bayesian viewpoint, alternative priors could be considered. If one believes that the means satisfy an order restriction, then one may also have prior knowledge about the location of the means. Specifically, one may believe that the mean GPAs may be linearly related to the high school rank and ACT scores of the students.
+
+One can construct a hierarchical regression prior to reflect the relationship between the GPA and the two explanatory variables. At the first stage of the prior, we assume the means are independent, where μij is normal with the location given by the regression structure
+
+β0 + β1*ACTi + β2*HSRj
+
+and variance (σπ)^2. At the second stage of the prior model, we assume the hyperparameters β = (β0, β1, β2) and (σπ)^2 are independent with β distributed as N3(β ̄, Σβ) and (σπ)^2 distributed as S(χν)^(−2).
+
+Prior knowledge about the regression parameter β is expressed by means of the normal prior with mean β ̄ and variance-covariance matrix Σβ. These values can be obtained by analyzing similarly classified data for 1978 Iowa students. One can find the MLE and associated variance-covariance matrix from an additive fit to these data. If one assumes that the regression structure between GPA and the covariates did not change significantly between 1978 and 1990, these values can be used for β ̄ and Σβ.
+
+To construct a suitable prior for σπ2, observe that this parameter reflects the strength of the user’s prior belief that the regression model fits the table of observed means. Also, this parameter is strongly related to the prior belief that the table of means satisfies the order restriction. The prior mean and standard deviation are given respectively by E((σπ)^2) = S/(v − 2) and SD((σπ)^2) = sqrt(2)/(v − 2)/sqrt(v − 4). By fixing a value of S and increasing v, the prior for (σπ)^2 is placing more of its mass toward zero and reflects a stronger belief in order restriction. In the following, we use the parameter values S = 0.02 and v = 16.
+
+The posterior density of all parameters (μ, β, (σπ)^2) is given by the following: 
+
+g(μ, β, (σπ)^2|y) ∝ A*B*C
+A = prod(prod(exp(−nij(yij − μij)^2/(2σ^2), j = 1:5), i = 1:8)
+B = prod(prod(exp(−(μij − (xij)’*β)^2/(2(σπ)^2), j = 1:5), i = 1:8)
+C = exp(−(β − β ̄)′Σ^(−1)(β − β ̄)/2)*((σπ)^2)^(−ν/2 −1)*exp(−S/(2(σπ)^2))
+
+σ π2 − ( 4 0 + v ) / 2 − 1 
+
+exp 1 S + ( μ i j − x ′i j β ) 2 . 2σπ2
+
+Simulation from the joint posterior distribution is possible using a Gibbs sampling algorithm. We partition the parameters into the three components μ,β, and (σπ)^2 and consider the distribution of each component conditional on the remaining parameters. We describe the set of conditional distributions here; we will see that all of these distributions have convenient functional forms that are easy to simulate in R.
+
+- The population means μ11, ..., μ85, conditional on β and (σπ)^2, are independent distributed as N(μij(y), sqrt(vij)), where
+
+μij(y) = vij(nij*yij/σ^2 +  (xij)’*β/(σπ)^2)
+vij = (nij/σ^2 + 1/(σπ)^2)^(-1)
+
+- The regression vector β, conditional on μ and (σπ)^2, is distributed as N3(β∗, Σβ∗), where
+
+Σβ∗ = ((Σβ)^(−1) + X′X(σπ)^(−2))^(−1)
+β∗ = Σβ∗((Σβ)^(−1)β ̄ + X′(σπ)^(−2)μ)
+
+- The variance (σπ)^2, conditional on μ and β, is distributed according to the inverse gamma form
+
+(σπ)^2^((40 + ν)/2 − 1)*exp((S + sum(μij−(xij)′*β)^2))/(2(σπ)^2))
+
+The R function hiergibbs implements this Gibbs sampling algorithm. There are two inputs to this function: the data matrix data and the number of iterations of the Gibbs sampler m. In the program setup, one defines the vector of cell means {yij} (y), the vector of sample sizes {nij} (n), the design matrix consisting of rows {(1, ACTi, HSRj)} (X), and the vector of known sampling variances {σ^2/nij} (s2). One defines the prior mean β ̄ (b1), the prior covariance-variance matrix Σβ (bvar), and the hyperparameters of the prior on (σπ)^2 , S (s), and v (v). Also, the inverse of Σβ (ibar) is computed.
+
+Before the Gibbs sampling begins, initial values need to be set for the population means {μij} and the prior variance (σπ)^2. It is convenient to simply let an initial estimate for μij be the observed sample mean yij. Also we let (σπ)^2 denote the relatively large value 0.006 that corresponds to little shrinkage toward the regression model.
+
+We describe the R implementation for a single Gibbs cycle that simulates in turn from the three sets of conditional posterior distributions.
+
+1. Simulation of β. This fragment of R code simulates the regression vector β from a multivariate normal distribution. The R command solve is used to compute the inverse of the matrix (Σβ)^(−1) + X′X(σπ)^(−2), and the variance-covariance matrix is stored in the variable pvar. The posterior mean is stored in the variable pmean, and the function rmnorm is used to simulate the multivariate normal variate.
+
+```{r, comment=NA}
+pvar <- solve(ibvar + t(a )%*% a/s2pi) 
+pmean <- pvar %*% (ibvar %*% b1 + t(a) %*% mu/s2pi) 
+beta <- rmnorm(1, mean = c(pmean), varcov = pvar)
+```
+
+2. Simulation of (σπ)^2 . This R fragment simulates the prior variance from an inverse gamma distribution.
+
+```{r, comment=NA}
+s2pi <- rigamma(1, (N + v)/2, sum((mu - a %*% beta)^2)/2 + s/2)
+```
+
+3. Simulation of μ. Conditional on the remaining parameters, the components of μ have independent normal distributions. It is convenient to simultaneously simulate all distributions by means of vector operations. The R variable postvar contains values of the posterior variances for the components of μ, and postmean contains the respective posterior means. Then the command rnorm(n,postmean,sqrt(postvar)) simulates the values from the 40 independent normal distributions. 
+
+```{r, comment=NA}
+postvar <- 1/(1/s2 + 1/s2pi)
+postmean <- (y/s2 + a %*% beta/s2pi)*postvar
+mu <- rnorm(n, postmean, sqrt(postvar))
+```
+
+The Gibbs sampler is run for 5000 cycles by executing the function hiergibbs.
+
+```{r, comment=NA}
+FIT <- hiergibbs(iowagpa, 5000)
+```
+
+The output variable FIT is a list consisting of three elements: beta, the matrix of simulated regression coefficients β, where each row is a simulated draw; mu, the matrix of simulated cell means; and var, the vector of simulated variances (σπ)^2.
+
+Figure 10.7 shows density estimates of the simulated draws of the regression coefficients β1 and β2, corresponding respectively to the two covariates high school rank and ACT score. We summarize each coefficient by the computation of the 0.025, 0.25, 0.5, 0.75, and 0.975 quantiles of each batch of simulated draws. A 95% interval estimate for β2, for example, is given by the 0.025 and 0.975 quantiles (0.0223, 0.0346).
+
+```{r, comment=NA}
+par(mfrow = c(2,1))
+plot(density(FIT$beta[ , 2]), xlab = expression(beta[2]), main = "HIGH SCHOOL RANK")
+plot(density(FIT$beta[ , 3]), xlab = expression(beta[3]), main = "ACT SCORE")
+quantile(FIT$beta[ , 2], c(0.025, 0.25, 0.5, 0.75, 0.975))
+quantile(FIT$beta[ , 3], c(0.025, 0.25, 0.5, 0.75, 0.975))
+```
+
+Fig. 10.7. Density estimates of simulated draws of regression coefficients β1 and β2 in the hierarchical regression model.
+
+We summarize the posterior distribution of the variance parameter σπ2 ; this parameter is helpful for understanding the shrinkage of the observed sample means toward the regression structure.
+
+```{r, comment=NA}
+quantile(FIT$var, c(0.025, 0.25, 0.5, 0.75, 0.975))
+```
+
+Last, we compute and display the posterior means of the cell means in Figure 10.8. These posterior mean estimates using a hierarchical prior look similar to the posterior estimates using a non-informative prior on the restricted space displayed in Figure 10.6.
+
+```{r, comment=NA}
+posterior.means <- apply(FIT$mu, 2, mean)
+posterior.means <- matrix(posterior.means, nrow = 8, ncol = 5, byrow = TRUE)
+par(mfrow = c(1, 1))
+matplot(act, t(posterior.means), type = "l", lwd = 3, lty = 1:8, col = 1,
+  xlim = c(17, 34))
+legend(30, 3, lty = 1:8, lwd = 2, 
+       legend = c("HSR = 9", "HSR = 8", "HSR = 7", "HSR = 6",
+                  "HSR = 5", "HSR = 4", "HSR = 3", "HSR = 2"))
+```
+
+Fig. 10.8. Plot of posterior means of GPAs using the hierarchical prior.
+
+### 10.4.4 Predicting the Success of Future Students
+
+The university is most interested in predicting the success of future students from this model. Let z∗ denote the college GPA for a single future student with ACT score in class i and high school percentile in class j. If the university believes that a GPA of at least 2.5 defines success, then they are interested in computing the posterior predictive probability
+
+P (zij∗ ≥ 2.5|y)
+
+One can express this probability as the integral
+
+P(zij∗ ≥ 2.5|y) = integral(P(zij∗ ≥ 2.5|μ, y)*g(μ|y)dμ)
+
+where g(μ|y) is the posterior distribution of the vector of cell means μ. In our model, we assume that the distribution of zij∗, conditional on μ, is N(μij, σ). So we can write the predictive probability as
+
+P(zij∗ ≥ 2.5|y) = integral((1 − Φ((2.5−μij)/σ))*g(μ|y)dμ)
+
+where Φ() is the standard normal cdf. A simulated sample from the posterior distribution of the cell means is available as one of the outputs of the Gibbs sampling algorithms ordergibbs and hiergibbs. If {(μij)^t, t = 1, ..., m} represents the sample from the marginal posterior distribution of μij, then the posterior predictive probability that the student will be successful is estimated by
+
+P(zij∗ ≥ 2.5|y)≈ sum(1 - Φ((2.5 − (μij)^t)/σ), t = 1:m)/m
+
+We illustrate this computation when a hierarchical regression model is placed on the cell means. Recall that the output of the function hiergibbs in our example was FIT, and so FIT$mu is the matrix of simulated cell means from the posterior distribution. We transform all the cell means to probabilities of success by using the pnorm function and compute the sample means for all cells by using the apply function.
+
+```{r, comment=NA}
+p <- 1 - pnorm((2.5 - FIT$mu)/0.65)
+prob.success <- apply(p, 2, mean)
+```
+
+We convert this vector of estimated probabilities of success to a matrix by using the matrix command, attach row and column labels to the table by using the dimnames command, and then display the probabilities, rounding to the third decimal space.
+
+```{r, comment=NA}
+prob.success <- matrix(prob.success, nrow = 8, ncol = 5, byrow = TRUE)
+dimnames(prob.success) <- list(HSR = rlabels, ACTC = clabels)
+round(prob.success, 3)
+```
+
+This table of predictive probabilities should be useful to the admissions officer at the university. From this table, one may wish to admit students who have a predictive probability of, say, at least 0.70 of being successful in college.
+
+## 10.5 Further Reading
+
+Gelfand and Smith (1990) and Gelfand et al. (1990) were the first papers to describe the statistical applications of Gibbs sampling. Wasserman and Verdinelli (1991) and Albert (1992) describe the use of Gibbs sampling in outlier models. The use of latent variables and Gibbs sampling for fitting binary response models is described in Albert and Chib (1993). Chib (1995) describes how Gibbs sampling can be used to compute values of the marginal density. The use of Gibbs sampling in modeling order restrictions in a two-way table of means was illustrated in Albert (1994).
+
+## 10.6 Summary of R Functions
+
+bayes.probit – simulates from a probit binary response regression model using data augmentation and Gibbs sampling
+
+Usage: bayes.probit(y, X, m, prior = list(beta = 0, P = 0))
+
+Arguments: y, vector of binary responses; X, covariate matrix; m, number of simulations; prior, list with components beta, the prior mean, and P, the prior precision matrix
+
+Value: beta, matrix of simulated draws of the regression vector beta, where each row corresponds to a draw of beta; log.marg, simulation estimate at log marginal likelihood of the model
+
+bprobit.probs – simulates fitted probabilities for a probit regression model 
+
+Usage: bprobit.probs(X, fit)
+
+Arguments: X, matrix where each row corresponds to a covariate set; fit, matrix of simulated draws from the posterior distribution of the regression vector beta
+
+Value: matrix of simulated draws of the fitted probabilities, where a column corresponds to a particular covariate set
+
+hiergibbs – implements Gibbs sampling for estimating a two-way table of normal means under a hierarchical regression model
+
+Usage: hiergibbs(data, m)
+
+Arguments: data, data matrix where the columns are observed sample means, sample sizes, and values of two covariates; m, number of cycles of Gibbs sampling
+
+Value: beta, matrix of simulated values of regression parameter; mu, matrix of simulated values of cell means; var, vector of simulated values of second-stage prior variance
+
+ordergibbs – implements Gibbs sampling for estimating a two-way table of normal means under an order restriction
+
+Usage: ordergibbs(data, m)
+
+Arguments: data, data matrix where the first column contains the sample means and the second column contains the sample sizes; m, number of iterations of Gibbs sampling
+
+Value: matrix of simulated draws of the normal means, where each row represents one simulated draw
+
+robustt – implements Gibbs sampling for a robust t sampling model with location mu, scale sigma, and degrees of freedom v
+
+Usage: robustt(y, v, m)
+
+Arguments: y, vector of data values; v, degrees of freedom for t model; m, number of cycles of the Gibbs sampler
+
+Value: mu, vector of simulated values of mu; s2, vector of simulated draws of sigma2; lam, matrix of simulated draws of lambda, where each row corresponds to a single draw
+
+## 10.7 Exercises
+
+### 1. Gibbs sampling when parameters are correlated
+
+In Exercise 8 of Chapter 4, we explored the relationship between a student’s ACT score and his success in a calculus class. If yi and ni are the total number and number of successful students with ACT score xi, we assume yi is binomial(ni, pi), where the probabilities satisfy the logistic model
+
+log(pi/(1 − pi)) = β0 + β1*xi 
+
+The data are given in the exercise. Assuming a uniform prior, the logarithm of the posterior density is given by the LearnBayes function logisticpost, where the data matrix consists of columns of the ACT scores {xi}, the sample sizes {ni}, and the success counts {yi}.
+
+a) Construct a contour plot of the joint posterior density of (β0, β1) using the function mycontour.
+
+b) Find the posterior mode and associated variance-covariance matrix of (β0, β1) using the function laplace.
+
+c) Using the “Metropolis within Gibbs” algorithm of Section 6.4 implemented in the function gibbs, implement a Gibbs algorithm for sampling from the joint posterior distribution of (β0, β1) using 1000 iterations. Adjust the scale parameters c1, c2 of the algorithm so that the acceptance rate for each component is approximately 25%.
+
+d) Using of trace plots and autocorrelation graphs, inspect the simulated stream of values for each regression parameter. Explain why the Gibbs sampler is not an efficient method of sampling for this problem.
+
+### 2. Robust modeling with Cauchy sampling
+
+In Section 6.9, different computational methods are used to model data where outliers may be present. The data y1, …, yn are assumed independent, where yi is Cauchy with location μ and scale σ. Using the standard non-informative prior of the form g(μ, σ) = 1/σ and Darwin’s dataset, Table 6.2 presents 5-th, 50-th, and 95-th percentiles of the marginal posterior densities of μ and log σ using Laplace, brute-force, random walk Metropolis, independence Metropolis, and Metropolis within Gibbs algorithms. Use the “automatic” Gibbs sampler as implemented in the function robustt to fit this Cauchy error model, where the degrees of freedom of the t density is set to 1. Run the algorithm for 10,000 cycles, and compute the posterior mean and standard deviation of μ and log σ. Compare your answers with the values given in Table 6.2 using the other computational methods.
+
+### 3. Probit regression modeling
+
+The dataset calculus.grades in the LearnBayes package contains grade information for a sample of 100 calculus students at Bowling Green State University. For the ith student, one records yi = 1 if he or she receives an A or a B in the class. In addition, one records PREV.GRADEi = 1 if the student received an A in a prerequisite mathematics class and ACTi, the student’s score in an ACT math test. Suppose one wishes to predict the grade of the student by using a probit regression model using explanatory variables PREV.GRADE and ACT.
+
+a) Using the model checking strategy of Section 10.3.2 and the function bayes.probit to compute marginal density values, find the best probit regression model.
+
+b) Using the bayes.probit function, fit the best probit model. By summarizing the simulated sample from the posterior distribution of β, describe how the fitted probability p varies as a function of the explanatory variables.
+
+### 4. Mixtures of sampling densities
+
+Suppose one observes a random sample y1, ..., yn from the mixture density
+
+f(y|p, λ1, λ2) = pf(y|λ1) + (1 − p)*f(y|λ2),
+
+where f(y|λ) is a Poisson density with mean λ, p is a mixture parameter between 0 and 1, and λ1 < λ2. Suppose that a priori the parameters (p, λ1, λ2) are independent, with p assigned a uniform density and λi assigned gamma(ai, bi), i = 1, 2. Then the joint posterior density is given by
+
+g(p, λ1, λ2|data) ∝ g(p, λ1, λ2)*prod(f(yi|p, λ1, λ2), i = 1:n)
+
+Suppose one introduces the latent data Z1, ..., Zn, where Zi = 1 or 2 if yi ∼ Poisson(λ1) or yi ∼ Poisson(λ2), respectively. The joint posterior density of the vector of latent data Z = (Z1, ..., Zn) and the parameters is given by
+
+g(p, λ1, λ2, Z|data) ∝ g(p, λ1, λ2)*prod(I(Zi = 1)*p*f(yi|λ1) + I(Zi = 2)*(1 − p)*f(yi|λ2), i = 1:n)
+
+where I(A) is the indicator function, which is equal to 1 if A is true and 0 otherwise.
+
+a) Find the complete conditional densities of p, λ1,λ2, and Zi.
+
+b) Describe a Gibbs sampling algorithm for simulating from the joint
+density of (p, λ1, λ2, Z).
+
+c) Write an R function to implement the Gibbs sampler.
+
+d) To test your function, the following data were simulated from the mixture density with p = 0.3, λ1 = 5, and λ2 = 15:
+
+24 18 21  5  5 11 11 17 6  7
+20 13  4 16 19 21  4 22 8 17
+
+Let the prior hyperparameters be equal to a1 = b1 = a2 = b2 = 1. Run the Gibbs sampler for 10,000 iterations. From the simulated output, compute the posterior mean and standard deviation of p, λ1, and λ2 and compare the posterior means with the parameter values from which the data were simulated.
+
+### 5. Censored data
+
+Suppose that observations x1, ..., xn are normally distributed with mean μ and variance σ^2. However, the measuring device has malfunctioned and one only knows that the first observation x1 exceeds a known constant c; the remaining observations x2, ..., xn are recorded correctly. If we regard the censored observation x1 as an unknown and we assign the usual non-informative prior on (μ, σ^2), then the joint density of all unknowns (the single observation and the two parameters) has the form
+
+g(μ, σ^2, x1|data) ∝ A*B/σ^2
+A = prod(exp(−(xi − μ)^2/(2σ^2))/sqrt(2πσ^2), i = 2:n)
+B = exp(−(x1 − μ)^2/(2σ^2))/sqrt(2πσ^2)
+
+a) Suppose one partitions the unknowns by [μ, σ2] and [x1]. Describe the conditional posterior distributions [μ, σ2|x1] and [x1|μ, σ2].
+
+b) Write an R function to program the Gibbs sampling algorithm based on the conditional distributions found in part (a).
+
+c) Suppose the sample observations are 110, 104, 98, 101, 105, 97, 106, 107, 84, and 104, where the measuring device is “stuck” at 110 and one knows that the first observation exceeds 110. Use the Gibbs sampling algorithm to find 90% interval estimates for μ and σ.
+
+### 6. Order-restricted inference
+
+Suppose one observes y1, ..., yN , where yi is distributed binomial with sample size ni and probability of success pi. A priori suppose one assigns a uniform prior over the space where the probabilities satisfy the order restriction
+
+p1 < p2 < ... < pN
+
+a) Describe a Gibbs sampling algorithm for simulating from the joint posterior distribution of (p1, ..., pN).
+
+b) Write an R function to implement the Gibbs sampler found in part (a).
+
+c) Suppose N = 4,the sample sizes are n1 = ... = n4 = 20, and one observes y1 = 2, y2 = 5, y3 = 12, and y4 = 9. Use the R function to simulate 1000 draws from the joint posterior distribution of (p1, p2, p3, p4).
+
+### 7. Grouped data
+
+In Section 6.7, inference about the mean μ and the variance σ^2 of a normal population is considered, where the heights of male students are observed in grouped form, as displayed in Table 6.1. Let y = (y1, ..., yn) denote the vector of actual unobserved heights, which are distributed N(μ, σ). Consider the joint posterior distribution of all unobservables (y, μ, σ^2). As in Section 6.7, we assume that the parameters (μ,σ2) have the non-informative prior proportional to 1/σ^2.
+
+a) Describe the conditional posterior distributions [y|μ, σ2] and [μ, σ2|y].
+
+b) Program an R function that implements a Gibbs sampler based on the conditional posterior distributions found in part (a).
+
+c) Using the R function, simulate 1000 cycles of the Gibbs sampler. Compute the posterior mean and posterior standard deviation of μ and σ and compare your estimates with the values reported using the Metropolis random walk algorithm in Section 6.7.

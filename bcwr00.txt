@@ -1,0 +1,195 @@
+Bayesian Computation with R
+by Jim Albert
+Second Edition
+
+Preface
+
+There has been dramatic growth in the development and application of Bayesian inference in statistics. Berger (2000) documents the increase in Bayesian activity by the number of published research articles, the number of books, and the extensive number of applications of Bayesian articles in applied disciplines such as science and engineering.
+
+One reason for the dramatic growth in Bayesian modeling is the availability of computational algorithms to compute the range of integrals that are necessary in a Bayesian posterior analysis. Due to the speed of modern computers, it is now possible to use the Bayesian paradigm to fit very complex models that cannot be fit by alternative frequentist methods.
+
+To fit Bayesian models, one needs a statistical computing environment. This environment should be such that one can:
+
+• write short scripts to define a Bayesian model
+
+• use or write functions to summarize a posterior distribution
+
+• use functions to simulate from the posterior distribution
+
+• construct graphs to illustrate the posterior inference
+
+An environment that meets these requirements is the R system. R provides a wide range of functions for data manipulation, calculation, and graphical dis- plays. Moreover, it includes a well-developed, simple programming language that users can extend by adding new functions. Many such extensions of the language in the form of packages are easily downloadable from the Comprehensive R Archive Network (CRAN).
+
+The purpose of this book is to illustrate Bayesian modeling by computations using the R language. At Bowling Green State University, I have taught an introductory Bayesian inference class to students in masters and doctoral programs in statistics for which this book would be appropriate. This book would serve as a useful companion to the introductory Bayesian texts by Gelman et al. (2003), Carlin and Louis (2009), Press (2003), Gill (2008), or Lee (2004). The book would also be valuable to the statistical practitioner who wishes to learn more about the R language and Bayesian methodology.
+
+Chapters 2, 3, and 4 illustrate the use of R for Bayesian inference for standard one- and two-parameter problems. These chapters discuss the use of different types of priors, the use of the posterior distribution to perform different types of inferences, and the use of the predictive distribution. The base package of R provides functions to simulate from all of the standard probability distributions, and these functions can be used to simulate from a variety of posterior distributions. Modern Bayesian computing is introduced in Chapters 5 and 6. Chapter 5 discusses the summarization of the posterior distribution using posterior modes and introduces rejection sampling and the Monte Carlo approach for computing integrals. Chapter 6 introduces the fundamental ideas of Markov chain Monte Carlo (MCMC) methods and the use of MCMC output analysis to decide if the batch of simulated draws provides a reasonable approximation to the posterior distribution of interest. The remaining chapters illustrate the use of these computational algorithms for a variety of Bayesian applications. Chapter 7 introduces the use of exchangeable models in the simultaneous estimation of a set of Poisson rates. Chapter 8 describes Bayesian tests of simple hypotheses and the use of Bayes factors in comparing models. Chapter 9 describes Bayesian regression models, and Chapter 10 describes several applications, such as robust modeling, binary regression with a probit link, and order-restricted inference, that are well- suited for the Gibbs sampling algorithm. Chapter 11 describes the use of R to interface with WinBUGS, a popular program for implementing MCMC algorithms.
+
+An R package, LearnBayes, available from the CRAN site, has been writ- ten to accompany this text. This package contains all of the Bayesian R functions and datasets described in the book. One goal in writing LearnBayes is to provide guidance for the student and applied statistician in writing short R functions for implementing Bayesian calculations for their specific problems. Also the LearnBayes package will make it easier for users to use the growing number of R packages for fitting a variety of Bayesian models.
+
+Changes in the Second Edition
+
+I appreciate the many comments and suggestions that I have received from readers of the first edition. Although this book is not intended to be a self-contained book on Bayesian thinking or using R, it hopefully provides a useful entry into Bayesian methods and computation.
+
+The second edition contains several new topics, including the use of mixtures of conjugate priors (Section 3.5), the use of the SIR algorithm to explore the sensitivity of Bayesian inferences with respect to changes in the prior (Section 7.9), and the use of Zellner’s g priors to choose between models in linear regression (Section 9.3). There are more illustrations of the construction of in- formative prior distributions, including the construction of a beta prior using knowledge about percentiles (Section 2.4), the use of the conditional means prior in logistic regression (Section 4.4), and the use of a multivariate normal prior in probit modeling (Section 10.3). I have become more proficient in the R language, and the R code illustrations have changed according to the new version of the LearnBayes package. It is easier for a user to write an R function to compute the posterior density, and the laplace function provides a more robust method of finding the posterior mode using the optim function in the base package. The R code examples avoid the use of loops and illustrate some of the special functions of R, such as sapply. This edition illustrates the use of the lattice package in producing attractive graphs. Since the book seems useful for self-learning, the number of exercises in the book has been increased from 58 to 72.
+
+I would like to express my appreciation to the people who provided assistance in preparing this book. John Kimmel, my editor, was most helpful in encouraging me to write this book and providing valuable feedback. I thank Patricia Williamson and Sherwin Toribio for providing useful suggestions. Bill Jeffreys, Peter Lee, John Shonder, and the reviewers gave many constructive comments on the first edition. I appreciate all of the students at Bowling Green who have enrolled in my Bayesian statistics class over the years. Finally, but certainly not least, I wish to thank my wife, Anne, and my children, Lynne, Bethany, and Steven, for encouragement and inspiration.
+
+Bowling Green, Ohio 
+Jim Albert 
+December 2008
+
+Contents
+
+1.0.0 An Introduction to R
+1.1.0 Overview
+1.2.0 Exploring a Student Dataset
+1.2.1 Introduction to the Dataset
+1.2.2 Reading the Data into R
+1.2.3 R Commands to Summarize and Graph  a Single Batch
+1.2.4 R Commands to Compare Batches
+1.2.5 R Commands for Studying Relationships
+1.3.0 Exploring the Robustness of the t Statistic
+1.3.1 Introduction
+1.3.2 Writing a Function to Compute the t Statistic
+1.3.3 Programming a Monte Carlo Simulation
+1.3.4 The Behavior of the True Significance Level Under Different Assumptions
+1.4.0 Further Reading
+1.5.0 Summary of R Functions
+1.6.0 Exercises
+
+2.0.0 Introduction to Bayesian Thinking
+2.1.0 Introduction
+2.2.0 Learning About the Proportion of Heavy Sleepers
+2.3.0 Using a Discrete Prior
+2.4.0 Using a Beta Prior
+2.5.0 Using a Histogram Prior
+2.6.0 Prediction
+2.7.0 Further Reading
+2.8.0 Summary of R Functions
+2.9.0 Exercises
+
+3.0.0 Single-Parameter Models
+3.1.0 Introduction
+3.2.0 Normal Distribution with Known Mean but Unknown Variance
+3.3.0 Estimating a Heart Transplant Mortality Rate
+3.4.0 An Illustration of Bayesian Robustness
+3.5.0 Mixtures of Conjugate Priors
+3.6.0 A Bayesian Test of the Fairness of a Coin
+3.7.0 Further Reading
+3.8.0 Summary of R Functions
+3.9.0 Exercises
+
+4.0.0 Multiparameter Models
+4.1.0 Introduction
+4.2.0 Normal Data with Both Parameters Unknown
+4.3.0 A Multinomial Model
+4.4.0 A Bioassay Experiment
+4.5.0 Comparing Two Proportions
+4.6.0 Further Reading
+4.7.0 Summary of R Functions
+4.8.0 Exercises
+
+5.0.0 Introduction to Bayesian Computation
+5.1.0 Introduction
+5.2.0 Computing Integrals
+5.3.0 Setting Up a Problem in R
+5.4.0 A Beta-Binomial Model for Overdispersion
+5.5.0 Approximations Based on Posterior Modes
+5.6.0 The Example
+5.7.0 Monte Carlo Method for Computing Integrals
+5.8.0 Rejection Sampling
+5.9.0 Importance Sampling
+5.9.1 Introduction
+5.9.2 Using a Multivariate t as a Proposal Density
+5.10.0 Sampling Importance Resampling
+5.11.0 Further Reading
+5.12.0 Summary of R Functions
+5.13.0 Exercises
+
+6.0.0 Markov Chain Monte Carlo Methods
+6.1.0 Introduction
+6.2.0 Introduction to Discrete Markov Chains
+6.3.0 Metropolis-Hastings Algorithms
+6.4.0 Gibbs Sampling
+6.5.0 MCMC Output Analysis
+6.6.0 A Strategy in Bayesian Computing
+6.7.0 Learning About a Normal Population from Grouped Data
+6.8.0 Example of Output Analysis
+6.9.0 Modeling Data with Cauchy Errors
+6.10.0 Analysis of the Stanford Heart Transplant Data
+6.11.0 Further Reading
+6.12.0 Summary of R Functions
+6.13.0 Exercises
+
+7.0.0 Hierarchical Modeling
+7.1.0 Introduction
+7.2.0 Three Examples
+7.3.0 Individual and Combined Estimates
+7.4.0 Equal Mortality Rates?
+7.5.0 Modeling a Prior Belief of Exchangeability
+7.6.0 Posterior Distribution
+7.7.0 Simulating from the Posterior
+7.8.0 Posterior Inferences
+7.8.1 Shrinkage
+7.8.2 Comparing Hospitals
+7.9.0 Bayesian Sensitivity Analysis
+7.10.0 PosteriorPredictiveModelChecking
+7.11.0 Further Reading
+7.12.0 Summary of R Functions
+7.13.0 Exercises
+
+8.0.0 Model Comparison
+8.1.0 Introduction
+8.2.0 Comparison of Hypotheses
+8.3.0 A One-Sided Test of a Normal Mean
+8.4.0 A Two-Sided Test of a Normal Mean
+8.5.0 ComparingTwoModels
+8.6.0 Models for Soccer Goals
+8.7.0 Is a Baseball Hitter Really Streaky?
+8.8.0 A Test of Independence in a Two-Way Contingency Table
+8.9.0 Further Reading
+8.10.0 Summary of R Functions
+8.11.0 Exercises
+
+9.0.0 Regression Models
+9.1.0 Introduction
+9.2.0 Normal Linear Regression
+9.2.1 TheModel
+9.2.2 The Posterior Distribution
+9.2.3 Prediction of Future Observations
+9.2.4 Computation
+9.2.5 Model Checking 
+9.2.6 An Example
+9.3.0 Model Selection Using Zellner’s g Prior
+9.4.0 Survival Modeling
+9.5.0 Further Reading
+9.6.0 Summary of R Functions
+9.7.0 Exercises
+
+10.0.0 Gibbs Sampling
+10.1.0 Introduction
+10.2.0 Robust Modeling
+10.3.0 Binary Response Regression with a Probit Link
+10.3.1 Missing Data and Gibbs Sampling
+10.3.2 Proper Priors and Model Selection
+10.4.0 Estimating a Table of Means 
+10.4.1 Introduction
+10.4.2 A Flat Prior Over the Restricted Space
+10.4.3 A Hierarchical Regression Prior
+10.4.4 Predicting the Success of Future Students
+10.5.0 Further Reading
+10.6.0 Summary of R Functions
+10.7.0 Exercises
+
+11.0.0 Using R to Interface with WinBUGS
+11.1.0 Introduction to WinBUGS
+11.2.0 An R Interface to WinBUGS 
+11.3.0 MCMC Diagnostics Using the coda Package
+11.4.0 A Change-Point Model
+11.5.0 A Robust Regression Model 
+11.6.0 EstimatingCareerTrajectories
+11.7.0 Further Reading
+11.8.0 Exercises
+
+References
+Index

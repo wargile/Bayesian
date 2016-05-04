@@ -1,0 +1,703 @@
+---
+title: "bcwr08"
+author: "Robert A. Stevens"
+date: "December 7, 2015"
+output: html_document
+---
+
+*Bayesian Computation with R* by Jim Albert (Second Edition)
+
+```{r, comment=NA}
+library(LearnBayes)
+```
+
+# 8 Model Comparison
+
+## 8.1 Introduction
+
+In this chapter, we illustrate the use of R to compare models from a Bayesian perspective. We introduce the notion of a Bayes factor in the setting where one is comparing two hypotheses about a parameter. In the setting where one is testing hypotheses about a population mean, we illustrate the computation of Bayes factors in both the one-sided and two-sided settings. We then generalize to the setting where one is comparing two Bayesian models, each consisting of a choice of prior and sampling density. In this case, the Bayes factor is the ratio of the marginal densities for the two models. We illustrate Bayes factor computations in two examples. In the analysis of hitting data for a baseball player, one wishes to compare a “consistent” model with a “streaky” model where the probability of a success may change over a season. In the second application, we illustrate the computation of Bayes factors against independence in a two-way contingency table.
+
+## 8.2 Comparison of Hypotheses
+
+To introduce Bayesian measures of evidence, suppose one observes Y from a sampling distribution f(y|θ) and one wishes to test the hypotheses
+
+H0: θ ∈ Θ0
+H1: θ ∈ Θ1
+
+where Θ0 and Θ1 form a partition of the parameter space. If one assigns a proper prior density g(θ), then one can judge the two hypotheses a priori by the prior odds ratio
+
+π0/π1 
+= P(θ ∈ Θ0)/P(θ ∈ Θ1) 
+= integral(g(θ)dθ, Θ0)/integral(g(θ)dθ, Θ1)
+
+After data Y = y are observed, one’s beliefs about the parameter are updated by the posterior density
+
+g(θ|y) ∝ L(θ)*g(θ)
+
+where L(θ) is the likelihood function. One’s new beliefs about the two hypotheses are summarized by the posterior odds ratio
+
+p0/p1 
+= P(θ ∈ Θ0|y)/P(θ ∈ Θ1|y) 
+= integral(g(θ|y)dθ, Θ0)/integral(g(θ|y)dθ, Θ1)
+
+The Bayes factor is the ratio of the posterior odds to the prior odds of the hypotheses
+
+BF 
+= (posterior odds)/(prior odds)
+= (p0/p1)/(π0/π1)
+
+The statistic BF is a measure of the evidence provided by the data in support of the hypothesis H0. The posterior probability of the hypothesis H0 can be expressed as a function of the Bayes factor and the prior probabilities of the hypotheses by
+
+p0 = π0*BF/(π0*BF + 1 − π0)
+
+## 8.3 A One-Sided Test of a Normal Mean
+
+In an example from Chapter 14 of Berry (1996), the author was interested in determining his true weight from a variable bathroom scale. We assume the measurements are normally distributed with mean μ and standard deviation σ. The author weighed himself ten times and obtained the measurements (in pounds) 182, 172, 173, 176, 176, 180, 173, 174, 179, and 175. For simplicity, assume that he knows the accuracy of the scale and σ = 3 pounds.
+
+If we let μ denote the author’s true weight, suppose he is interested in assessing if his true weight is more than 175 pounds. He wishes to test the hypotheses
+
+H0: μ ≤ 175
+H1: μ > 175
+
+Suppose the author has little prior knowledge about his true weight and so he assigns μ a normal prior with mean 170 and standard deviation 5 
+
+μ distributed as N(170, 5)
+
+The prior odds of the null hypothesis H0 is given by
+
+π0/π1 = P(μ ≤ 175)/P(μ > 175)
+
+We compute this prior odds from the N(170, 5) density using the pnorm function. In the following output, pmean and pvar are, respectively, the prior mean and prior variance of μ.
+
+```{r, comment=NA}
+pmean <- 170
+pvar <- 25
+probH <- pnorm(175, pmean, sqrt(pvar))
+probA <- 1 - probH
+prior.odds <- probH/probA
+prior.odds
+```
+
+So a priori the null hypothesis is five times more likely than the alternative hypothesis.
+
+We enter the ten weight measurements into R and compute the sample mean y ̄ and the associated sampling variance sigma2 equal to σ^2/n.
+
+```{r, comment=NA}
+weights <- c(182, 172, 173, 176, 176, 180, 173, 174, 179, 175)
+xbar <- mean(weights)
+sigma2 <- 3^2/length(weights)
+```
+
+By the familiar normal density/normal prior updating formula described in Section 3.4, the posterior precision (inverse of the variance) of μ is the sum of the precisions of the data and the prior.
+
+```{r, comment=NA}
+post.precision <- 1/sigma2 + 1/pvar
+post.var <- 1/post.precision
+```
+
+The posterior mean of μ is the weighted average of the sample mean and the prior mean, where the weights are proportional to the respective precisions.
+
+```{r, comment=NA}
+post.mean <- (xbar/sigma2 + pmean/pvar)/post.precision
+c(post.mean, sqrt(post.var))
+```
+
+The posterior density of μ is N(175.79, 0.93).
+
+Using this normal posterior density, we calculate the odds of the null hypothesis.
+
+```{r, comment=NA}
+pnorm175 <- pnorm(175, post.mean, sqrt(post.var))
+post.odds <- pnorm175/(1 - pnorm175)
+post.odds
+```
+
+So the Bayes factor in support of the null hypothesis is
+
+```{r, comment=NA}
+BF <- post.odds/prior.odds
+BF
+```
+
+From the prior probabilities and the Bayes factor, we can compute the posterior probability of the null hypothesis.
+
+```{r, comment=NA}
+postH <- probH*BF/(probH*BF + probA)
+postH
+```
+
+Based on this calculation, the author can conclude that it is unlikely that his weight is at most 175 pounds.
+
+There is an interesting connection between this Bayesian measure of evidence and the frequentist p-value. Here, with a known value of the standard deviation σ, the traditional test of H0 is based on the test statistic
+
+z = sqrt(n)*(y ̄ − 175)/3
+
+The p-value is the probability that a standard normal variate exceeds z. In the R output, we compute the p-value using the pnorm function.
+
+```{r, comment=NA}
+z <- sqrt(length(weights))*(mean(weights) - 175)/3
+1 - pnorm(z)
+```
+
+Suppose we repeat the Bayesian analysis using a very flat prior where the mean and standard deviation are 170 and 1000, respectively. The function mnormt.onesided in the LearnBayes package performs the calculations, where one inputs the value of the mean to be tested, the parameters (mean and standard deviation) of the normal prior, and the data values (sample mean, sample size, known sampling standard deviation).
+
+```{r, comment=NA}
+weights <- c(182, 172, 173, 176, 176, 180, 173, 174, 179, 175)
+data <- c(mean(weights), length(weights), 3)
+prior.par <- c(170, 1000)
+mnormt.onesided(175, prior.par, data)
+```
+
+Note that the probability of the null hypothesis is approximately equal to the p-value. This illustrates the general result that a Bayesian probability of a hypothesis is equal to the p-value for one-sided testing problems when a vague prior distribution is placed on the parameter.
+
+## 8.4 A Two-Sided Test of a Normal Mean
+
+Consider the “two-sided” test of the hypothesis that a mean from a normal distribution (with known standard deviation) is equal to a specific value. Continuing the example from the last section, suppose that Berry knows that his weight last year was 170 pounds and he wonders whether he still weighs 170 this year, so he is interested in the hypothesis H0 that his true current weight μ is equal to 170. The alternative hypothesis H1 is that his weight is now either larger or smaller than 170.
+
+The construction of the prior distribution is somewhat unique here since there will be a point mass at the value of μ in the null hypothesis. In the example, the author believes that there is a good chance that his weight did not change from last year, and so he assigns the statement μ = 170 a probability of 0.5.
+
+Next, the author has to think about plausible values for μ if the hypothesis H0 is not true. If his weight did change from last year, then he may think that it is more likely that μ is close to last year’s weight (170) than far from it. A normal distribution with mean 170 and standard deviation τ will then be a suitable model for alternative values for μ.
+
+In general, we are testing the hypothesis H0: μ = μ0 against the alter- native hypothesis H1: μ ̸= μ0 in the case where the standard deviation σ is known. A normal prior distribution with mean μ0 and standard deviation τ will be used to represent one’s opinion under the alternative hypothesis H1.
+
+In this situation, the Bayes factor in support of the hypothesis H is given by
+
+BF = A/B
+
+A = n^(1/2)*exp{−n*(y ̄ − μ0)^2/(2σ^2)}/σ
+
+B = (σ^2/n + τ^2)^(−1/2)*exp{−((y ̄ − μ0)^2)/(2(σ^2/(n + τ^2))}
+
+As before, if π0 is the prior probability of the null hypothesis H0 that μ = μ0, then the posterior probability of H0 is
+
+p0 = π0*BF/(π0*BF + 1 − π0)
+
+To compute the Bayes factor in practice, one has to input the standard deviation τ of the normal density under the alternative hypothesis H1. If the author’s weight did change from last year, how large will the change be? One way of obtaining the value of τ is to think of the range of possible alternative values for μ and then solve for this standard deviation by setting the 95% range of the normal distribution, 4τ, to this range. To illustrate, suppose that the author thinks that his current weight could be five pounds less or more than last year’s weight of 170. The range of alternative values for μ is 175−165 = 10, and by setting 10 = 4τ one obtains τ = 2.5.
+
+The function mnormt.twosided in the LearnBayes package computes the Bayes factor and the posterior probability of the null hypothesis in this problem. The inputs to the function are the value μ0 to be tested, the prior probability π0 of the hypothesis H0, the prior standard deviation τ, and the data values (sample mean, sample size, known sampling standard deviation). Since it may be difficult to assess values for τ, the function allows the user to input a vector of plausible values.
+
+The R code for the computation in this example is shown here. Note that the values 0.5, 1, 2, 4, and 8 are inputted as possible values for τ.
+
+```{r, comment=NA}
+weights <- c(182, 172, 173, 176, 176, 180, 173, 174, 179, 175)
+data <- c(mean(weights), length(weights), 3)
+t <- c(0.5, 1, 2, 4, 8)
+mnormt.twosided(170, 0.5, t, data)
+```
+
+For each value of the prior standard deviation τ, the program gives the Bayes factor in support of the hypothesis that μ takes on the specific value and the posterior probability that the hypothesis H is true. If the author uses a normal (170, 2) density to reflect alternative values for his weight μ, then the Bayes factor in support of the hypothesis μ = 170 is equal to 0.0000002. The posterior probability that his weight hasn’t changed is 0.0000002, which is much smaller than the author’s prior probability of 0.5. He should conclude that his current weight is not 170.
+
+## 8.5 Comparing Two Models
+
+The Bayesian approach to comparing hypotheses can be generalized to compare two models. If we let y denote the vector of data and θ the parameter, then a Bayesian model consists of a specification of the sampling density f(y|θ) and the prior density g(θ). Given this model, one can compute the marginal or prior predictive density of the data,
+
+m(y) = integral(f(y|θ)g(θ)dθ)
+
+Suppose we wish to compare two Bayesian models,
+
+M0: y ∼ f1(y|θ0), θ0 ∼ g1(θ0)
+M1: y ∼ f2(y|θ1), θ1 ∼ g2(θ1)
+
+where it is possible that the definition of the parameter θ may differ between models. Then the Bayes factor in support of model M0 is the ratio of the respective marginal densities (or prior predictive densities) of the data for the two models.
+
+BF = m0(y)/m1(y)
+
+If π0 and π1 denote the respective prior probabilities of the models M0 and M1, then the posterior probability of model M0 is given by
+
+P(M0|y) = π0*BF/(π0*BF + π1)
+
+A simple way of approximating a marginal density is by Laplace’s method, described in Section 5.3. Let θˆ denote the posterior mode and H(θ) denote the Hessian (second derivative matrix) of the log posterior density. Then the prior predictive density can be approximated as
+
+m(y) ≈ (2π)^(d/2)*g(θˆ)f(y|θˆ)|−H(θˆ)|^(1/2)
+
+where d is the number of parameters. On the log scale, we have
+
+log(m(y)) ≈ (d/2)*log(2π) + log(g(θˆ)*f(y|θˆ)) + (1/2)*log(|−H(θˆ)|)
+
+Once an R function is written to compute the logarithm of the product f(y|θ)g(θ), then the function laplace can be applied and the component of the output int gives an estimate of log m(y). By applying this method for several models, one can use the computed values of m(y) to compute a Bayes factor.
+
+## 8.6 Models for Soccer Goals
+
+To illustrate the use of the function laplace in computing Bayes factors, suppose you are interested in learning about the mean number of goals scored by a team in Major League Soccer. You observe the number of goals scored y1, ..., yn for n games. Since goals are relatively rare events, it is reasonable to assume that the yis are distributed according to a Poisson distribution with mean λ. We consider the use of the following four subjective priors for λ:
+
+1. Prior 1. You assign a conjugate gamma prior to λ of the form 
+
+g(λ) ∝ λ^(α − 1)*exp{−βλ}, λ > 0
+
+with α = 4.57 and β = 1.43. This prior says that you believe that a team averages about 3 goals a game and the quartiles for λ are given by 2.10 and 4.04.
+
+2. Prior 2. It is more convenient for you to represent prior opinion in terms of symmetric distributions, so you assume that log(λ) is normal with mean 1 and standard deviation 0.5. The quartiles of this prior for log λ are 0.66 and 1.34, which translates to prior quartiles for λ of 1.94 and 3.81. Note that Prior 1 and this prior reflect similar beliefs about the location of the mean rate λ.
+
+3. Prior 3. This prior assumes that log λ is N (2, 0.5). The prior quartiles for the rate λ are 5.27 and 10.35. This prior says that you believe teams score a lot of goals in Major League Soccer.
+
+4. Prior 4. This prior assumes that log λ is N (1, 2) with associated quartiles for the rate λ of 1.92 and 28.5. This prior reflects little knowledge about the scoring pattern of soccer games.
+
+The number of goals was observed for a particular team in Major League Soccer for the 2006 season. The dataset is available as soccergoals in the LearnBayes package. The likelihood of λ, assuming the Poisson model, is given by
+
+L(λ) ∝ exp(−nλ)*λ^s/prod(yi!, i = 1:n)
+
+where s = sum(yi, i = 1:n). For our dataset, n = 35 and s = 57. Figure 8.1 displays the likelihood on the log λ scale together with the four proposed priors described earlier. Priors 1 and 2 seem pretty similar in location and shape. We see substantial conflict between the likelihood and Prior 3, and the shape of Prior 4 is very flat relative to the likelihood.
+
+Fig. 8.1. The likelihood function and four priors on θ = log(λ) for the soccer goal example.
+
+To use the function laplace, we have to write short functions defining the log posterior. The first function, logpoissgamma, computes the log posterior with Poisson sampling and a gamma prior. Following our usual strategy, we transform λ to the real-valued parameter θ = log λ. The arguments to the function are theta and datapar, a list that contains the data vector data and the parameters of the gamma prior par. Note that we use the R function dgamma in computing both the likelihood and the prior.
+
+```{r, comment=NA}
+logpoissgamma <- function(theta, datapar) {
+   y <- datapar$data
+   npar <- datapar$par
+   lambda <- exp(theta)
+   loglike <- log(dgamma(lambda, shape = sum(y) + 1, rate = length(y)))
+   logprior <- log(dgamma(lambda, shape = npar[1], rate = npar[2])*lambda)
+   return(loglike + logprior)
+}
+```
+
+Similarly, we write the function logpoissnormal to compute the log posterior of log λ for Poisson sampling and a normal prior. This function uses both the R functions dgamma and dnorm.
+
+```{r, comment=NA}
+logpoissnormal <- function(theta, datapar) {
+   y <- datapar$data
+   npar <- datapar$par
+   lambda <- exp(theta)
+   loglike <- log(dgamma(lambda, shape = sum(y) + 1, scale = 1/length(y)))
+   logprior <- log(dnorm(theta, mean = npar[1],sd = npar[2]))
+   return(loglike + logprior)
+}
+```
+
+We first load in the datafile soccergoals; there is one variable, goals, in this dataset, which we make available using the attach command. For each of the four priors, we use the function laplace to summarize the posterior. If the output of the function is fit, fit$mode is the posterior mode, fit$var is the associated estimate at the posterior variance, and fit$int is the estimate of log m(y).
+
+```{r, comment=NA}
+str(soccergoals)
+datapar <- list(data = soccergoals$goals, par = c(4.57, 1.43))
+fit1 <- laplace(logpoissgamma, 0.5, datapar)
+datapar <- list(data = soccergoals$goals, par = c(1, 0.5))
+fit2 <- laplace(logpoissnormal, 0.5, datapar)
+datapar <- list(data = soccergoals$goals, par = c(2, 0.5))
+fit3 <- laplace(logpoissnormal, 0.5, datapar)
+datapar <- list(data = soccergoals$goals, par = c(1, 2))
+fit4 <- laplace(logpoissnormal, 0.5, datapar)
+```
+
+We display the posterior modes, posterior standard deviations, and log marginal densities for the four models corresponding to the four priors.
+
+```{r, comment=NA}
+postmode <- c(fit1$mode, fit2$mode, fit3$mode, fit4$mode)
+postsd <- sqrt(c(fit1$var, fit2$var, fit3$var, fit4$var))
+logmarg <- c(fit1$int, fit2$int, fit3$int, fit4$int)
+cbind(postmode, postsd, logmarg)
+```
+
+By using the values of log(m(y)), one can use Bayes factors to compare the different models. Does it matter if we use a gamma(4.57, 0.7) prior on λ or a normal(1, 0.5) prior on log(λ)? To answer this question, we can compute the Bayes factor in support of Prior 2 over Prior 1:
+
+BF21 = m2(y)/m1(y) = exp(−1.255171 + 1.502977) = 1.28
+
+There is slight support for the normal prior – this makes sense from Figure 8.1 since Prior 2 is slightly closer to the likelihood function. Comparing Prior 2 with Prior 3, the Bayes factor in support of Prior 2 is
+
+BF23 = m2(y)/m3(y) = exp(−1.255171 + 5.076316) = 45.7
+
+indicating large support for Prior 2. Actually, note that the locations of the likelihood and Prior 3 are far apart, indicating a conflict between the data and the prior and a small value of m3(y). Comparing Prior 2 with Prior 4, the Bayes factor in support of Prior 2 is
+
+BF24 = m2(y)/m4(y) = exp(−1.255170 + 2.137214) = 2.42
+
+Generally, the marginal probability for a prior will decrease as the prior density becomes more diffuse.
+
+## 8.7 Is a Baseball Hitter Really Streaky?
+
+In sports, we observe much streaky behavior in players and teams. For example, in the sport of baseball, one measure of success of a hitter is the batting average or proportion of base hits. During a baseball season, there will be periods when a player is “hot” and has an unusually high batting average, and there will also be periods when the player is “cold” and has a very low batting average. We observe many streaky patterns in the performance of players. The interesting question is what these streaky data say about the ability of a player to be streaky.
+
+In baseball, the player has opportunities to bat in an individual season – we call these opportunities “at-bats.” In each at-bat, there are two possible outcomes – a hit (a success) or an out (a failure) (drawing a walk doesn’t count as an at-bat). Suppose we divide all of the at-bats in a particular baseball season into N periods. Let pi denote the probability that the player gets a hit in a single at-bat during the ith period, i = 1, ..., N. If a player is truly consistent, or nonstreaky, then the probability of a hit stays constant across all periods; we call this the nonstreaky model M0:
+
+M0: p1 = ... = pN = p
+
+To complete this model specification, we assign the common probability value p a uniform prior on (0, 1).
+
+On the other hand, if the player is truly streaky, then the probability of a hit pi will change across the season. A convenient way to model this variation in the probabilities is to assume that p1, ..., pN are a random sample from a beta density of the form
+
+g(p) = p^(Kη − 1)*(1 − p)^(K(1 − η) − 1)/B(Kη, K(1 − η)), 0 < p < 1.
+
+In the density g, η is the mean and K is a precision parameter. We can index this streaky model by the parameter K; we represent the streaky model by MK: 
+
+p1, ..., pN iid beta(Kη, K(1 − η))
+
+For this model, we place a uniform prior on the mean parameter η, reflecting little knowledge about the location of the random effects distribution. Note that as the precision parameter K approaches infinity, the streaky model MK approaches the consistent model M0.
+
+To compare the models M0 and MK, we need to compute the associated marginal densities. Under the model M0, the numbers of hits y1, ..., yN are independent, where yi is binomial(ni, p). With the assumption that p is uniform(0, 1), we obtain the marginal density
+
+m0(y) = integral(prod(choose(ni, yi)*p^(yi)*(1 - p)^(ni - yi)dp, i = 1:N))
+= prod(choose(ni, yi)*B(sum(yi, i = 1:N) + 1, sum(ni - yi, i = 1:N)  + 1)
+
+Under the alternative “streaky” model, the marginal density is given by
+
+mK(y) = integral(prod(choose(ni, yi)*(pi)^(yi)*(1 - pi)^(ni - yi)*(pi)^(Kη − 1)*(1 - pi)^(K(1 − η) − 1)/B(Kη, K(1 − η)) dp1...dpN, i = 1:N))
+= prod(choose(ni, yi)*integral(prod(B(yi + Kη, ni − yi + K(1 − η)), i = 1:N)/B(Kη, K(1 − η))^N dη, i = 1:N)
+
+The Bayes factor in support of the “streaky” model HK compared with the “nonstreaky” model H0 is given by 
+
+BK = mK(y)/m0(y) = integral(A dη, 0, 1)/C
+
+A = product(B(yi + Kη, ni − yi + K(1 − η), i = 1:N)/B(Kη,K(1 − η))^N 
+
+C = B(sum(yi + 1, sum((ni − yi) + 1)
+
+We use the function laplace to compute the integral in the Bayes factor BK . We first transform the variable η in the integral to the real-valued variable θ = log(η/(1 − η)). Using the R function lbeta, which computes the logarithm of the beta function, we define the following function bfexch, which computes the log integrand. The inputs to this function are theta and a list datapar with components data (a matrix with columns y and n) and K.
+
+```{r, comment=NA}
+bfexch <- function(theta, datapar) {
+y <- datapar$data[, 1]
+n <- datapar$data[, 2]
+K <- datapar$K
+eta <- exp(theta)/(1 + exp(theta))
+logf <- function(K, eta, y, n)
+  lbeta(K * eta + y, K * (1 - eta) + n - y) - lbeta(K * eta, K * (1 - eta))
+sum(logf(K, eta, y, n)) + log(eta * (1 - eta)) - lbeta(sum(y) + 1, sum(n - y) + 1)
+}
+```
+
+To compute the Bayes factor BK for a specific value, say K0, we use the function laplace with inputs the function bfexch, a starting value of η = 0, and the list datapar using the value K0.
+
+```{r, comment=NA}
+s <- laplace(bfexch, 0, list(data = data, K = K0))
+s$int
+```
+
+The list s is the output of laplace; the component s$int gives the estimate of the logarithm of the Bayes factor log BK .
+
+To illustrate the use of this method, we consider the hitting data for the New York Yankee player Derek Jeter for the 2004 baseball season. Jeter was one of the “star” players on this team, and he experienced an unusual hitting slump during the early part of the season that attracted much attention from the local media.
+
+Hitting data for Jeter were collected for each of the 154 games he played in that particular season. A natural way of defining periods during the season is by games, so N = 154. However, it is difficult to detect streakiness in these hitting data since Jeter only had about 4–5 opportunities to hit in each game, so we group the data into five-game intervals. The original game-by-game data are available as jeter2004 in the LearnBayes package. In the following R code, we read in the complete hitting data for Jeter and use the regroup function to group the data into periods of five games.
+
+```{r, comment=NA}
+str(jeter2004)
+data <- cbind(H, AB)
+data1 <- regroup(data, 5)
+```
+
+The matrix data1 contains the grouped hitting data (yi, ni), i = 1, ..., 30i, where yi is the number of hits by Jeter in ni at-bats in the ith interval of games. These data are listed in Table 8.1.
+
+Table 8.1. Hitting data of Derek Jeter for 2004 baseball season.
+Period ( y,  n) 
+ 1     ( 4, 19)
+ 2     ( 6, 22)
+ 3     ( 4, 22)
+ 4     ( 0, 20)
+ 5     ( 5, 22)
+ 6     ( 5, 24)
+ 7     ( 7, 26)
+ 8     ( 3, 20)
+ 9     ( 8, 24) 
+10     (10, 24) 
+11     ( 4, 15)
+12     (10, 21) 
+13     ( 5, 21) 
+14     (11, 22) 
+15     ( 7, 18) 
+16     ( 6, 21)
+17     ( 5, 22)
+18     ( 5, 20)
+19     ( 3, 22)
+20     (10, 21)
+21     ( 7, 20)
+22     ( 6, 24)
+23     ( 3, 20)
+24     ( 6, 19)
+25     ( 4, 18) 
+26     ( 6, 18) 
+27     (10, 22) 
+28     ( 9, 20) 
+29     ( 8, 21) 
+30     (11, 35)
+
+We compute the Bayes factor for a sequence of values of log K using the function laplace and the definition of the log integral defined in the function bfexch. In this example, we write a short wrapper function that computes the log Bayes factor for a single value of log(K). The vector logK contains the values log(K) = 2, 3, 4, 5, and 6. By using the sapply function, the corresponding values of the log Bayes factor log BK are stored in the variable log.BF. We display in a data frame the values of log(K), the values of K, the values of log(BK), and the values of the Bayes factor BK.
+
+```{r, comment=NA}
+log.marg <- function(logK) 
+  laplace(bfexch, 0, list(data = data1, K = exp(logK)))$int
+log.K <- seq(2, 6)
+K <- exp(log.K)
+log.BF <- sapply(log.K, log.marg)
+BF <- exp(log.BF)
+round(data.frame(log.K, K, log.BF, BF), 2)
+```
+
+We see from the output that the value log(K) = 4 is most supported by the data with a corresponding Bayes factor of BK = 2.51. This particular streaky model is approximately two and a half times as likely as the consistent model. This indicates that Jeter did indeed display some true streakiness in his hitting behavior for this particular baseball season.
+
+## 8.8 A Test of Independence in a Two-Way Contingency Table
+
+A basic problem in statistics is to explore the relationship between two categorical measurements. To illustrate this situation, consider the following example presented in Moore (1995) in which North Carolina State University looked at student performance in a course taken by chemical engineering majors. Researchers wished to learn about the relationship between the time spent in extracurricular activities and the grade in the course. Data on these two categorical variables were collected from 119 students, and the responses are presented using the contingency table in Table 8.2.
+
+Table 8.2. Two-way table relating student performance and time spent in extracurricular activities.
+
+Extracurricular Activities (hr per week)
+            <2 2 to 12 > 12
+C or better 11      68    3
+D or F       9      23    5
+
+To learn about the possible relationship between participation in extracurricular activities and grade, one tests the hypothesis of independence. The usual non-Bayesian approach of testing the independence hypothesis is based on a Pearson chi-squared statistic that contrasts the observed counts with expected counts under an independence model. In R, we read in the table of counts and use the function chisq.test to test the independence hypothesis:
+
+```{r, comment=NA}
+data <- matrix(c(11, 9, 68, 23, 3, 5), c(2, 3))
+data
+chisq.test(data)
+```
+
+Here the p-value is approximately 0.03, which is some evidence that one’s grade is related to the time spent on extracurricular activities.
+
+From a Bayesian viewpoint, there are two possible models – the model MI that the two categorical variables are independent and the model MD that the two variables are dependent in some manner. To describe the Bayesian models, assume that these data represent a random sample from the population of interest and the counts of the table have a multinomial distribution with proportion values as shown in Table 8.3. Under the dependence model MD, the proportion values p11, ..., p23 can take any values that sum to 1, and we assume that the prior density places a uniform distribution over this space.
+
+Table 8.3. Probabilities of the table under the hypothesis of dependence.
+
+Extracurricular Activities (hr per week)
+            < 2 2 to 12 > 12
+C or better p11     p12  p13
+D or F      p21     p22  p23
+
+Under the independence model MI, the proportions in the table are determined by the marginal probabilities {p1+, p2+} and {p+1, p+2, p+3} as displayed in Table 8.4. Here the unknown parameters are the proportions of students in different activity levels and the proportions with different grades. We assume that these two sets of proportions, {pi+} and {p+j}, are independent and assign to each set a uniform density over all possible values.
+
+We have defined two models – a dependence model MD, where the multinomial proportions are uniformly distributed, and an independence model MI, where the multinomial proportions have an independence structure and
+
+Table 8.4. Probabilities of the table under the hypothesis of independence.
+
+Extracurricular Activities (hr per week)
+            < 2    2 to 12 > 12
+C or better p1+p+1 p1+p+2  p1+p+3 p1+
+D or F      p2+p+1 p2+p+2  p2+p+3 p2+
+            p+1    p+2     p+3
+
+the marginal proportions are assigned independent uniform priors. It can be shown that the Bayes factor in support of the dependence model over the independence model is given by
+
+BF = D(y + 1)D(1R)D(1C)/(D(1RC)D(yR + 1)D(yC + 1))
+
+where y is the matrix of counts, yR is the vector of row totals, yC is the vector of column totals, 1R is the vector of ones of length R, and D(ν) is the Dirichlet function defined by
+
+D(ν) = prod(Γ(νi)/Γ(sum(νi))
+
+The R function ctable will compute this Bayes factor for a two-way contingency table. One inputs a matrix a of prior parameters for the matrix of probabilities. By taking a matrix a of ones, one is assigning a uniform prior on {pij} and uniform priors on {pi+} and {p+j} under the dependence model. The output of this problem is the value of the Bayes factor. Here the value is BF = 1.66, which indicates modest support against independence.
+
+```{r, comment=NA}
+a <- matrix(rep(1, 6), c(2, 3))
+a
+ctable(data, a)
+```
+
+We are comparing “uniform” with “independence” models for a contingency table. One criticism of this method is that we may not really be interested in a “uniform” alternative model. Perhaps we would like to compare “independence” with a model where the cell probabilities are “close to independence.” Such a model was proposed by Albert and Gupta (1981). Suppose the table probabilities {pij} are assigned a conjugate Dirichlet distribution of the form
+
+g(p) ∝ prod((pij)^(Kηij − 1))
+
+where the prior means {ηij} satisfy an independence configuration 
+
+ηij = (ηi)^A*(ηj)^B
+
+This structure of prior means is illustrated for our example in Table 8.5. Then the vectors of prior means of the margins {ηiA} and {ηjB} are assigned uniform distributions. This model will be labeled MK , as it is indexed by the Dirichlet precision parameter K. As K approaches infinity, the model approaches the independence hypothesis MI, where the marginal probabilities have uniform distributions.
+
+Table 8.5. Prior means of the cell probabilities of the table under the “close to independence” model.
+
+Extracurricular Activities (hr per week)
+            < 2       2 to 12   > 12
+C or better η1^A*η1^B η1^A*η2^B η1^A*η3^B η1^A
+D or F      η2^A*η1^B η2^A*η2^B η2^A*η3^B η2^A
+            η1^B      η2^B      η3^B
+
+It can be shown that the Bayes factor in support of the “close to independence” model MK over the independence model MI is given by
+
+BFK = X/Y
+
+X = integral(D(Kη^A*η^B + y)/D(Kη^A*η^B) dη^A dη^B) 
+
+Y = D(yR + 1)*D(yC + 1) 
+
+where Kη^A*η^B + y is the vector of values {Kηi^A*ηj^B + yij} and the integral is taken over the vectors of marginal prior means η^A = {ηi^A} and η^B = {ηj^B}.
+
+One straightforward way of computing the Bayes factor is by importance sampling. The Bayes factor can be represented as the integral
+
+BFK = integral(h(θ) dθ)
+
+where θ = (η^A, η^B). Suppose the integrand can be approximated by the density g(θ), where g is easy to simulate. Then by writing the integral as
+
+BFK = integral((h(θ)/g(θ))g(θ) dθ)
+
+we can approximate the integral as
+
+BFK ≈ sum(h(θj)/g(θj), j = 1:m)/m 
+
+where θ1, ..., θm are independent simulated draws from g(θ). The simulation standard error of this importance sampler estimate is given by
+
+se = standard deviation({h(θj)/g(θj)})/sqrt(m)
+
+In our example, it can be shown that, as K approaches infinity, the posterior of the vectors of marginal prior means ηA and ηB can be shown to be independent with
+
+η^A distributed as Dirichlet(yR + 1)
+η^B distributed as Dirichlet(yC + 1)
+
+where the Dirichlet distribution on the vector η with parameter vector a has a density proportional to prod(ηi^(ai − 1). This density is a convenient choice for i an importance sampler since it is easy to simulate draws from a Dirichlet distribution.
+
+Using this importance sampling algorithm, the function bfindep computes the Bayes factor using this alternative “close to independence” model. One inputs the data matrix y, the Dirichlet precision parameter K, and the size of the simulated sample m. The output is a list with two components: bf, the value of the Bayes factor, and nse, an estimate of the simulation standard error of the computed value of BF.
+
+In the following R input, we compute the Bayes factor for a sequence of values of log(K). We write a short function compute.log.BF to compute the Bayes factor for a single value of log(K). The output gives the value of the log Bayes factor and the Bayes factor for six values of log(K). Figure 8.2 displays the log Bayes factor as a function of log(K) computed over a finer grid and 10,000 simulation draws. (We used the R function spm in the SemiPar package to smooth out the simulation errors in the computed log Bayes factors before plotting.) Note that this maximum value of the Bayes factor is 2.3, indicating some support for an alternative model that is in the neighborhood of the independence model.
+
+```{r, comment=NA}
+log.K <- seq(2, 7)
+compute.log.BF <- function(log.K)
+  log(bfindep(data, exp(log.K), 100000)$bf)
+log.BF <- sapply(log.K, compute.log.BF)
+BF <- exp(log.BF)
+round(data.frame(log.K, log.BF, BF), 2)
+```
+
+Fig. 8.2. Plot of log Bayes factor in support of model MK over MI against the precision parameter log(K).
+
+## 8.9 Further Reading
+
+Chapter 4 of Carlin and Louis (2009), and Kass and Raftery (1995) provide general discussions of the use of Bayes factors in selecting models. Berger and Sellke (1987) and Casella and Berger (1987) describe the relationship between Bayesian and frequentist measures of evidence in the two-sided and one-sided testing situations, respectively. Gunel and Dickey (1974) describe the use of Dirichlet distributions in the development of tests for contingency tables, and Albert and Gupta (1981) introduce the use of mixtures of Dirichlet distributions for contingency tables.
+
+## 8.10 Summary of R Functions
+
+bfexch – computes the logarithm of the integrand of the Bayes factor for testing homogeneity of a set of probabilities
+
+Usage: bfexch(theta, datapar)
+
+Arguments: theta, vector of values of the logit of the prior hyperparameter η; datapar, list with components data (matrix with columns y and n) and K (prior precision hyperparameter)
+
+Value: vector of values of the logarithm of the integral
+
+bfindep – computes a Bayes factor against independence for a two-way contingency table assuming a “close to independence” alternative model
+
+Usage: bfindep(y, K, m)
+
+Arguments: y, matrix of counts; K, Dirichlet precision hyperparameter; m, number of simulations
+
+Value: bf, value of the Bayes factor against independence; nse, estimate of the simulation standard error of the computed value of the Bayes factor
+
+ctable – computes a Bayes factor against independence for a two-way contingency table assuming uniform prior distributions
+
+Usage: ctable(y,a)
+
+Arguments: y, matrix of counts; a, matrix of prior parameters for the matrix of probabilities
+
+Value: the Bayes factor against the hypothesis of independence
+
+logpoissgamma – computes the logarithm of the posterior with Poisson sampling and a gamma prior
+
+Usage: logpoissgamma(theta, datapar)
+
+Arguments: theta, vector of values of the log mean parameter; datapar, list with components data (vector of sample values) and par (vector of parameters of the gamma prior)
+
+Value: value of the log posterior for all values in theta
+
+logpoissnormal – computes the logarithm of the posterior with Poisson sam- pling and a normal prior
+
+Usage: logpoissnormal(theta, datapar)
+
+Arguments: theta, vector of values of the log mean parameter; datapar, list with components data (vector of sample values) and par (vector of parameters of the normal prior)
+
+Value: value of the log posterior for all values in theta
+
+mnormt.onesided – Bayesian test of the hypothesis that a normal mean M is less than or equal to a specific value
+
+Usage: mnormt.onesided(mu0, normpar, data)
+
+Arguments: mu0, value of the normal mean to be tested; normpar, vector of mean and standard deviation of the normal prior distribution; data, vector of sample mean, sample size, and known value of the population standard deviation
+
+Value: BF, Bayes factor in support of the null hypothesis; prior.odds, the prior odds of the null hypothesis; post.odds, the posterior odds of the null hypothesis, postH, the posterior probability of the null hypothesis
+
+mnormt.twosided – Bayesian test of the hypothesis that a normal mean M is equal to a specific value
+
+Usage: mnormt.twosided(mu0, probH, tau, data)
+
+Arguments: mu0, the value of the normal mean to be tested; probH, the prior probability of the null hypothesis; tau, vector of values of the prior standard deviation under the alternative hypothesis; data, vector of sample mean, sample size, and known value of the population standard deviation
+
+Value: bf, vector of values of the Bayes factor in support of the null hypothesis; post, vector of values of the posterior probability of the null hypothesis
+
+## 8.11 Exercises
+
+### 1. A one-sided test of a binomial probability
+
+In 1986, the St. Louis Post Dispatch was interested in measuring public support for the construction of a new indoor stadium. The newspaper conducted a survey in which they interviewed 301 registered voters. Let p denote the proportion of all registered voters in the St. Louis voting district opposed to the stadium. A city councilman wishes to test the hypotheses H: p ≥ 0.5, K: p < 0.5.
+
+a) The number y opposed to the stadium construction is assumed to be binomial(301, p). Suppose the survey result is y = 135. Using the R function pbinom, compute the p-value P(y ≤ 135|p = 0.5). If this probability is small, say under 5%, then one concludes that there is significant evidence in support of the hypothesis K: p < 0.5.
+
+b) Suppose one places a uniform prior on p. Compute the prior odds of the hypothesis K.
+
+c) After observing y = 135, the posterior distribution of p is beta(136, 167). Using the R function pbeta, compute the posterior odds of the hypothesis K.
+
+d) Compute the Bayes factor in support of the hypothesis K.
+
+### 2. A two-sided test of a normal mean (example from Weiss (2001)) 
+
+For last year, a sample of 50 cell phone users had a mean local monthly bill of $41.40. Do these data provide sufficient evidence to conclude that last year’s mean local monthly bill for cell phone users has changed from the 1996 mean of $47.70? (Assume that the population standard deviation is σ = $25.)
+
+a) The usual statistic for testing the value of a normal mean μ is z = sqrt(n)*(y ̄ − μ)/σ. Use this statistic and the R function pnorm to compute a p-value for testing the hypothesis H: μ = 47.7.
+
+b) Suppose one assigns a prior probability of 0.5 to the null hypothesis. Use the R function mnormt.twosided to compute the posterior probability of H. The arguments to mnormt.twosided are the value to be tested (47.70), the prior probability of H (0.5), the standard deviation τ of the prior under the alternative hypothesis (assume τ = 4), and the data vector (values of sample mean, sample size, and known sampling standard deviation).
+
+c) Compute the posterior probability of H for the alternative values τ = 1, 4, 6, 8, and 10. Compare the values of the posterior probability with the value of the p-value computed in part (a).
+
+### 3. Comparing Bayesian models using a Bayes factor
+
+Suppose that the number of births to women during a month at a particular hospital has a Poisson distribution with parameter R. During a given year at a particular hospital, 66 births were recorded in January and 48 births were recorded in April. If the birthrates during January and April are given by RJ and RA, respectively, then (assuming independence) the probability of the sample result is
+
+f(data|RJ, RA) = exp(−RJ)*(Rj)^66*exp(−RA)*(RA)^48/(66! 48!)
+
+Consider the following two priors for (RJ, RA):
+
+- M1: RJ ∼ gamma(240, 4), RA ∼ gamma(200, 4)
+
+- M2: RJ = RA and the common value of the rate R ∼ gamma(220, 4)
+
+a) Write R functions to compute the logarithm of the posterior density of (RJ , RA) under model M1 and the logarithm of the posterior density of R under model M2.
+
+b) Use the function laplace to compute the logarithm of the predictive density for both models M1 and M2.
+
+c) Compute the Bayes factor in support of the model M1.
+
+### 4. Is a basketball player streaky?
+
+Kobe Bryant is one of the most famous players in professional basketball. Shooting data were obtained for Bryant for the first 15 games in the 2006 season. For game i, one records the number of field goal attempts ni and the number of successful field goals yi; the data are displayed in Table 8.6. If pi denotes the probability that Kobe makes a shot during the ith game, it is of interest to compare the nonstreaky hypothesis
+
+M0: p1 = ... = p15 = p, p ∼ uniform(0, 1)
+
+against the streaky hypothesis that the pi vary according to a beta distribution
+
+MK: p1, ..., p15 random sample from beta(Kη, K(1 − η)), η ∼ uniform(0, 1)
+
+Use the function laplace together with the function bfexch to compute the logarithm of the Bayes factor in support of the streaky hypothesis MK . Compute the log of the Bayes factors for values of K = 10, 20, 50, and 100. Based on your work, is there much evidence that Bryant displayed true streakiness in his shooting performance in these 15 games?
+
+Table 8.6. Shooting data for Kobe Bryant for the first 15 games during the 2006 basketball season.
+
+Game ( y,  n) 
+ 1   ( 8, 15) 
+ 2   ( 4, 10) 
+ 3   ( 5,  7) 
+ 4   (12, 19)
+ 5   ( 5, 11) 
+ 6   ( 7, 17) 
+ 7   (10, 19) 
+ 8   ( 5, 14)
+ 9   (12, 23) 
+10   ( 9, 18) 
+11   ( 8, 24) 
+12   ( 7, 23) 
+13   (19, 26) 
+14   (11, 23) 
+15   ( 7, 16)
+
+### 5. Test of independence (example from Agresti and Franklin (2005)) 
+
+The 2002 General Social Survey asked the question “Taken all together, would you say that you are very happy, pretty happy, or not too happy?” The survey also asked “Compared with American families in general, would you say that your family income is below average, average, or above average?” Table 8.7 cross-tabulates the answers to these two questions.
+
+Table 8.7. Happiness and family income from 2002 General Social Survey.
+
+              Happiness
+Income        Not Too Happy Pretty Happy Very Happy
+Above Average 17             90           51
+Average       45            265          143
+Below Average 31            139           71
+
+a) Using the Pearson chi-square statistic, use the function chisq.test to test the hypothesis that happiness and family income are independent. Based on the p-value, is there evidence to suggest that the level of happiness is dependent on the family income?
+
+b) Consider two models, a “dependence model” where the underlying multinomial probability vector is uniformly distributed and an “independence model” where the cell probabilities satisfy an independence configuration and the marginal probability vectors have uniform distributions. Using the R function ctable, compute the Bayes factor in support of the dependence hypothesis.
+
+c) Instead of the analysis in part (b), suppose that one wishes to compare the independence model with the “close to independence” model MK described in Section 8.8. Using the function bfindep, compute the Bayes factor in support of the model MK for values of log K = 2, 3, 4, 5, 6, and 7.
+
+d) Compare the frequentist measure of evidence against independence with the Bayesian measures of evidence computed in parts (b) and (c). Which type of measure, frequentist or Bayesian, indicates more evidence against independence?

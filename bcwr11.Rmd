@@ -1,0 +1,596 @@
+---
+title: "bcwr11"
+author: "Robert A. Stevens"
+date: "December 7, 2015"
+output: html_document
+---
+
+*Bayesian Computation with R* by Jim Albert (Second Edition)
+
+```{r, comment=NA}
+library(LearnBayes)
+#require(arm)
+library(arm)
+```
+
+# 11 Using R to Interface with WinBUGS
+
+## 11.1 Introduction to WinBUGS
+
+The BUGS project is focused on the development of software to facilitate Bayesian fitting of complex statistical models using Markov chain Monte Carlo algorithms. In this chapter, we introduce the use of R in running WinBUGS, a stand-alone software program for the Windows operating system.
+
+WinBUGS is a program for sampling from a general posterior distribution of a Bayesian model by using Gibbs sampling and a general class of proposal densities. To describe the use of WinBUGS in a very simple setting, suppose you observe y distributed as binomial(n, p) and a beta(α, β) prior is placed on p, where α = 0.5 and β = 0.5. You observe y = 7 successes in a sample of n = 50 and you wish to construct a 90% interval estimate for p.
+
+After you launch the WinBUGS program, you create a file that describes the Bayesian model. For this example, the model script looks like the following:
+
+    model {
+      y ~ dbin(p, n)
+      p ~ dbeta(alpha, beta)
+    }
+
+Note that the script begins with model and one indicates distributional assumptions by the “∼” symbol. The names for different distributions (dbin, dbeta, etc.) are similar to the names of these densities in the R system.
+
+After the model is described, one defines the data and any known parameter values in the file. This script begins with the word data, and we use a list to specify the values of y, n, α, and β.
+
+    data
+    list(y = 7, n = 50, alpha = 0.5, beta = 0.5)
+
+Last, we specify the initial values of parameters in the MCMC simulation. This section begins with the word inits, and a list specifies the initial values. Here we have a single parameter p and decide to begin the simulation at p = 0.1.
+
+    inits
+    list(p = 0.1)
+
+Once the model, data, and initial values have been defined, we tell WinBUGS, in the Sample Monitor Tool, what parameters to monitor in the simulation. These will be the parameters of primary interest in the inferential problem. Here there is only one parameter p that we wish to monitor.
+
+By using the Update Tool, we are able to use WinBUGS to take a simulated sample of a particular size from the posterior distribution. Once the MCMC simulation is finished, we want to make plots or compute diagnostic statistics of the parameters that help us learn if the MCMC simulation has approximately converged to the posterior distribution. If we believe that the simulation draws represent (approximately) a sample from the posterior, then we want to construct a graph of various marginal posterior distributions of interest and compute various summaries to draw inferences about the parameters.
+
+WinBUGS is useful for fitting a variety of Bayesian models, some of high dimension. But the program runs independently of other programs such as R, and one is limited to the data analysis tools available in the WinBUGS system. Recently, there have been efforts to provide interfaces between popular statistical packages (such as R) and WinBUGS. In the remainder of the chapter, we describe one attractive R function, bugs, that simplifies the process of using the WinBUGS program and allows one to use the R system to analyze the simulation output.
+
+## 11.2 An R Interface to WinBUGS
+
+Before you can use this R/WinBUGS interface, some setup needs to be done. The WinBUGS and OpenBUGS programs should be downloaded and installed on your Windows system. Also, special packages, including R2WinBUGS and BRugs, need to be downloaded and installed on your R system. This setup procedure likely will be modified over time; you should consult the WinBUGS home page (http://www.mrc-bsu.cam.ac.uk/bugs/) for the most recent information.
+
+Once the setup is completed, it is easy to define a Bayesian problem for WinBUGS using this R interface. There are four necessary inputs, which are similar to the inputs required within the WinBUGS program:
+
+- Model. One describes the statistical model by means of a “model” file that describes the model in the BUGS language.
+
+- Data. One inputs data directly into R in the form of constants, vectors, matrices, and model parameters.
+
+- Parameters. Within R, one specifies the parameters to be monitored in the simulation run.
+
+- Initial values. One specifies initial values of the parameters in the R console.
+
+Suppose the model is defined in the file model.bug in the working directory and the data, parameters, and initial values are defined in R in the respective variables data, parameters, and inits. Then one simulates from the Bayesian model by using the R command bugs:
+
+    model.sim <- bugs (data, inits, parameters, "model.bug")
+
+When this command is executed, the model information is sent to the WinBUGS program. The WinBUGS program will run in the background, simulating parameters from the model. At the completion of the simulation, WinBUGS will close and one is returned to the R console. The output of bugs is a structure containing the output from the WinBUGS run. Specifically, from the object model.sim, one can access the matrix of simulated draws of the monitored parameters.
+
+One controls different aspects of the simulation by using optional arguments to the function bugs. A more general form of bugs that includes optional arguments is given here:
+
+    bugs(data, inits, parameters.to.save, model.file = "model.bug", n.chains = 3, n.iter = 2000, n.burnin = floor(n.iter/2), n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000)), bin = (n.iter - n.burnin) / n.thin)
+
+- n.chains contains the number of Markov chains that are run. By default, three parallel chains will be run; if one wishes to simulate only one chain, the argument n.chains = 1 should be used.
+
+- n.iter is the number of total iterations for each chain.
+
+- n.burnin is the number of iterations to discard at the beginning. Typically, one will discard a specific number of the initial draws and base inference on the remaining output. By default, the first half of the iterations are removed; that is, n.burnin = n.iter/2.
+
+- n.thin is the thinning rate. If n.thin = 1, every iterate will be collected; if n.thin = 2, every other iterate will be collected, and so on. By default, the thinning rate is set so that 1000 iterations will be collected for each chain.
+
+- bin is the number of iterations between savings of results; the default is to save only at the end.
+
+## 11.3 MCMC Diagnostics Using the coda Package
+
+Once the MCMC chain has been run and simulated samples from the algorithm have been stored, then the user needs to perform some diagnostics on the simulations to determine if they approximately represent the posterior distribution of interest. Some diagnostic questions include the following:
+
+1. How many chains should be run in the simulation? Does the choice of starting value in the chain make a difference?
+
+2. How long is the burn-in time before the simulated draws approximately represent a sample from the posterior distribution?
+
+3. How many simulated draws should be collected to get accurate approximations of summaries of the posterior?
+
+4. What is the simulation standard error of a particular summary of the posterior distribution?
+
+5. Are there high correlations between successive simulated draws?
+
+The coda package (Output Analysis and Diagnostics for MCMC), written by Martyn Plummer, Nicky Best, Kate Cowles, and Karen Vines, provides a variety of diagnostic functions useful for MCMC output. (The package boa described in Smith (2007) also gives diagnostic functions for MCMC runs.) In particular, the coda package:
+
+- provides various summary statistics, such as means, standard deviations, quantiles, highest-probability density intervals, and simulation standard errors for correlated output based on batch means
+
+- allows one to compare autocorrelations and cross-correlations of simulated samples from different parameters
+
+- computes various convergence diagnostics, such as those proposed by Geweke, Gelman and Rubin, and Raftery and Lewis
+
+- provides a variety of different plots, such as lag correlations, density estimates, and running means
+
+After the bugs function is used to perform the MCMC sampling in WinBUGS, the coda provides a collection of functions that operate on the bugs output. Also, the coda functions will accept as input vectors or matrices of simulated parameters such as those generated in the previous chapters. We illustrate the use of these MCMC diagnostic functions in the examples of this chapter.
+
+## 11.4 A Change-Point Model
+
+We begin with an analysis of counts of British coal mining disasters described in Carlin et al. (1992). The number of disasters is recorded for each year from 1851 to 1962; we let yt denote the number of disasters in year t, where t = actual year − 1850. Looking at the data, it appears that the rate of accidents decreased in some year during the end of the 19th century. We assume for the early years, say when t < τ , that yt has a Poisson distribution where the logarithm of the mean logμt = β0, and for the later years (t ≥ τ) logμt = β0 + β1. We represent this as
+
+    yt ∼ Poisson(μt)
+    log(μi) = β0 + β1×δ(t − τ)
+
+where δ() is defined to be 1 if its argument is nonnegative and 0 otherwise. The unknown parameters are the regression parameters β0 and β1 and the change-point parameter τ. We complete the model by assigning vague uniform priors to β0 and β1 and assigning τ a uniform prior on the interval (1, N), where N is the number of years.
+
+The first step in using WinBUGS is to write a short script defining the model in the BUGS language. The description of the change-point model is displayed next. Note that the observation for a particular year is denoted by D[year] and the corresponding mean as mu[year]. The parameters are b[1],b[2], and the change-point parameter τ is called changeyear. Note that the syntax is similar to that used in R, with some exceptions. The syntax
+
+    D[year] ~ dpois(mu[year])
+
+indicates that D[year] is Poisson distributed with mean mu[year]. Similarly, the code
+
+    b[j] ~ dnorm(0.0, 1.0E-6)
+
+indicates that βj is assigned a normal prior distribution with mean 0 and a precision (reciprocal of the variance) equal to 0.000001. In WinBUGS, one must assign proper distributions to all parameters, and this normal density approximates the improper uniform prior density. Also,
+
+    changeyear ~ dunif(1, N)
+
+indicates that τ has a continuous uniform prior density on the interval (1, N ). The operator <- indicates an assignment to a variable; for example, the syntax
+
+    log(mu[year]) <- b[1] + step(year - changeyear)*b[2]
+
+assigns the linear expression on the right-hand side to the variable log(mu[year]). The step function in WinBUGS is equivalent to the function δ() defined earlier. The entire model description file is saved as the text file coalmining.bug.
+
+    model {
+      for(year in 1:N) {
+        D[year] ~ dpois(mu[year])
+        log(mu[year]) <- b[1] + step(year - changeyear)*b[2]
+      }
+      for (j in 1:2) {b[j] ~ dnorm(0.0,1.0E-6)}
+      changeyear ~ dunif(1,N)
+    }
+
+After the model has been defined, we enter the data directly into the R console. The R constant N is the number of years, and D is the vector of observed counts. The variable data is a list containing the names of the variables N and D that are sent to WinBUGS.
+
+```{r, comment=NA}
+N <- 112
+D <- c(4, 5, 4, 1, 0, 4, 3, 4, 0, 6, 
+       3, 3, 4, 0, 2, 6, 3, 3, 5, 4, 
+       5, 3, 1, 4, 4, 1, 5, 5, 3, 4, 
+       2, 5, 2, 2, 3, 4, 2, 1, 3, 2,
+       1, 1, 1, 1, 1, 3, 0, 0, 1, 0, 
+       1, 1, 0, 0, 3, 1, 0, 3, 2, 2,
+       0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 
+       0, 2, 1, 0, 0, 0, 1, 1, 0, 2,
+       2, 3, 1, 1, 2, 1, 1, 1, 1, 2,
+       4, 2, 0, 0, 0, 1, 4, 0, 0, 0,
+       1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+       0, 0)
+data <- list("N", "D")
+```
+
+Next we indicate by the parameters line
+
+```{r, comment=NA}
+parameters <- c("changeyear", "b")
+```
+
+that we wish to monitor the simulated samples of the change-point parameter τ and the regression vector β.
+
+Last, we indicate by the line
+
+```{r, comment=NA}
+inits  <-  function() {list(b = c(0, 0), changeyear = 50)}
+```
+
+that the starting value for the parameter (β1, β2) is (0, 0) and the starting value of τ is 50.
+
+Now that the problem has been set up, the function bugs is used to run WinBUGS.
+
+```{r, comment=NA}
+coalmining.sim <- bugs (data, inits, parameters, "coalmining.bug", 
+                        n.chains = 3, n.iter = 1000, codaPkg = TRUE)
+```
+
+If we did not include the option codaPkg=TRUE, the output of bugs would be a simulation object that we could summarize and plot using the print and plot commands. Here, by including the codaPkg=TRUE option, the bugs function returns the filenames of the WinBUGS output that are used by the coda package. To create a Markov chain Monte Carlo (mcmc) object from the WinBUGS output files, we use the read.bugs command.
+
+```{r, comment=NA}
+coalmining.coda  <-  read.bugs(coalmining.sim)
+```
+
+Now that an mcmc object has been created, we can use coda functions to summarize and graph the simulated draws. Summary statistics for the MCMC run are obtained using the summary command. The output explains that three chains were used, each with 1000 iterations, and the first 500 iterations (the burn-in) were discarded in each chain. Summary statistics for each parameter are given for the 1500 iterations that were saved. Also, the “deviance row” gives the posterior mean and posterior standard deviation of the deviance function
+
+    D(θ) = −2*log(L(θ)) + 2*h(y)
+
+where L(θ) is the likelihood and h(y) is a standardizing function of the data. The posterior mean of D(θ) is a summary measure of model fit. If one combines this measure with an estimate of model complexity, one obtains the deviance information criterion (DIC), which can be used to select models analogous to the predictive density approach described in Chapter 8.
+
+```{r, comment=NA}
+summary(coalmining.coda)
+```
+
+Once the MCMC object coalmining.coda has been created, the coda package provides simple functions for MCMC diagnostic graphs. Lattice style trace plots of all parameters and the deviance function are constructed using the xyplot command and displayed in Figure 11.1.
+
+```{r, comment=NA}
+xyplot(coalmining.coda)
+```
+
+Autocorrelation graphs of all parameters are created using the acfplot command and displayed in Figure 11.2.
+
+```{r, comment=NA}
+acfplot(coalmining.coda)
+```
+
+Last, density plots of the parameters are constructed using the densityplot command.
+
+```{r, comment=NA}
+densityplot(coalmining.coda, col = "black")
+```
+
+From looking at the density plots in Figure 11.3, we note that the density for τ has an interesting bimodal shape; this indicates that there is support for a change point near 37 and 40 years past 1850. It is also clear from Figure 11.3 that β2 < 0, which indicates a drop in the rate of coal mining facilities beyond the change-point year.
+
+Fig. 11.1. Trace plots of the parameters and the deviance function for the changepoint problem.
+
+## 11.5 A Robust Regression Model
+
+As a second illustration of the R/WinBUGS interface, we consider the fitting of a robust simple linear regression model. One is interested in the relationship between the vote count in the 1996 and 2000 presidential elections in the state of Florida. For each of 67 counties in Florida, one records the voter count for Pat Buchanan, the Reform Party candidate in 2000, and the voter count for Ross Perot, the Reform Party candidate in 1996. Figure 11.4 plots the square root of the Buchanan vote against the square root of the Perot count. One notices a linear relationship with one distinctive outlier. This outlier is due to an unusually high vote count for Buchanan in Palm Beach County due to a butterfly ballot design used in that county.
+
+Fig. 11.2. Autocorrelation plots of the parameters and the deviance function for the change-point problem.
+
+Let yi and xi denote the square root of the voter count in the ith county for Buchanan and Perot, respectively. From our preliminary analysis, a linear regression assuming normal errors seems inappropriate. Instead, we assume that y1, ..., yn follow the regression model
+
+     yi = β0 + β1*xi + εi
+
+where ε1,...,εn are a random sample from a t distribution with mean 0, scale parameter σ and ν = 4 degrees of freedom. As in Section 10.2, we can represent this model as the following scale mixture of normal distributions:
+
+    yi ∼ N(β0 + β1*xi, (τλi)^(−1/2))
+    λi ∼ gamma(2, 2)
+
+To complete the model, we assign β0 and β1 uniform priors and let the precision τ have the standard non-informative prior proportional to 1/τ.
+
+This model is described by means of the following model script in WinBUGS. The observations are y[1], ..., y[N]; the observation means are mu[1], ..., mu[N]; and the observation precisions are p[1], ..., p[N]. The i-th precision, p[i], is defined by tau*lam[i], where the scale parameter lam[i] is assigned a gamma(2, 2) distribution. One cannot formally assign improper priors to parameters, but we approximate a uniform prior for b[1] by assigning it a normal prior with mean 0 and the small precision value 0.001. In a similar fashion, we assign the precision parameter tau a gamma prior with shape and scale parameters each set to the small value of 0.001. This script is saved as the file robust.bug.
+
+Fig. 11.3. Parameter and deviance function density estimates for the change-point problem.
+
+    model {
+      for(i in 1:N) {
+        y[i] ~ dnorm(mu[i], p[i])
+        p[i] <- tau*lam[i]
+        lam[i] ~ dgamma(2,2)
+        mu[i] <- b[1] + b[2]*x[i]}
+      for (j in 1:2) {b[j] ~ dnorm(0, 0.001)}
+      tau ~ dgamma(0.001, 0.001)
+    }
+
+Fig. 11.4. Scatterplot of Buchanan and Perot voter counts in Florida in the 1996 and 2000 presidential elections.
+
+Next we define the data in R. The Florida voter data for the 1996 and 2000 elections are stored in the dataset election in the package LearnBayes. The variables buchanan and perot contain, respectively, the Buchanan and Perot vote totals. There are three quantities to define: the number of paired observations N, the vector of responses y, and the vector of covariates x. Recall that we applied an initial square root re-expression of both 1996 and 2000 vote totals.
+
+```{r, comment=NA}
+#data(election)
+#attach(election)
+str(election)
+y <- sqrt(buchanan)
+x <- sqrt(perot)
+N <- length(y)
+```
+
+The final two inputs are the selection of initial values for the parameters and the decision on what parameters to monitor in the simulation run. In the command
+
+```{r, comment=NA}
+inits  <-  function() {list(b = c(0, 0), tau = 1)}
+```
+
+we indicate that the starting values for the regression parameters are 0 and 0 and the starting value of the precision parameter τ is 1. We last indicate through the parameters statement that we wish to monitor τ, the vector of values {λi}, and the regression vector β.
+
+```{r, comment=NA}
+data <- list("N", "y", "x")
+parameters <- c("tau", "lam", "b")
+```
+
+We are ready to use WinBUGS to simulate from the model using the bugs function.
+
+```{r, comment=NA}
+robust.sim <- bugs (data, inits, parameters, "robust.bug", 
+                    n.chains = 3, n.iter = 1000)
+print(robust.sim)
+```
+
+Suppose we are interested in estimating the mean Buchanan (root) count E(y|x) for a range of values of the Perot (root) count x. In the R code, we first create a sequence of x values in the variable xo and store the corresponding design matrix in the variable X0. By multiplying this matrix by the matrix of simulated draws of the regression vector b, we get a simulated sample from the posterior of E(y|x) for all values of x in xo. We summarize the matrix of posterior distributions meanresponse with the 5th, 50th, and 95th percentiles and plot these values as lines in Figure 11.5. Note that this robust fit is relatively unaffected by the one outlier with an unusually large value of y.
+
+```{r, comment=NA}
+attach.bugs(robust.sim)
+xo <- seq(18, 196, 2)
+X0 <- cbind(1, xo)
+meanresponse <- b %*% t(X0)
+meanp <- apply(meanresponse, 2, quantile, c(0.05, 0.5, 0.95))
+plot(sqrt(perot), sqrt(buchanan))
+lines(xo,meanp[2, ])
+lines(xo,meanp[1, ],lty = 2)
+lines(xo,meanp[3, ],lty = 2)
+```
+
+## 11.6 Estimating Career Trajectories
+
+A professional athlete’s performance level will tend to increase until the middle of his or her career and then deteriorate until retirement. For a baseball player, suppose one records the number of home runs yj out of the number of balls that are put into play nj (formally, the number of balls put in play is equal to the number of “at-bats” minus the number of strikeouts) for the j-th year of his career. One is interested in the pattern of the home run rate yj/nj as a function of the player’s age xj . Figure 11.6 displays a graph of home run rate against age for the great slugger Mickey Mantle.
+
+Fig. 11.5. Scatterplot of Buchanan and Perot voter counts. The solid line represents the median of the posterior distribution of the expected response, and the dashed lines correspond to the 5th and 95th percentiles of the distribution.
+
+To understand a player’s career trajectory, we fit a model. Suppose yj is binomial(nj, pj), where pj is the probability of a home run during the j-th season. We assume that the probabilities follow the logistic quadratic model
+
+    log(p[j]/(1 − p[j])) = β0 + β1*x[j] + β2*x[j]^2
+
+Figure 11.6 displays the fitted probabilities for Mickey Mantle using the glm function.
+
+In studying a player’s career performance, one may be interested in the player’s peak ability and the age where he achieved this peak ability. From the quadratic model, if β2 < 0, then the probability is maximized at the value
+
+    agePEAK = −β1/(2*β2)
+
+and the peak value of the probability (on the logit scale) is
+
+    PEAK = β0 − β1^2/(4*β2)
+
+Fig. 11.6. Career trajectory and fitted probabilities for Mickey Mantle’s home run rates.
+
+Although fitting this model is informative about a player’s career trajectory, it has some limitations. Since a player only plays for 15–20 years and there is sizable binomial variation, it can be difficult to get precise estimates of a player’s peak age and his peak ability. But there are many players in baseball history who display similar career trajectories. It would seem that one could obtain improved estimates of players’ career trajectories by combining data from players with similar abilities.
+
+One can get improved estimates by fitting an exchangeable model. Suppose we have k similar players; for player i, we record the number of home runs yij , number of balls put in play nij, and the age xij for the seasons j = 1, …, Ti. We assume that the associated probabilities {pij} satisfy the logistic model
+
+    log(p[i, j]/(1 − p[i, j]) = βi0 + βi1*x[i, j] + βi2*x[i, j]^2, j = 1, ..., Ti
+
+Let βi = (βi0, βi1, βi2) denote the regression coefficient vector for the i-th player. To represent the belief in exchangeability, we assume that β1, ..., βk are a random sample from a common multivariate normal prior with mean vector μβ and variance-covariance matrix V:
+
+    βi|μβ,R ∼ N3(μβ, V), i = 1, ..., k
+
+At the second stage of the prior, we assign vague priors to the hyperparameters.
+
+    μβ ∼ c
+    V ∼ inverse Wishart(S − 1, ν)
+
+where inverse Wishart(S − 1,ν) denotes the inverse Wishart distribution with scale matrix S and degrees of freedom ν. In WinBUGS, information about a variance-covariance matrix is represented by means of a Wishart(S, ν) distribution placed on the precision matrix P:
+
+    P = V^(−1) ∼ Wishart(S, ν)
+
+Data are available for ten great home run hitters in baseball history in the dataset sluggerdata in the package LearnBayes. This dataset contains bat- ting statistics for these players for all seasons of their careers. The R function careertraj.setup is used to extract the matrices from sluggerdata that will be used in the WinBUGS program.
+
+```{r, comment=NA}
+#data(sluggerdata)
+str(sluggerdata)
+s <- careertraj.setup(sluggerdata)
+N <- s$N
+S <- s$T
+y <- s$y
+n <- s$n
+x <- s$x
+```
+
+The variable N is the number of players and the vector T contains the number of seasons for each player. The matrix y has 10 rows and 23 columns, where the i-th row in y represents the number of home runs of the i-th player for the years of his career. Similarly, the matrix n contains the number of balls put in play for all players and the matrix x contains the ages of the players for all seasons.
+
+A listing of the file career.bug describing the model in the WinBUGS language is shown next. The variable beta is a matrix where the i-th row corresponds to the regression vector for the i-th player. The syntax
+
+    beta[i , 1:3] ~ dmnorm(mu.beta[ ], R[ , ])
+
+indicates that the i row of beta is assigned a multivariate normal prior with mean vector mu.beta and precision matrix R. The syntax
+
+    y[i, j] ~ dbin(p[i, j], n[i, j])
+    logit(p[i, j]) <- beta[i, 1] + beta[i, 2]*x[i, j] + beta[i, 3]*x[i, j]*x[i, j]
+
+gives the logistic model for the home run probabilities in the matrix p. Finally, the syntax
+
+    mu.beta[1:3] ~ dmnorm(mean[1:3], prec[1:3 ,1:3]) 
+    R[1:3, 1:3] ~ dwish(Omega[1:3 ,1:3], 3)
+
+assigns the second-stage priors. The mean vector mu.beta is assigned a multivariate normal prior with mean mean and precision matrix prec; the precision matrix R is assigned a Wishart distribution with scale matrix Omega and degrees of freedom 3.
+
+    model {
+      for(i in 1:N) {
+        beta[i, 1:3] ~ dmnorm(mu.beta[ ], R[ , ]) 
+        for(j in 1:T[i]) {
+          y[i, j] ~ dbin(p[i, j], n[i, j])
+          logit(p[i, j]) <- beta[i, 1] + 
+                            beta[i, 2]*x[i, j] +
+                            beta[i, 3]*x[i, j]*x[i, j]
+        } 
+      }
+      mu.beta[1:3] ~ dmnorm(mean[1:3],prec[1:3 ,1:3]) 
+      R[1:3 , 1:3] ~ dwish(Omega[1:3 ,1:3], 3)
+}
+
+The dataset variables N, T, y, n, and x have already been defined in R with the help of the careertraj.setup function. One defines the hyperparameter values at the last stage of the prior.
+
+```{r, comment=NA}
+mean <- c(0, 0, 0)
+Omega <- diag(c(0.1, 0.1, 0.1))
+prec <- diag(c(1.0E-6, 1.0E-6, 1.0E-6))
+```
+
+Next one gives initial estimates for β, μβ, and R. The estimate of βi is found by fitting a logistic model to the pooled dataset for all players, and μβ is also set to be this value. The precision matrix R is initially given a diagonal form with small values.
+
+```{r, comment=NA}
+beta0 <- matrix(c(-7.69, 0.350, -0.0058), nrow = 10, ncol = 3, byrow = TRUE)
+mu.beta0 <- c(-7.69, 0.350, -0.0058)
+R0 <- diag(c(0.1, 0.1, 0.1))
+```
+
+We then indicate in the data line the list of variables, the inits function specifies the initial values, and the parameter line indicates that we will monitor only the matrix beta. We run the MCMC simulation using the bugs command.
+
+```{r, comment=NA}
+data <- list("N", "S", "y", "n", "x", "mean", "Omega", "prec")
+inits <- function() {list(beta = beta0, mu.beta = mu.beta0, R = R0)}
+parameters <- c("beta")
+career.sim <- bugs (data, inits, parameters, "career.bug", 
+                    n.chains = 1, n.iter = 10000, n.thin = 1, codaPkg = TRUE)
+
+career.coda <- read.bugs(career.sim)
+windows(record = TRUE)
+plot(career.coda, ask = TRUE)
+summary(career.coda)
+densityplot(career.coda)
+```
+
+Since we saved the output in the variable career.sim, the simulated draws of β are contained in the component career.sims$sims.list$beta. This is a three-dimensional array, where beta[ , i, 1] contains the simulated draws of βi0, beta[ , i, 2] contains the simulated draws of βi1, and beta[ , i, 3] contains the simulated draws of βi2. Suppose we focus on the estimates of the peak age for each player. In the following R code, we create a new matrix to hold the simulated draws of the peak age and then compute the functions in a loop.
+
+```{r, comment=NA}
+career.sim <- bugs (data, inits, parameters, "career.bug", 
+                    n.chains = 1, n.iter = 50000, n.thin = 1)
+
+peak.age <- matrix(0, 50000, 10)
+for(i in 1:10)
+  peak.age[ , i] <- -career.sim$sims.list$beta[ , i, 2]/2/
+                     career.sim$sims.list$beta[ , i, 3]
+```
+
+We apply functions in the coda package to graph and summarize the simulated samples. We first use the dimnames command to label the columns of the matrix of simulated draws with the player names. Then we use the densityplot command to construct density estimates of the peak ages for the ten players. (Note that we use the as.mcmc command to convert the matrix to an mcmc object.)
+
+```{r, comment=NA}
+dimnames(peak.age)[[2]] <- c("Aaron", "Greenberg", "Killebrew", "Mantle","Mays",
+                             "McCovey", "Ott", "Ruth", "Schmidt", "Sosa") 
+densityplot(as.mcmc(peak.age), plot.points = FALSE, col = "black", lwd = 2)
+```
+
+Fig. 11.7. Density estimates of the peak age parameters for the ten baseball players.
+
+The density estimate graphs are displayed in Figure 11.7. To compute 95% interval estimates of each parameter, we use the summary command.
+
+```{r, comment=NA}
+summary(as.mcmc(peak.age))
+```
+
+We see that baseball players generally peak in home run hitting ability in their early 30s, although there are some exceptions.
+
+## 11.7 Further Reading
+
+Cowles (2004) gives a general review and evaluation of WinBUGS. A tutorial on computing Bayesian analyses via WinBUGS is provided by George Woodworth in the complement to Chapter 6 of Press (2003). General information about WinBUGS, including the program code for many examples can be found in the WinBUGS user manual of Spiegelhalter et al. (2003). Congdon (2003, 2005, 2007) describes a wide variety of Bayesian inference problems that can be fit using WinBUGS. Cowles and Carlin (1996) give an overview of diagnostics for MCMC output. Sturtz et al. (2005) give a general description of the R2WinBUGS package, including examples demonstrating the use of the package.
+
+## 11.8 Exercises
+
+### 1. Estimation of a proportion with a discrete prior
+
+In Chapter 2, we considered the situation where one observes y ∼ binomial(n,p) and the proportion p is assigned a discrete prior. Suppose the possible values of p are 0.05, 0.15, ..., 0.95, with respective prior probabilities 0.0625, 0.125, 0.25, 0.25, 0.125, 0.0625, 0.03125, 0.03125, 0.03125, 0.03125. Place the values of p in a vector p and the probabilities in the vector prior. As in the example of Chapter 2, set y = 11 and n = 27. Define data, inits, and parameters as follows:
+
+    data <- list("p", "prior", "n", "y")
+    inits <- function() {list(ind = 2)}
+    parameters <- list("prob")
+
+Save the following script in a file “proportion.bug”.
+
+    model {
+      ind ~ dcat(prior[])
+      prob <- p[ind]
+      y ~ dbin(prob,n)
+    }
+
+Use the R interface to simulate 1000 draws from the posterior distribution of p. Compute the posterior probability that p is larger than 0.5. 
+
+### 2. Fitting a beta/binomial exchangeable model
+
+In Chapter 5, we considered the problem of simultaneously estimating the rates of death from stomach cancer for males at risk for cities in Missouri. Assume the number of cancer deaths yj for a given city is binomial with sample size nj and probability of success pj. To model the belief that the {pj} are exchangeable, we assume that they are a random sample from a beta(α, β) distribution. The beta parameters α and β are assumed independent from gamma(.11, .11) distributions. The WinBUGS model file is shown here. Note that the variable betamean is the prior mean of pj and K1 is the prior precision.
+
+    model {
+      for (i in 1:N) {
+        y[i] ~ dbin(p[i], n[i])
+        p[i] ~ dbeta(alpha, beta)
+      }
+      alpha ~ dgamma(0.11, 0.11)
+      beta  ~ dgamma(0.11, 0.11)
+      betamean <- alpha/(alpha + beta)
+      K1 <- alpha + beta;
+    }
+
+Use the R interface to simulate from the joint posterior distribution of ({pj}, α, β).Summarize each probability pj and the prior mean α/(α + β) and prior precision K = α + β using 90% interval estimates.
+
+### 3. Smoothing multinomial counts
+
+Consider the observed multinomial frequencies (14, 20, 20, 13, 14, 10, 18, 15, 11, 16, 16, 24). Using a GLIM formulation for these data, suppose that the counts {yi} are independent Poisson with means {μi}. The multinomial proportion parameters are defined by θ[i] = μ[i]/sum(μ[j], j). Suppose one believes that the {θi} are similar in size. To model this belief, assume that {θi} has a symmetric Dirichlet distribution of the form
+
+    g({θi}|k) ∝ prod(θ[i]^(k - 1), i = 1:12)
+
+The hyperparameter k has a prior density proportional to (1 + k)^(−2), which is equivalent to log k distributed according to a standard logistic distribution. The WinBUGS model description is shown here:
+
+    model {
+      logk ~ dlogis(0,1)
+      k <- exp(logk)
+      for(i in 1:I) {
+        mu[i] ~ dgamma(k,1)
+        x[i] ~ dpois(mu[i])
+        theta[i] <- mu[i]/mu.sum
+      }
+      mu.sum <- sum(mu[]);
+    }
+
+Using the R interface, simulate from the posterior distribution of {θi} and K. Summarize each parameter using a posterior mean and standard deviation.
+
+### 4. A gamma regression model
+
+Congdon (2007) gives a Bayesian analysis of an example from McCullagh and Nelder (1989) modeling the effects of three nutrients on coastal Bermuda grass. The design was a 4 × 4 × 4 factorial experiment defined by replications involving the nutrients nitrogen (N), phosphorus (P), and potassium (K). The response yi is the yield of grass in tons/acre. We assume yi is gamma with shape ν and scale parameter νεi, where the mean εi satisfies
+
+    1/εi = β0  +β1/(Ni + α1) + β2/(Pi + α2) + β3/(Ki + α3)
+
+In Congdon’s formulation, α1, α2, and α3 (background nutrient levels) are assigned independent normal priors with respective means 40, 22, and 32 and variance 100. Non-informative priors were assigned to β0 and ν and the growth effect parameters β1, β2, and β3, except that the growth effects are assumed to be positive.
+
+The WinBUGS model description is shown here. The LearnBayes datafile bermuda.grass contains the data; the factor levels are stored in the variables Nit, Phos, and Pot, and the response values are stored in the variable y. Also one needs to define the sample size variable n = 64 and the nutrient value vectors N = 0, 100, 200, and 400, P = 0, 22, 44, and 88, and K = 0, 42, 84, and 168.
+
+    model {
+      for(i in 1:n) {
+        y[i] ~ dgamma(nu, mu[i])
+        mu[i] <- nu*eta[i]
+        yhat[i] <- 1/eta[i]
+        eta[i] <- beta0 +
+                  beta[1]/(N[Nit[i]  + 1] + alpha[1]) +
+                  beta[2]/(P[Phos[i] + 1] + alpha[2]) +
+                  beta[3]/(K[Pot[i]   +1] + alpha[3])
+      }
+      beta0 ~ dnorm(0, 0.0001)
+      nu ~ dgamma(0.01, 0.01)
+      alpha[1] ~ dnorm(40, 0.01)
+      alpha[2] ~ dnorm(22, 0.01)
+      alpha[3] ~ dnorm(32, 0.01)
+      for (j in 1:3) {
+        beta[j] ~ dnorm(0, 0.0001) I(0, )
+      }
+    }
+
+Use WinBUGS and the R interface to simulate 10,000 iterations from this model. Compute 90% interval estimates for all parameters. 
+
+### 5. A nonlinear hierarchical growth curve model
+
+The BUGS manual presents an analysis of data originally presented in Draper and Smith (1998). The response yij is the trunk circumference recorded at time xj = 1, ..., 7 for each of i = 1, ..., 5 orange trees; the data are displayed in Table 11.1. One assumes yij is normally distributed with mean ηij and variance σ^2, where the means satisfy the nonlinear growth model
+
+    ηij = φ1i/(1 + φi2*exp(φi3*xj))
+
+Suppose one re-expresses the parameters as the real-valued parameters 
+
+    θi1 = log(φi1)
+    θi2 = log(φi2 + 1)
+    θi3 = log(−φi3)
+    i = 1, ... ,5
+
+Table 11.1. Data on the growth of five orange trees over time.
+
+Response for Tree Number 
+   x   1   2   3   4   5
+ 118  30  33  30  32  30 
+ 484  58  69  51  62  49 
+ 664  87 111  75 112  81 
+1004 115 156 108 167 125 
+1231 120 172 115 179 142 
+1372 142 203 138 209 174 
+1582 145 203 140 214 177
+
+Let θi = (θi1,θi2,θi3) represent the vector of growth parameters for the i-th tree. To reflect a prior belief in similarity in the growth patterns of the five trees, one assumes that {θi, i = 1, ..., 5} are a random sample from a multivariate normal distribution with mean vector μ and variance-covariance matrix Ω. At the final stage of the prior, one assumes Ω^(−1) is Wishart with parameters R and 3, and assumes μ is multivariate normal with mean vector μ0 and variance-covariance matrix M. In this example, one assumes R is a diagonal matrix with diagonal elements 0.1, 0.1, and 0.1, μ0 is the zero vector, and M^(−1) is the diagonal matrix with diagonal elements 1.0E-0.6, 1.0E-6, and 1.0E-6.
+
+The WinBUGS model description is shown here:
+
+    model {
+      for(i in 1:K) {
+        for(j in 1:n) {
+          Y[i, j] ~ dnorm(eta[i, j], tauC)
+          eta[i, j] <- phi[i, 1]/(1 + phi[i, 2]*exp(phi[i, 3] * x[j]))
+        }
+        phi[i, 1] <-  exp(theta[i, 1])
+        phi[i, 2] <-  exp(theta[i, 2]) - 1
+        phi[i, 3] <- -exp(theta[i, 3])
+        theta[i, 1:3] ~ dmnorm(mu[1:3], tau[1:3, 1:3])
+      }
+      mu[1:3] ~ dmnorm(mean[1:3], prec[1:3, 1:3]) 
+      tau[1:3, 1:3] ~ dwish(R[1:3, 1:3], 3)
+      sigma2[1:3, 1:3] <- inverse(tau[1:3, 1:3])
+      for(i in 1:3) {
+        sigma[i] <- sqrt(sigma2[i, i])
+      } 
+      tauC ~ dgamma(1.0E-3, 1.0E-3)
+      sigmaC <- 1/sqrt(tauC)
+    }
+
+Use WinBUGS and the R interface to simulate 10,000 iterations from this model. Compute 90% interval estimates for all parameters.

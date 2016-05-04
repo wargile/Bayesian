@@ -1,0 +1,703 @@
+---
+title: "bcwr09"
+author: "Robert A. Stevens"
+date: "December 7, 2015"
+output: html_document
+---
+
+*Bayesian Computation with R* by Jim Albert (Second Edition)
+
+```{r, comment=NA}
+library(LearnBayes)
+library(lattice)
+library(survival)
+```
+
+# 9 Regression Models
+
+## 9.1 Introduction
+
+In this chapter, we illustrate R to fit some common regression models from a Bayesian perspective. We first outline the Bayesian normal regression model and describe algorithms to simulate from the joint distribution of regression parameters and error variance and the predictive distribution of future observations. One can judge the adequacy of the fitted model using the posterior predictive distribution and the inspection of the posterior distributions of Bayesian residuals. We then illustrate the R Bayesian computations in an example where one is interested in explaining the variation of extinction times of birds in terms of their nesting behavior, their size, and their migratory status. Zellner (1986) proposed a simple way of inputting prior information in a regression model. We illustrate the use of Zellner’s class of g priors to select among a set of best regression models. We conclude by illustrating the Bayesian fitting of a survival regression model.
+
+## 9.2 Normal Linear Regression
+
+### 9.2.1 The Model
+
+In the usual multiple regression problem, we are interested in describing the variation in a response variable y in terms of k predictor variables x1, ..., xk. We describe the mean value of yi, the response for the ith individual, as
+
+E(yi|β, X) = β1*xi1 + ... + βk*xik, i = 1, ..., n
+
+where xi1, ..., xik are the predictor values for the ith individual and β1, ..., βk are unknown regression parameters. If we let xi = (xi1 , ..., xik) denote the row vector of predictors for the ith individual and β = (β1, ..., βk) the column vector of regression coefficients, we can re-express the mean value as
+
+E(y[i]|β, X) = x[i]*β.
+
+The {yi} are assumed to be conditionally independent given values of the parameters and the predictor variables. In the ordinary linear regression setting, we assume equal variances, where var(yi|θ, X) = σ^2. We let θ = (β1, ..., βk, σ^2) denote the vector of unknown parameters. Finally, we assume that the errors εi = yi − E(yi|β, X) are independent and normally distributed with mean 0 and variance σ^2.
+
+In matrix notation, this model can be written for all observations as 
+
+y|β, σ^2, X ∼ Nn(Xβ, σ^2I),
+
+where y is the vector of observations; X is the design matrix with rows x1, ..., xn; I is the identity matrix; and Nk(μ, A) indicates a multivariate normal distribution of dimension k with mean vector μ and variance-covariance matrix A.
+
+To complete the Bayesian formulation of the model, we assume (β,σ^2) have the typical non-informative prior
+
+g(β,σ2) ∝ 1/σ^2
+
+### 9.2.2 The Posterior Distribution
+
+The posterior analysis for the normal regression model has a form similar to the posterior analysis of a mean and variance for a normal sampling model. We represent the joint density of (β,σ^2) as the product
+
+g(β, σ^2|y) = g(β|y, σ^2)*g(σ^2|y)
+
+The posterior distribution of the regression vector β conditional on the error variance σ^2, g(β|y, σ^2), is multivariate normal with mean βˆ and variance-covariance matrix Vβσ^2, where
+
+βˆ = (X′X)^(−1)X′y, Vβ = (X′X)^(−1)
+
+If one defines the inverse gamma(a, b) density proportional to y^(−a − 1)*exp{−b/y}, then the marginal posterior distribution of σ^2 is inverse gamma((n − k)/2, S/2), where
+
+S = (y − Xβˆ)′(y − X βˆ) 
+
+### 9.2.3 Prediction of Future Observations
+
+Suppose we are interested in predicting a future observation y ̃ corresponding to a covariate vector x∗. From the regression sampling model, we have that y ̃, conditional on β and σ^2, is N(x∗β, σ). The posterior predictive density of y ̃, p(y ̃|y), can be represented by a mixture of these sampling densities p(y ̃|β, σ^2), where they are averaged over the posterior distribution of the parameters β and σ^2:
+
+p(y ̃|y) = p(y ̃|β, σ^2)*g(β, σ^2|y)dβdσ^2
+
+### 9.2.4 Computation
+
+The expressions for the posterior and predictive distributions lead to efficient simulation algorithms. To simulate from the joint posterior distribution of the regression coefficient vector β and the error variance σ^2, one
+
+- simulates a value of the error variance σ^2 from its marginal posterior density g(σ^2|y)
+
+- simulates a value of β from the conditional posterior density g(β|σ^2, y).
+
+Since the two component distributions (inverse gamma and multivariate normal) are convenient functional forms, it is relatively easy to construct an algorithm in R such as the one programmed in the function blinreg to perform this simulation.
+
+Once the joint posterior distribution has been simulated, it is straightforward to obtain a sample from the marginal posterior distribution of any function h(β, σ) of interest. For example, if x∗ denotes a row vector of particular values of covariates, suppose one is interested in the mean response at x∗,
+
+E(y|x∗) = x∗β
+
+If β∗ is a simulated draw from the marginal posterior of β, then x∗β∗ will be a simulated draw from the marginal posterior of x∗β. The R function blinregexpected facilitates the simulation of linear combinations of the beta coefficients.
+
+Likewise, the representation of the posterior predictive distribution of future response values suggests a simple algorithm for simulation. Suppose y ̃ is a future response value corresponding to the row vector of covariates x∗. One simulates a single value of y ̃ by:
+
+- simulating (β, σ^2) from the joint posterior given the data y
+
+- simulating y ̃ from its sampling density given the simulated values of β and σ^2,
+
+y ̃ ∼ N (x∗β, σ)
+
+The R function blinregpred can be used to simulate sets of draws of future observations corresponding to a list of covariate values of interest.
+
+### 9.2.5 Model Checking
+
+One method of assessing the goodness of fit of the model uses the posterior predictive distribution defined in the previous section. Suppose one simulates many samples y ̃1, ..., y ̃n from the posterior predictive distribution conditional on the same covariate vectors x1, ..., xn used to simulate the data. To judge if a particular response value yi is consistent with the fitted model, one looks at the position of yi relative to the histogram of simulated values of y ̃i from the corresponding predictive distribution. If yi is in the tail of the distribution, that indicates that this observation is a potential outlier.
+
+A second approach is based on the use of “Bayesian residuals.” In a traditional regression analysis, one judges the adequacy of the fitted model by inspecting the standardized residuals
+
+ri = (yi − xi*βˆ)/(σˆsqrt(1 − hii))
+
+where βˆ and σˆ are the usual estimates of the regression vector and error standard deviation and hii is the ith diagonal element of the “hat” matrix. From a Bayesian perspective, one can consider the distribution of the parametric residuals
+
+{εi = yi − xi*β}
+
+Before any data are observed, the parametric residuals are a random sample from an N(0, σ) distribution. Suppose we say that the ith observation is an outlier if |εi| > kσ, where k is a predetermined constant such as 2 or 3. The prior probability that a particular observation is an outlier is 2Φ(−k), where Φ(z) is the standard normal cdf.
+
+After data y are observed, we can compute the posterior probability that each observation is an outlier. Define the functions z1 and z2 as
+
+z1 = (k − εˆi/σ)/sqrt(hii)
+z2 = (−k − εˆi/σ)/sqrt(hii)
+
+where
+
+εˆ = yi − xi*βˆ
+
+Then the posterior probability that the ith observation is an outlier is
+
+pi = P (|εi| > kσ|y) = integral((1 − Φ(z1) + Φ(z2))*g(σ^2|y)dσ^2)
+
+In practice, the pis can be computed and compared with the prior probability 2Φ(−k). The R function bayesresiduals can be used to compute the posterior outlying probabilities for a linear regression model.
+
+### 9.2.6 An Example
+
+Ramsey and Schafer (1997) describe an interesting study from Pimm et al. (1988) on the extinction of birds. Measurements on breeding pairs of land-bird species were collected from 16 islands around Britain over the course of several decades. For each species, the dataset contains TIME, the average time of extinction on the islands where it appeared, NESTING, the average number of nesting pairs, SIZE, the size of the species (large or small), and STATUS, the migratory status of the species (migrant or resident). The objective is to fit a model that describes the variation in the time of extinction of the bird species in terms of the covariates NESTING, SIZE, and STATUS.
+
+This dataset is available as birdextinct in the LearnBayes package. We read in the datafile and construct some initial graphs. Since the TIME variable is strongly right-skewed, we initially transform it using a logarithm creating the variable LOGTIME. Figures 9.1, 9.2, and 9.3 plot LOGTIME against each of the three predictor variables. Since the categorical variables SIZE and STATUS take only two values, we use the jitter function in R to jitter the horizontal location of the points so we can see any overlapping points. Note that there is a positive relationship between the average number of nesting pairs and time to extinction. However, there are five particular species (labeled in the graph) with points that seem to vary from the general pattern. There may be relationships of each of the categorical variables with LOGTIME, but the strength of the relationship seems weak in comparison with the relationship of NESTING and LOGTIME.
+
+```{r, comment=NA}
+#data(birdextinct)
+#attach(birdextinct)
+str(birdextinct)
+logtime <- log(time)
+plot(nesting, logtime)
+out <- (logtime > 3)
+text(nesting[out], logtime[out], label = species[out], pos = 2)  
+plot(jitter(size), logtime, xaxp = c(0,1,1))
+plot(jitter(status), logtime, xaxp = c(0,1,1))
+```
+
+We write the regression model as
+
+E(log(TIMEi)|x, θ) = β0 + β1*NESTINGi + β2*SIZEi + β3*STATUSi
+
+As two of the covariates are categorical with two levels, they can be represented by binary indicators; in the datafile birdextinct, SIZE is coded 0 (1) for small (large) and STATUS is coded 0 (1) for migrant (resident).
+
+We first perform the traditional least-squares fit using the lm command.
+
+```{r, comment=NA}
+fit <- lm(logtime ~ nesting + size + status, data = birdextinct, x = TRUE, y = TRUE)
+summary(fit)
+```
+
+We see from the output that NESTING is a larger number of nesting pairs tend to have longer extinction times, which means that these species are less likely to be extinct. The SIZE and STATUS effects appear to be less significant; larger birds (with SIZE = 1) have smaller strong effect; species with a extinction times and resident birds (with STATUS = 1) have longer extinction times.
+
+Raven
+Ringed_plover
+Rock_dove Skylark
+Starling
+2 4 6 8 10 12 nesting
+
+Fig. 9.1. Plot of logarithm of the extinction time against the average number of nesting pairs for the bird study.
+
+The function blinreg is used to sample from the joint posterior distribution of β and σ. The inputs to this function are the vector of values of the response variable y, the design matrix of the linear regression fit X, and the number of simulations m. Note that we used the optional arguments x = TRUE, and y = TRUE in the function lm so that the design matrix and response vector are available as components of the structure fit.
+
+```{r, comment=NA}
+theta.sample <- blinreg(fit$y, fit$x, 5000)
+```
+
+The algorithm in binreg is based on the decomposition of the joint posterior [β, σ^2|y] as the product [σ^2|y][β|σ^2, y]. To simulate one draw of (σ^2, β), σ^2 is first drawn from the inverse gamma((n − k)/2, S/2) density:
+
+   S <- sum(fit$residual^2)
+   shape <- fit$df.residual/2
+   rate <- S/2
+   sigma2 <- rigamma(1, shape, rate)
+
+Then the regression vector β is simulated from the multivariate normal density with mean βˆ and variance-covariance matrix Vβσ^2. Note that we obtain the matrix Vβ by dividing the estimated variance-covariance matrix vcov from the least-squares fit by the mean square error stored in the variable MSE.
+
+logtime 01234
+01 jitter(size)
+
+Fig. 9.2. Plot of the logarithm of the extinction time against the bird size for the bird study. The bird size variable is coded 0 for small and 1 for large.
+
+   MSE <- sum(fit$residuals^2)/fit$df.residual
+   vbeta <- vcov(fit)/MSE
+   beta <- rmnorm(1, mean = fit$coef, varcov = vbeta*sigma2)
+
+The function blinreg returns two components: beta is a matrix of simulated draws from the marginal posterior of β, where each row is a simulated draw, and sigma is a vector of simulated draws from the marginal posterior of σ.
+
+The following R commands construct histograms of the simulated posterior draws of the individual regression coefficients β1, β2, and β3 and the error standard deviation σ (see Figure 9.4):
+
+```{r, comment=NA}
+par(mfrow = c(2,2))
+hist(theta.sample$beta[ ,2], main ="NESTING", xlab = expression(beta[1]))
+hist(theta.sample$beta[ ,3], main ="SIZE"   , xlab = expression(beta[2]))
+hist(theta.sample$beta[ ,4], main ="STATUS" , xlab = expression(beta[3]))
+```
+
+Fig. 9.3. Plot of the logarithm of the extinction time against the bird status for the bird study. The bird status variable is coded 0 for migrant and 1 for resident.
+
+```{r, comment=NA}
+hist(theta.sample$sigma, main = "ERROR SD", xlab = expression(sigma))
+```
+
+We can summarize each individual parameter by computing the 5th, 50th, and 95th percentiles of each collection of simulated draws. In the output, we use the apply and quantile commands to summarize the simulation matrix of β theta.sample$beta. Similarly, we use the quantile command to simulate the draws of σ.
+
+```{r, comment=NA}
+apply(theta.sample$beta, 2, quantile, c(0.05, 0.5, 0.95))
+quantile(theta.sample$sigma, c(0.05, 0.5, 0.95))
+```
+
+As expected, the posterior medians of the regression parameters are similar in value to the ordinary regression estimates. Actually they are equivalent since we applied a vague prior for β; any small differences between the posterior medians and the least-squares estimates are due to small errors inherent in the simulation.
+
+Fig. 9.4. Histogram of simulated draws from the marginal posterior distributions of β1, β2, β3, and σ.
+
+Next, suppose we are interested in estimating the mean log extinction time E(y|x∗) = x∗β for four nesting pairs and for different combinations of SIZE and STATUS. The values of the four sets of covariates are shown in Table 9.1.
+
+Table 9.1. Four sets of covariates of interest in the bird study.
+
+Covariate Set Nesting Pairs Size  Status 
+A                   4       small migrant 
+B                   4       small resident 
+C                   4       large migrant 
+D                   4       large resident
+
+
+In the following input, we define the four sets of covariates and stack these sets in the matrix X1. The function blinregexpected will give a simulated sample for the expected response E(y|x∗) = x∗β for each set of covariate values. The inputs to the function are the matrix X1 of covariate values and the list of simulated values of β and σ obtained from the function binlinreg. The output of the function is a matrix where a column contains the simulated draws for a given covariate set. We construct histograms of the simulated draws for each of the mean extinction times, and the plots are displayed in Figure 9.5.
+
+```{r, comment=NA}
+cov1 <- c(1, 4, 0, 0)
+cov2 <- c(1, 4, 1, 0)
+cov3 <- c(1, 4, 0, 1)
+cov4 <- c(1, 4, 1, 1)
+X1 <- rbind(cov1, cov2, cov3, cov4)
+mean.draws <- blinregexpected(X1, theta.sample)
+c.labels <- c("A", "B", "C", "D")
+par(mfrow = c(2, 2))
+for(j in 1:4)
+  hist(mean.draws[ , j], main = paste("Covariate set", c.labels[j]), xlab = "log TIME")
+```
+
+In the preceding work, we were interested in learning about the mean response value E(y|x∗) for a given set of covariate values. Instead, suppose we are interested in predicting a future response y ̃ for a given covariate vector x∗. The function blinregpred will produce a simulated sample of future response values for a regression model. Similar to the function binlinregexpected, the inputs to the function blinregpred are a matrix X1 where each row corresponds to a covariate set and the structure of simulated values of the parameters β and σ.
+
+```{r, comment=NA}
+cov1 <- c(1, 4, 0, 0)
+cov2 <- c(1, 4, 1, 0)
+cov3 <- c(1, 4, 0, 1)
+cov4 <- c(1, 4, 1, 1)
+X1 <- rbind(cov1, cov2, cov3, cov4)
+pred.draws <- blinregpred(X1, theta.sample)
+c.labels <- c("A", "B", "C", "D")
+par(mfrow = c(2, 2))
+for(j in 1:4)
+  hist(pred.draws[ , j], main = paste("Covariate set", c.labels[j]), xlab = "log TIME")
+```
+
+Figure 9.6 displays histograms of the simulated draws from the predictive distribution for the same four sets of covariates. Comparing Figure 9.5 and Figure 9.6, note that the predictive distributions are substantially wider than the mean response distributions.
+
+We illustrate two methods of checking if the observations are consistent with the fitted model. The first method is based on the use of the posterior predictive distribution described in Section 9.2.5. Let yi∗ denote the density of a future log extinction time for a bird with covariate vector xi. Using the function binregpred, we can simulate draws of the posterior predictive distributions for all y1∗, ..., y6∗2 by using fit$x as an argument. In the R code, we summarize each predictive distribution by the 5th and 95th quantiles and graph these distributions as line plots using the matplot command (see Figure 9.7). We place the actual log extinction times y1, ..., y62 as solid dots in the figure. We are looking to see if the observed response values are consistent with the corresponding predictive distributions; any points that fall outside of the corresponding 90% interval band are possible outliers. There are three points (labeled in the figure) that exceed the 95th percentile, corresponding to the species snipe, raven, and skylark.
+
+Fig. 9.5. Histograms of simulated draws of the posterior of the mean extinction time for four sets of covariate values.
+
+```{r, comment=NA}
+pred.draws <- blinregpred(fit$x, theta.sample)
+pred.sum <- apply(pred.draws, 2, quantile, c(0.05, 0.95))
+par(mfrow = c(1, 1))
+ind <- 1:length(logtime)
+matplot(rbind(ind, ind), pred.sum, type = "l", lty = 1, col = 1,
+        xla b= "INDEX", ylab = "log TIME")
+```
+
+Fig. 9.6. Histograms of simulated draws of the predictive distribution for a future extinction time for four sets of covariate values.
+
+```{r, comment=NA}
+points(ind, logtime, pch = 19)
+out <- (logtime > pred.sum[2, ])
+text(ind[out], logtime[out], label = species[out], pos = 4)
+```
+
+Another method for outlier detection is based on the use of the Bayesian residuals εi = yi − xiβ. Following the strategy described in Section 9.2.5, we can compute the posterior outlying probabilities,
+
+P(|εi| > k|y)
+
+for all observations for a constant value k. These probabilities can be com-puted using the function bayesresiduals. The inputs are the lm fit structure fit, the matrix of simulated parameter draws theta.sample, and the value of k. The output is a vector of posterior outlying probabilities. In this example, we use a cutoff value of k = 2. We use the plot command to construct a scatterplot of the probabilities against the nesting covariate; the resulting display is in Figure 9.8. By using the identify command, we identify four birds that have outlying probabilities of .4 or higher. These birds have extinction times that are not well-explained by the variables NESTING, SIZE, and STATUS.
+
+Fig. 9.7. Posterior predictive distributions of {yi∗} with actual log extinction times {yi} indicated by solid points. Three times that exceed the 95th percentile of the predictive distributions are labeled with the name of the species.
+
+Two of the outlying species, raven and skylark, were also identified by the posterior predictive methodology.
+
+```{r, comment=NA}
+prob.out <- bayesresiduals(fit, theta.sample, 2)
+par(mfrow = c(1, 1))
+plot(nesting, prob.out)
+out <- (prob.out > 0.35)
+text(nesting[out], prob.out[out], label = species[out], pos = 4)  
+```
+
+## 9.3 Model Selection Using Zellner’s g Prior
+
+In the previous sections, we have considered the use of a non-informative prior for (β, σ2). Arnold Zellner introduced a simple way of inputting subjective information in a regression problem. This particular choice of distribution is called a g prior. In this section, we illustrate the use of g priors and show that this prior distribution provides a convenient way of choosing among a set of regression models.
+
+Fig. 9.8. Plot of posterior probabilities of outliers for all observations. Four unusually large probabilities are identified with the name of the species.
+
+For a g prior, we assume that the regression vector β, conditional on σ, has a multivariate normal prior distribution with mean β0 and variance-covariance matrix cσ^2(X′X)^(−1), and then we assign σ^2 the standard non-informative prior proportional to 1/σ^2. To use this prior, the user needs to specify only two quantities, a guess β0 at the regression vector, and a constant c that reflects the amount of information in the data relative to the prior. If one believes strongly in the prior guess, one would choose a small value for c. In contrast, choosing a large value of c would have an effect similar to choosing the standard non-informative prior for (β, σ^2).
+
+One nice feature of the g prior analysis is that the posterior distribution has a relatively simple functional form. One can represent the joint posterior density of (β, σ^2) as
+
+g(β, σ2|y) = g(β|y, σ^2)*g(σ^2|y).
+
+The posterior distribution of the regression vector β conditional on σ^2, g(β|y, σ^2), is multivariate normal with mean β1 and variance-covariance matrix V1, where
+
+β1 = (c/(c + 1))(β0/c + βˆ)
+V1 = (σ^2c/(c + 1))(X′X)^(−1)
+
+The marginal posterior distribution of σ^2 is inverse gamma(a1, b1), where 
+
+a1 = n/2
+b1 = S/2 + (1/(2(c + 1)))(β0 − βˆ)′X′X(β0 − βˆ)
+
+A simulated sample from the joint posterior distribution can be obtained using the same algorithm described in Section 9.2.4. First, one simulates a value of the variance from the inverse gamma distribution, and then one simulates β from the conditional multivariate normal density. The R function blinreg, with the prior option, will simulate draws from the regression model with Zellner’s g prior.
+
+To illustrate the application of Zellner’s g prior, consider data from a study described in Peck, Devore, and Olsen (2005) that relates the breeding success of the common puffin in different habitats at Great Island, Newfoundland. For 28 birds, we observe NEST, the nesting frequency, GRASS, the grass cover, SOIL, the mean soil depth, ANGLE, the angle of slope, and DISTANCE, the distance from the cliff edge.
+
+Suppose we explore the relationship between NEST and DISTANCE using the simple regression model
+
+NESTi = β0 + β1(DISTANCEi − DISTANCE) + εi
+
+where NESTi and DISTANCEi are, respectively, the nesting frequency and grass cover for the ith puffin, and the {εi} are a random sample from a normal(0, σ) distribution. Suppose our prior guess at the regression vector β = (β0, β1) is equal to β0 = (8, 0). This guess says that we don’t think that DISTANCE is a useful predictor of nesting frequency and so β1 = 0; the value β0 = 8 is the average nesting frequency.
+
+To use the blinreg function, we add the option prior, a list with components b0 and c0, which correspond to the prior parameter values of β0 and c, respectively. In the following R code, we simulate posterior samples of (β, σ) using the g prior with the prior guess β0 = (8, 0) and the prior constant c = 0.1, 0.5, 2, 5. Using the xyplot function in the lattice package, we construct scatterplots of the simulated draws from the posterior distribution of (β0, β1) for the four values of c. (See Figure 9.9.) We see that, as c decreases from 5 to 0.1, corresponding to stronger prior beliefs, the posterior distribution moves toward the prior guess (β0, β1) = (8, 0).
+
+```{r, comment=NA}
+# illustrating the role of the parameter c
+#data(puffin)
+str(puffin)
+X <- cbind(1, puffin$Distance - mean(puffin$Distance))
+c.prior <- c(0.1, 0.5, 5, 2)
+fit <- vector("list", 4)
+for(j in 1:4) {
+  prior <- list(b0 = c(8,0), c0 = c.prior[j])
+  fit[[j]] <- blinreg(puffin$Nest, X, 1000, prior)
+}
+BETA <- NULL
+for(j in 1:4) {
+  s <- data.frame(Prior = paste("c =", as.character(c.prior[j])),
+         beta0 = fit[[j]]$beta[ , 1], beta1 = fit[[j]]$beta[ , 2])
+  BETA <- rbind(BETA, s)
+}
+with(BETA, xyplot(beta1 ~ beta0 | Prior, type = c("p", "g"), col = "black"))
+```
+
+Fig. 9.9. Posterior distribution of β0,β1 for four choices of the prior parameter c for the puffin dataset.
+
+Zellner’s class of g priors can be used to select a best model in a regression problem. Suppose that there are k potential predictors of the response variable y. There are a total of 2k possible regression models, corresponding to the inclusion or exclusion of each predictor in the model. Let β denote the full model including all of the predictors. We assign β a g prior with prior guess β0 = 0 and a “large” value of c, say c = 100, corresponding to vague prior information about the location of β. Then if βP denotes a regression model containing a subset P of the predictors, we assign βP a g prior of the same functional form with a prior guess of 0 and the same value of c.
+
+We compare the different regression models by computing the prior predictive density. If the sampling density of the response variable is given by f(y|β, σ^2) and the parameter vector (β, σ^2) is assigned the prior density g(β, σ^2), then the prior predictive density of y is given by the integral
+
+m(y) = integral(f(y|β, σ^2)*g(β, σ^2)dβdσ^2)
+
+If we transform σ^2 by a logarithm where η = log(σ), then this integral over (β, η) can be accurately approximated using Laplace’s method implemented in the R function laplace in the LearnBayes package.
+
+The function reg.gprior.post computes the log posterior density for a regression model with a g prior. The log posterior is the sum of the log likelihood and the log prior, where the following R code is used to compute the two terms.
+
+loglike <- sum(dnorm(y, mean = X %*% as.vector(beta), sd = sigma, log = TRUE))
+logprior <- dmnorm(beta, mean = beta0, varcov = c0*sigma^2*solve(t(X) %*% X), log = TRUE)
+
+Suppose one is interested in computing the prior predictive density for the specific model that includes the covariates GRASS and SOIL. One first defines the data list that contains the response vector y and the design matrix X. Then one defines the prior list that contains the values of β0 and c. One gets a reasonable starting value for β in laplace by performing a least-squares regression fit, and the starting value for logσ is an estimate of the error standard deviation. The component int of the output from laplace is the estimate of the logarithm of the predictive density.
+
+```{r, comment=NA}
+# model selection
+data <- list(y = puffin$Nest, X = cbind(1, puffin$Grass, puffin$Soil))
+prior <- list(b0 = c(0, 0, 0), c0 = 100)
+beta.start <- with(puffin, lm(Nest ~ Grass + Soil)$coef)
+laplace(reg.gprior.post, c(beta.start, 0), list(data = data, prior = prior))$int
+```
+
+In practice, one wishes to compute the predictive density for a collection of plausible models. The function bayes.model.selection uses the algorithm above to compute the predictive density for all 2k models. The function has three inputs: y is the vector of responses, X is the design matrix (in this case, the design matrix does not contain a column corresponding to the constant term, so the option constant is set to FALSE), and c is the value of the constant c of the g prior. The output of bayes.model.selection is a matrix that gives the value of the log predictive density for all models. Suppose that the 2k models are believed equally likely a priori. Then the posterior probability of model Mj is given by
+
+P(Mj|y) = mj(y)/sum(mi(y), i = 1:2^k)
+
+Under this assumption that the models all have the same prior probability, this function also outputs the posterior model probabilities.
+
+```{r, comment=NA}
+X <- puffin[, -1]
+y <- puffin$Nest
+c <- 100
+bayes.model.selection(y, X, c, constant = FALSE)
+```
+
+From this output, we see the most probable models are {SOIL, DISTANCE}, {SOIL, ANGLE, DISTANCE}, and {GRASS, SOIL, DISTANCE}. The log marginal density and posterior probability of the most likely model {SOIL, DISTANCE} are −100.37 and 0.65065, respectively.
+
+## 9.4 Survival Modeling
+
+Suppose one is interested in constructing a model for lifetimes in a survival study. For a set of n individuals, one observes the lifetimes t1, ..., tn. It is possible that some of the lifetimes are not observable since some individuals are still alive at the end of the study. In this case, we represent the response by the pair (ti, δi), where ti is the observation and δi is a censoring indicator. If δi = 1, the observation is not censored and ti is the actual survival time. Otherwise when δi = 0, the observation ti is the censored time.
+
+Suppose we wish to describe the variation in the survival times using p covariates x1, ..., xp. One can describe this relationship by using the Weibull proportional hazards model. This model can be expressed as the loglinear model
+
+log(ti) = μ + β1*xi1 + ... + βp*xip + σ*εi
+
+where xi1, ..., xip are the values of the p covariates for the ith individual and εi is assumed to have a Gumbel distribution with density f(ε) = exp(ε − exp(ε)). There are p + 2 unknown parameters in this model, the p regression coefficients, the constant term μ, and the scale parameter σ.
+
+It can be shown that the density of the log time, yi = log(ti) is given by 
+
+fi(yi) = exp(zi − exp(zi))/σ
+
+where zi = (yi − μ − β1xi1 − ... − βp*xip)/σ. Also, the survival function for the ith individual is given by Si(yi) = exp(−exp(zi)). Then the likelihood function of the regression vector β = (β1, ..., βp), μ and σ is given by
+
+L(β, μ, σ) = prod({fi(yi)}^(δi){Si(yi)}^(1 − δi), i = 1:n)
+
+Suppose we assign μ,β uniform priors and the scale parameter σ the usual non-informative prior proportional to 1/σ. Then the posterior density is given, up to a proportionality constant, by
+
+g(β, μ, σ|data) ∝ L(β, μ, σ)/σ
+
+To illustrate the application of this model, Edmonson et al. (1979) studied the effects of different chemotherapy treatments following surgical treatment of ovarian cancer. The response variable TIME was the survival time in days following randomization to one of two chemotherapy treatments. Also, we record a censoring variable STATUS that indicates if TIME is an actual survival time (STATUS = 1) or censored at that time (STATUS = 0). The two covariates are TREAT, the treatment group, and AGE, the age of the patient. The loglinear model is
+
+log(TIMEi) = μ + β1*TREATi + β2*AGEi + σ*εi
+
+The dataset is given the name chemotherapy in the LearnBayes package. To begin, we read in the dataset and illustrate fitting this model using the survreg function in the survival library.
+
+```{r, comment=NA}
+#data(chemotherapy)
+#attach(chemotherapy)
+str(chemotherapy)
+survreg(Surv(time, status) ~ factor(treat) + age, dist = "weibull")
+```
+
+Unlike the normal regression model, the posterior distribution of the parameters of this survival model cannot be simulated by standard probability distributions. But we are able to apply our general computing strategy described in Chapter 6 to summarize the posterior distribution for this problem. We first make all parameters real-valued by transforming the scale parameter σ to η = log σ. We write the following function weibullregpost, which computes the joint posterior density of θ = (η, μ, β1, β2). The argument data is the data matrix where the first two columns are {ti} and {ci} and the remaining columns are the covariates TREAT and AGE.
+
+```{r, comment=NA}
+weibullregpost <- function (theta, data) {
+  logf <- function(t, c, x, sigma, mu, beta) { 
+    z <- (log(t) - mu - x %*% beta)/sigma
+    f <- 1/sigma * exp(z - exp(z))
+    S <- exp(-exp(z))
+    c * log(f) + (1 - c) * log(S) 
+  } 
+  k  <-  dim(data)[2]
+  p <- k - 2
+  t <- data[, 1]
+  c <- data[, 2]
+  X <- data[, 3:k]
+  sigma <- exp(theta[1])
+  mu <- theta[2]
+  beta <- array(theta[3:k], c(p, 1))
+  return(sum(logf(t, c, X, sigma, mu, beta)))
+}
+```
+
+To get some initial estimates of the location and spread of the posterior density, we use the laplace function. We use the output of the survreg fit to suggest the initial guess at the posterior mode (−0.5, 9, 0.5, −0.05). The output of this function is the posterior mode θˆ and associated variance-covariance matrix V.
+
+```{r, comment=NA}
+start <- c(-0.5, 9, 0.5, -0.05)
+d <- cbind(time, status, treat - 1, age)
+fit <- laplace(weibullregpost, start, d)
+fit
+```
+
+We then use the information from the laplace function to find a proposal density for the Metropolis random walk chain programmed in the R function rwmetrop. The proposal density will be a multivariate normal density with mean 0 and variance-covariance scaleV, where scale is a scale parameter chosen so that the random walk chain has an acceptance range in the 20–40% range. With some trial and error, we find that scale = 1.5 seems to give a satisfactory acceptance rate.
+
+```{r, comment=NA}
+proposal <- list(var = fit$var, scale = 1.5)
+bayesfit <- rwmetrop(weibullregpost, proposal, fit$mode, 10000, d)
+bayesfit$accept
+```
+
+By using several hist commands, we display histograms of the simulated draws from the marginal posterior densities of β1 (corresponding to TREAT), β2 (corresponding to AGE), and the scale parameter σ (see Figure 9.10).
+
+```{r, comment=NA}
+par(mfrow = c(2, 2))
+sigma <- exp(bayesfit$par[ ,1])
+mu <- bayesfit$par[ ,2]
+beta1 <- bayesfit$par[ ,3]
+beta2 <- bayesfit$par[ ,4]
+hist(beta1, xlab = "treatment", main = "")
+hist(beta2, xlab = "age", main = "")
+hist(sigma, xlab = "sigma", main = "")
+```
+
+Fig. 9.10. Plot of the posterior probabilities of regression coefficients for TREAT and AGE and the scale parameter σ for the chemotherapy example.
+
+Suppose one is interested in estimating the survival curve for an individual in the treatment group (TREAT = 1) who is 60 years old. For a given time t, the probability that this individual survives beyond t days is given by
+
+P(T > t) = exp(−exp(z))
+
+where z = (log(t) − μ − β1(1) − β2(60))/σ. A simulated sample of draws from this survival probability is obtained by computing this function on the simulated draws of θ, and this simulated sample can be summarized by the 5th, 50th, and 95th percentiles. This procedure was repeated for a grid of t values between 0 and 2000 days. Figure 9.11 graphs the 5th, 50th, and 95th percentiles for the survival curve for this individual. In a similar fashion, it is straightforward to make inferences about any function of the parameters of interest.
+
+Fig. 9.11. Posterior median and 90% Bayesian interval estimates for the survival function S for an individual 60 years old in the treatment group.
+
+## 9.5 Further Reading
+
+Chapter 14 of Gelman et al. (2003) introduces Bayesian model building and inference for normal linear models. Analogous methods for generalized linear models are presented in Chapter 16 of Gelman et al. (2003). The Bayesian linear regression model is also described in chapter 4 of Gill (2008) and Chapter 12 of Press (2003). Zellner (1986) and Chapter 3 of Marin and Robert (2007) describe the class of g priors and the use of these priors in model selection. The classical Weibull survival regression model is discussed in Collett (1994). Chaloner and Brant (1988) describe the use of Bayesian residuals in a linear regression model.
+
+## 9.6 Summary of R Functions
+
+bayes.model.selection – using Zellner’s g priors, computes the log predictive density for all possible regression models
+
+Usage: bayes.model.selection(y, X, c, constant=TRUE)
+
+Arguments: y, vector of response values; X, matrix of covariates c, parameter of the g prior constant, logical value indicating if a constant term is in the matrix X
+
+Value: mod.prob, data frame specifying the model, the value of the log predictive density and the value of the posterior model probability; converge, logical vector indicating if the Laplace algorithm converged for each model
+
+bayesresiduals – computation of posterior outlying probabilities for a linear regression model with a non-informative prior
+
+Usage: bayesresiduals(fit, theta.sample, k)
+
+Arguments: fit, output of a least-squares fit (R function lm); theta.sample, list with components beta (matrix of simulated draws from the posterior of beta) and sigma (vector of simulated draws from the posterior of sigma); k, cutoff value that defines an outlier
+
+Value: vector of posterior outlying probabilities
+
+blinreg – gives a simulated sample from the joint posterior distribution of the regression vector and the error standard deviation for a linear regression model with a non-informative prior or a g prior
+
+Usage: blinreg(y, X, m, prior = NULL)
+
+Arguments: y, vector of responses; X, design matrix; m, number of simulations desired; prior, list with components c0 and beta0 of Zellner’s g prior Value: beta, matrix of simulated draws of beta where each row corresponds to one draw; sigma, vector of simulated draws of the error standard deviation
+
+blinregexpected – simulates draws of the expected response for a linear regression model with a non-informative prior
+
+Usage: binregexpected(X, theta.sample)
+
+Arguments: X, matrix where each row corresponds to a covariate set; theta.sample, list with components beta (matrix of simulated draws from the posterior of beta) and sigma (vector of simulated draws from the posterior of sigma
+
+Value: matrix where a column corresponds to the simulated draws of the expected response for a given covariate set
+
+blinregpred - simulates draws of the predicted future response for a linear regression model with a non-informative prior
+
+Usage: binregpred(X, theta.sample)
+
+Arguments: X, matrix where each row corresponds to a covariate set; theta.sample, list with components beta (matrix of simulated draws from the posterior of beta) and sigma (vector of simulated draws from the posterior of sigma
+
+Value: matrix where a column corresponds to the simulated draws of the predicted future response for a given covariate set
+
+reg.gprior.post – computes the log posterior of a normal regression model with a g prior
+
+Usage: reg.gprior.post(theta, dataprior)
+
+Arguments: theta, vector of components of beta and log sigma; dataprior, list with components data and prior; data is a list with components y and X, and prior is a list with components b0 and c0
+
+Value: value of the log posterior
+
+weibullregpost – computes the logarithm of the posterior of (log sigma, mu, beta) for a Weibull proportional odds model
+
+Usage: weibullregpost(theta, data)
+
+Arguments: theta, vector of parameter values of (log sigma, mu, beta); data, matrix with columns survival time, censoring variable, and covariate matrix 
+
+Value: value of the log posterior
+
+## 9.7 Exercises
+
+### 1. Normal linear regression
+
+Dobson (2001) describes a birthweight regression study. One is interested in predicting a baby’s birthweight (in grams) based on the gestational age (in weeks) and the gender of the baby. The data are presented in Table 9.2 and available as birthweight in the LearnBayes package. In the standard linear regression model, we assume that
+
+BIRTHWEIGHTi = β0 + β1*AGEi + GENDERi + ε
+
+where the εi are independent and normally distributed with mean 0 and variance σ^2.
+
+Table 9.2. Birthweight (in grams) and gestational age (weeks) for male and female babies.
+
+Male            Female
+Age Birthweight Age Birthweight
+40  2968        40  3317 
+38  2795        36  2729 
+40  3163        40  2935
+35  2925        38  2754
+36  2625        42  3210
+37  2847        39  2817
+41  3292        36  3126 
+40  3473        37  2539
+37  2628        36  2412
+38  3176        38  2991
+40  3421        39  2875 
+38  2975        40  3231
+
+a) Use the R function lm to fit this model by least-squares. From the output, assess if the effects AGE and GENDER are significant, and if they are significant, describe the effects of each covariate on birthweight. 
+
+b) Suppose a uniform prior is placed on the regression parameter vector β = (β0, β1, β2). Use the function blinreg to simulate a sample of 5000 draws from the joint posterior distribution of (β,σ2). From the simulated sample, compute the posterior means and standard deviations of β1 and β2. Check the consistency of the posterior means and standard deviations with the least-squares estimates and associated standard errors from the lm run.
+
+c) Suppose one is interested in estimating the expected birthweight for male and female babies of gestational weeks 36 and 40. From the simulated draws of the posterior distribution and function binregexpected, construct 90% interval estimates for 36-week males, 36-week females, 40-week males, and 40-week females.
+
+d) Suppose instead that one wishes to predict the birthweight for a 36- week male, a 36-week female, a 40-week male, and a 40-week female. Use the function blinregpred and the simulated posterior sample to construct 90% prediction intervals for the birthweight for each type of baby.
+
+### 2. Model selection in regression
+
+The dataset achievement in the LearnBayes package, from Abraham and Ledolter (2006), contains information on 109 Austrian schoolchildren. The following variables were measured: gender (0 for male and 1 for female), age (in months), IQ, Read1, a test on assessing reading speed, and Read2, a test for assessing reading comprehension. One is interested in using a normal linear regression model to understand the variation in each of the reading tests based on the predictors gender, age, and IQ.
+
+a) Suppose one is interested in finding the best model to predict the Read1 reading score. Use the function bayes.model.selection to compute the prior predictive density for all 23 = 8 possible models using a Zellner g prior with a constant value c = 100.
+
+b) Check the sensitivity of the predictive densities with respect to the choice of the constant c by applying the function bayes.model. selection for several alternative values of c.
+
+c) Use a classical model-checking strategy to find the best regression model, and compare the best model with the best model chosen in parts (a) and (b) using a Bayesian model-selection strategy.
+
+### 3. Logistic regression
+
+For a given professional athlete, his or her performance level will tend to increase until mid-career and then deteriorate until retirement. Let yi denote the number of home runs hit by the professional baseball player Mike Schmidt in ni at-bats (opportunities) during the ith season. Table 9.3 gives Schmidt’s age, yi, and ni for all 18 years of his baseball career. The datafile is named schmidt in the LearnBayes package. The home run rates {yi/ni} are graphed against Schmidt’s age in Figure 9.12. If yi is assumed to be binomial(ni, pi), where pi denotes the probability of hitting a home run during the ith season, then a reasonable model for the {pi} is the logit quadratic model of the form
+
+log(pi/(1 − pi)) = β0 + β1*AGEi + β2*AGEi
+
+where AGEi is Schmidt’s age during the ith season.
+
+Table 9.3. Home run hitting data for baseball player Mike Schmidt.
+
+Age Home Runs At-Bats Age Home Runs At-Bats
+22   1         34     31  31        354
+23  18        367     32  35        514
+24  36        568     33  40        534
+25  38        562     34  36        528
+26  38        584     35  33        549
+27  38        544     36  37        552
+28  21        513     37  35        522
+29  45        541     38  12        390
+30  48        548     39   6        148
+
+a) Assume that the regression vector β = (β0, β1, β2) has a uniform non-informative prior. Write a short R function to compute the logarithm of the posterior density of β.
+
+b) Use the function laplace to find the posterior mode and associated variance-covariance matrix of β.
+
+c) Based on the output from laplace, use the function rwmetrop to simulate 5000 draws from the posterior distribution of β.
+
+d) One would expect the fitted parabola to have a concave down shape where β2 < 0. Use the simulation output from part (c) to find the posterior probability that the fitted curve is concave down.
+
+### 4. Logistic regression (continued)
+
+For this exercise, we assume that a simulated sample from the posterior distribution of the regression vector β has been obtained.
+
+a) When evaluating a baseball player, one is interested in estimating the player’s ability at his peak. One can show that if β2 < 0, the peak value of the probability on the logit scale is given by
+
+PEAK = β0 − β1^2/(4*β2)
+
+Compute a density estimate of the marginal posterior density of the peak value.
+
+Fig. 9.12. Scatterplot of home run rates HR/AB against age for Mike Schmidt.
+
+b) One is also interested in the age at which a player achieves his peak performance. From the quadratic model, the peak age can be shown to be equal to
+
+PEAK AGE = −β1/(2*β2)
+
+Using the simulated draws from the posterior of β, find a 90% interval estimate for the peak age. 
+
+### 5. Survival modeling
+
+Collett (1994) describes an investigation to evaluate a histochemical marker HPA, which discriminates between primary breast cancer that has metastasized and that which has not. The question is whether HPA staining can be used to predict the survival experience of women with breast cancer. Tumors of the women were treated with HPA, and each tumor was classified as being positively or negatively stained, positively staining corresponding to a tumor with the potential for metastasis. Survival times of the women who died of breast cancer were collected; the data are displayed in Table 9.4. For some women (indicated by an asterisk in Table 9.4), the survival status at the end of the study was unknown and the time from surgery to last date they were known to be alive is a censored survival time. The datafile breastcancer in the LearnBayes package contains the data. There are three variables: time is the survival time (in months); status gives the censoring status, where status = 1 indicates a complete survival time and status = 0 indicates a time that is censored; and stain indicates the group, where stain = 0 (1) indicates a tumor that was negatively (positively) stained.
+
+Table 9.4. Survival times of women with tumors that were negatively or positively stained with HPA from Collett.
+
+Positive Staining
+ 5  31  68  118 
+ 5  35  71  143
+10  40  78∗ 154∗ 
+13  41 105∗ 162∗ 
+18  48 107∗ 188∗ 
+24  50 109∗ 212∗ 
+26  59 113  217∗ 
+26 116  61∗ 225∗
+
+Negative Staining
+ 23  181  
+ 47  198∗  
+ 69  208∗
+ 70∗ 212∗
+ 71∗ 224∗
+100∗ 
+101∗ 
+148
+
+a) Use the function survreg to fit a Weibull proportional hazards model of the form
+
+log(TIMEi) = μ + β*GROUPi + σ*εi
+
+where εi is assumed to have a standard Gumbel distribution. Obtain estimates and associated standard errors for the group regression coefficient β and the scale parameter σ.
+
+b) The function weibullregpost computes the log posterior of (log(σ), μ, β) assuming the standard non-informative prior. Use the function laplace to find the posterior mode and associated variance-covariance matrix. Then apply the function rwmetrop to simulate a sample of 1000 iterates from the joint posterior. Compute the posterior mean and standard deviation of β and σ, and compare your answers with the estimates from part (a).
+
+c) Using the simulated sample from the posterior of (log(σ), μ, β), estimate the survival curve S(t) for a patient in the negatively stained group and a patient in the positively stained group. Choose a sequence of values of the time t, and for each t find 5th, 50th, and 95th percentiles of the survival probability S(t). As in Figure 9.11, graph the median estimates of the survival curves for the two individuals.
+
+### 6. Modeling team competition
+
+A professional baseball season consists of a series of games played between teams in the league. Suppose that the qualities of the N teams are measured by the talent parameters η1, ..., ηN , and the probability pij that team i defeats team j in a single game is given by the logistic model
+
+log (pij/(1 − pij)) = ηi − ηj
+
+(This is the well-known Bradley-Terry model.) Suppose one believes that the talent parameters {ηk} are a random sample from a normal distribution with mean 0 and standard deviation σ. Assuming independent Bernoulli game outcomes, the likelihood function is given by
+
+L(η1, ..., ηN, σ) = prod(pij^sij*(1 − pij)^fij), i < j)*prod(φ(ηk;0, σ), k = 1:N)
+
+where sij (fij) are the number of games won by team i (team j) in the games played between teams i and j and φ(;μ, σ) is the normal density with mean μ and standard deviation σ. If we assign the parameter vector θ = (η1,..., ηN, log(σ)) a uniform prior, then the posterior density is proportional to the likelihood function. The following data give the game results for the 1964 National League. These data are stored in the dataset baseball.1964, and the function bradley.terry.post contains the definition of the log posterior density of θ.
+
+   Team CHC CIN HOU LAD MLN NYM PHI PIT SFG STL
+1  CHC  NA   6  11  10   8  11   6   9   9   6
+2  CIN  12  NA  12  14   9  11   9   8   7  10
+3  HOU   7   6  NA   7  12   9   5   5   7   8
+4  LAD   8   4  11  NA   8  15   8  10   6  10
+5  MLN  10   9   6  10  NA  14  10  12   9   8
+6  NYM   7   7   9   3   4  NA   3   6   7   7
+7  PHI  12   9  13  10   8  15  NA  10  10   5
+8  PIT   9  10  13   8   6  12   8  NA   8   6
+9  SFG   9  11  11  12   9  11   8  10  NA   9
+10 STL  12   8  10   8  10  11  13  12   9  NA
+
+a) Construct a random walk MCMC algorithm to draw a sample of 20,000 from the joint posterior distribution.
+
+b) Construct a density estimate of the standard deviation parameter σ that describes the spread of the talent distribution of the ten teams.
+
+c) Suppose Cincinnati (team 2) plays Chicago (team 1) in ten additional games. Use simulations from the posterior predictive distribution to predict the number of games Cincinnati will win.
