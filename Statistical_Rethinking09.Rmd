@@ -1,0 +1,20 @@
+---
+title: "Statistical_Rethinking09"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 9.0 Big Entropy and the Generalized Linear Model  
+
+## 9.1 Maximum entropy  
+
+## 9.2 Generalized linear models  
+
+## 9.3 Maximum entropy priors  
+
+## 9.4 Summary  

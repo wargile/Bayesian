@@ -1,0 +1,20 @@
+---
+title: "Statistical_Rethinking10"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+# 10.0 Counting and Classification  
+
+## 10.1 Binomial regression  
+
+## 10.2 Poisson regression  
+
+## 10.3 Other count regressions  
+
+## 10.4 Summary  
+
+## 10.5 Practice  

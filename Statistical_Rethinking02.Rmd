@@ -1,0 +1,24 @@
+---
+title: "Statistical_Rethinking02"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 2.0 Small Worlds and Large Worlds  
+
+## 2.1 The garden of forking data  
+
+## 2.2 Building a model  
+
+## 2.3 Components of the model  
+
+## 2.4 Making the model go  
+
+## 2.5 Summary   
+
+## 2.6 Practice   

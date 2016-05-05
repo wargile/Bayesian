@@ -1,0 +1,22 @@
+---
+title: "Statistical_Rethinking11"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 11.0 Monsters and Mixtures  
+
+## 11.1 Ordered categorical outcomes  
+
+## 11.2 Zero-inflated outcomes  
+
+## 11.3 Over-dispersed outcomes  
+
+## 11.4 Summary  
+
+## 11.5 Practice  

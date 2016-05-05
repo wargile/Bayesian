@@ -1,0 +1,26 @@
+---
+title: "Statistical_Rethinking05"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 5.0 Multivariate Linear Models  
+
+## 5.1 Spurious association  
+
+## 5.2 Masked relationship  
+
+## 5.3 When adding variables hurts  
+
+## 5.4 Categorical variables  
+
+## 5.5 Ordinary least squares and lm  
+
+## 5.6 Summary  
+
+## 5.7 Practice  

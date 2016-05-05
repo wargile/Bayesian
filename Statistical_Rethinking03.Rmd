@@ -1,0 +1,22 @@
+---
+title: "Statistical_Rethinking03"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 3.0 Sampling the Imaginary  
+
+## 3.1 Sampling from a grid-approximate posterior  
+
+## 3.2 Sampling to summarize  
+
+## 3.3 Sampling to simulate prediction  
+
+## 3.4 Summary  
+
+## 3.5 Practice 

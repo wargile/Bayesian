@@ -81,12 +81,12 @@ Table of Contents
 9.3 Maximum entropy priors 
 9.4 Summary
 
-10.1 Counting and Classification 
-10.2 Binomial regression
-10.3 Poisson regression 
-10.4 Other count regressions 
-10.5 Summary 
-10.6 Practice
+10.0 Counting and Classification 
+10.1 Binomial regression
+10.2 Poisson regression 
+10.3 Other count regressions 
+10.4 Summary 
+10.5 Practice
 
 11.0 Monsters and Mixtures 
 11.1 Ordered categorical outcomes 

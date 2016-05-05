@@ -1,0 +1,20 @@
+---
+title: "Statistical_Rethinking01"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 1.0 The Golem of Prague  
+
+## 1.1 Statistical golems  
+
+## 1.2 Statistical rethinking  
+
+## 1.3 Three tools for golem engineering  
+
+## 1.4 Summary  

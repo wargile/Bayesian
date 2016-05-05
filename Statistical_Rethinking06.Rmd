@@ -1,0 +1,26 @@
+---
+title: "Statistical_Rethinking06"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 6.0 Overfitting, Regularization, and Information Criteria  
+
+## 6.1 The problem with parameters  
+
+## 6.2 Information theory and model performance  
+
+## 6.3 Regularization  
+
+## 6.4 Information criteria  
+
+## 6.5 Using information criteria  
+
+## 6.6 Summary  
+
+## 6.7 Practice  

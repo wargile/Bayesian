@@ -1,0 +1,20 @@
+---
+title: "Statistical_Rethinking14"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 14.0 Missing Data and Other Opportunities  
+
+## 14.1 Measurement error  
+
+## 14.2 Missing data  
+
+## 14.3 Summary  
+
+## 14.4 Practice 

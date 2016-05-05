@@ -1,0 +1,24 @@
+---
+title: "Statistical_Rethinking13"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 13.0 Adventures in Covariance  
+
+## 13.1 Varying slopes by construction  
+
+## 13.2 Example: Admission decisions and gender  
+
+## 13.3 Example: Cross-classified chimpanzees with varying slopes  
+
+## 13.4 Continuous categories and the Gaussian process  
+
+## 13.5 Summary  
+
+## 13.6 Practice 

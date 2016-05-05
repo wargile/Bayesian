@@ -1,0 +1,24 @@
+---
+title: "Statistical_Rethinking12"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 12.0 Multilevel Models  
+
+## 12.1 Example: Multilevel tadpoles  
+
+## 12.2 Varying effects and the underfitting/overfitting trade-off  
+
+## 12.3 More than one type of cluster  
+
+## 12.4 Multilevel posterior predictions  
+
+## 12.5 Summary  
+
+## 12.6 Practice 

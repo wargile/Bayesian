@@ -1,0 +1,26 @@
+---
+title: "Statistical_Rethinking04"
+author: "Robert A. Stevens"
+date: "May 4, 2016"
+output: html_document
+---
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+# 4.0 Linear Models  
+
+## 4.1 Why normal distributions are normal  
+
+## 4.2 A language for describing models  
+
+## 4.3 A Gaussian model of height  
+
+## 4.4 Adding a predictor  
+
+## 4.5 Polynomial regression  
+
+## 4.6 Summary  
+
+## 4.7 Practice  
