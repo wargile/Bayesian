@@ -36,6 +36,63 @@ by Richard McElreath
 
 ## 0.3 How to use this book  
 
+What the book assumes
+
+https://cran.r-project.org/other-docs.html
+
+Using the code
+
+```{r, comment=NA}
+print("All models are wrong, but some are useful.")
+```
+
+```{r, comment=NA}
+x <- 1:2
+x <- x*10
+x <- log(x)
+x <- sum(x)
+x <- exp(x)
+x
+```
+
+Optional sections
+
+Rethinking:  Think again
+
+Overthinking:  Getting your hands dirty
+
+```{r, comment=NA}
+(log(0.01^200))
+(200*log(0.01))
+```
+
+The command line is the best tool
+
+How you should work
+
+```{r, comment=NA}
+# Load the data:
+# car braking distances in feet paired with speeds in km/h
+# see ?cars for details
+data(cars)
+# fit a linear regression of distance on speed
+m <- lm(dist ~ speed, data = cars)
+plot(dist ~ speed, data = cars)
+abline(m)
+# estimated coefficients from the model
+coef(m)
+# plot residuals against speed
+plot(resid(m) ~ speed, data = cars)
+```
+
 ## 0.4 Installing the rethinking R package  
+
+```{r, comment=NA}
+# only need to install once
+#install.packages(c("coda", "mvtnorm", "devtools"))
+library(devtools)
+#devtools::install_github("rmcelreath/rethinking")
+library(rethinking)
+```
 
 ## 0.5 Acknowledgements  
