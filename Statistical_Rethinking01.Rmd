@@ -13,8 +13,42 @@ by Richard McElreath
 
 ## 1.1 Statistical golems  
 
+Figure 1.1. Example decision tree, or flowchart, for selecting an appropriate statistical procedure. Beginning at the top, the user answers a series of questions about measurement and intent, arriving eventually at the name of a procedure. Many such decision trees are possible.
+
 ## 1.2 Statistical rethinking  
 
+Rethinking:  Is NHST fasificationist?
+
+### 1.2.1 Hypotheses are not models
+
+Figure 1.2. Relations among hypotheses (left), detailed process models (middle), and statistical models  (right), illustrated by the example of "neutral" models of evolution. Hypotheses (H) are typically vague, and so correspond to more than one process model (P). Statistical evaluations of hypotheses rarely address process models directly. Instead, they rely upon statistical models (M), all of which reflect only some aspect of the process models. As a result, relations are multiple in both directions: Hypotheses do not imply unique models, and models do not imply unique hypotheses. This fact greatly complicates statistical inference.
+
+Rethinking: Entropy and model identification.
+
+### 1.2.2 Measurement matters
+
+#### 1.2.2.1 Observation error
+
+#### 1.2.2.2 Continuous hypotheses
+
+### 1.2.3 Falsification is consensual
+
 ## 1.3 Three tools for golem engineering  
+
+### 1.3.1 Bayesian data analysis
+
+Figure 1.3. Saturn, much like Galileo must have seen it. The true shape is uncertain, but not because of any sampling variation. Probability theory can still help.
+
+Rethinking:  Probability is not unitary
+
+Rethinking: A little history
+
+### 1.3.2 Multilevel models
+
+Rethinking: Multilevel election forecasting
+
+### 1.3.3 Model comparison and information criteria
+
+Rethinking: The Neanderthal in you
 
 ## 1.4 Summary  
