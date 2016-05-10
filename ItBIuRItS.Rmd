@@ -1,0 +1,106 @@
+---
+title: "ItBIuRItS"
+author: "Robert A. Stevens"
+date: "May 9, 2016"
+output: html_document
+---
+
+http://user2016.org/tutorials/15.html
+
+# An Introduction to Bayesian Inference using R Interfaces to Stan
+
+Ben Goodrich - Columbia University
+
+## Tutorial Description
+
+The Stan project implements a probabalistic programming language, a library of mathematical and statistical functions, and a variety of algorithms to estimate statistical models in order to make Bayesian inferences from data. The three main sections of this tutorial will
+
+1. Provide an introduction to modern Bayesian inference using Hamiltonian Markov Chain Monte Carlo (MCMC) as implemented in Stan.
+
+2. Teach the process of Bayesian inference using the rstanarm R package, which comes with all the necessary functions to support a handful of applied regression models that can be called by passing a formula and data.frame as the first two arguments (just like for glm).
+
+3. Demonstrate the power of the Stan language, which allows users to write a text file defining their own posterior distributions. The stan function in the rstan R package parses this file into C++, which is then compiled and executed in order to sample from the posterior distribution via MCMC.
+
+## Goals
+
+1. Participants should come away from the tutorial with a good understanding of the basics of modern Bayesian inference
+
+2. To build the community of researchers who use Stan, whether through the models provided by the rstanarm package or by creating their own models to be handled by the rstan package
+
+3. To build the community of developers who may want to contribute to rstan or rstanarm or who may want to use Stan to estimate models in their own R packages
+
+## Tutorial Outline
+
+Modern Bayesian Inference (55 minutes, followed by a 5 minute break)
+
+- Brief review of probability (multiplication and addition rules)
+
+- Bayes Theorem
+
+- Hamiltonian Markov Chain Monte Carlo as the engine for Bayesian inference
+    + Troubleshooting common sampling problems
+    + Effective Sample Size  
+
+- Bayesian methods of model comparison
+
+Using the rstanarm, shinystan, and loo packages for Bayesian Inference (55 minutes, followed by a 5 minute break)
+
+- Stan-based counterparts to core model-fitting functions in R
+    + stan_lm()
+    + stan_glm()
+    + stan_polr()  
+
+- Visualizing and diagnosing results using the shinystan package
+
+- Evaluating competing models estimated via Stan using the loo package
+
+- Stan-based counterparts to lme4-style fitting functions in R to estimate hierarchical models
+    + stan_glmer()
+    + stan_gamm4()  
+
+Sampling from Arbitrary Posterior Distributions Defined in the Stan Language Using the rstan Package (60 minutes)
+
+- Elements of the Stan language
+
+- Blocks of a Stan program
+    + functions
+    + data
+    + transformed data
+    + parameters
+    + transformed parameters
+    + model
+    + generated quantities  
+
+- Examples of defining simple and complicated posterior distributions in the Stan language
+
+- Drawing from an arbitrary posterior distribution using the stan() function in the rstan package
+
+## Background Knowledge
+
+Tutorial participants should have a good understanding of probability theory in order to utilize the various probability density functions and probability mass functions that are available in Stan. Participants should also be familiar with frequentist model-fitting functions in R such as lm and glm. Ideally, participants would also be familiar with functions that fit models with group-specific terms, such as lmer and glmer in the lme4 package, but this is not absolutely required.
+
+It is not necessary to have any previous experience with Stan, although anyone who has previous experience with the BUGS family (WinBUGS, JAGS, OpenBUGS, etc.) is likely ready to learn Stan. We would ask that all tutorial participants read in advance these two sample chapters
+
+http://xcelab.net/rmpubs/rethinking/Statistical_Rethinking_sample.pdf
+
+from Richard McElreath’s 2016 book *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*, which has been published by Chapman and Hall / CRC Press.
+
+## Installation of Software
+
+Getting the rstan package to work is not as simple as it is for most R packages because Stan requires a C++ toolchain. A few days before the tutorial, please follow the instructions at
+
+https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started
+
+to install a C++ toolchain for your operating system and the latest version of the rstan package and its suggested R packages. At that point, installing the latest version of the rstanarm R package is straightforward via
+
+    install.packages("rstanarm")
+
+which will also install the loo and shinystan R packages. Any questions about installation can be posted to
+
+https://groups.google.com/forum/#!forum/stan-users
+
+The tutorial will utilize the RStudio IDE, so we highly suggest installing its latest version along with the knitr and rmarkdown packages. Although we will not discuss them in detail, participants may also be interested in the rethinking package (which can be installed with devtools::install_github("rmcelreath/rethinking")) and/or the brms package (which can be installed with install.packages("brms")), which can generate a Stan program from R syntax and then draw from its posterior distribution.
+
+## Instructor Biography
+
+Ben Goodrich is a core developer of the Stan project and a frequent contributor to both the Stan Users Google Group (660+ threads) and the Stan Developer Google Group (705+ threads). He is the maintainer of two Stan-related R packages that will be heavily used in this tutorial, a coauthor of a forthcoming article on Stan in the Journal of Statistical Software, and a Lecturer at Columbia University where he teaches graduate classes in quantitative methodology, including a masters-level course based on Stan entitled “Bayesian Statistics for the Social Sciences” (3 times). He is supported in part by a grant from the Sloan Foundation to build the Stan community and to ensure that the Stan project thrives over the long-term.
