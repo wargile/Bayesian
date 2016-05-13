@@ -39,7 +39,7 @@ Rethinking: Entropy and model identification.
 
 Figure 1.3. Saturn, much like Galileo must have seen it. The true shape is uncertain, but not because of any sampling variation. Probability theory can still help.
 
-Rethinking:  Probability is not unitary
+Rethinking: Probability is not unitary
 
 Rethinking: A little history
 
