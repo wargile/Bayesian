@@ -5,20 +5,145 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+```{r, comment=NA}
+library(rethinking)
+library(StanHeaders)
+```
+
 *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
 
 by Richard McElreath
 
 # 2.0 Small Worlds and Large Worlds  
 
+Figure 2.1. Illustration of MartinBehaim's 1492 globe, showing the small world that Colombo anticipated. Europe lies on the right-hand side. Asia lies on the left. The big island labeled "Cipangu" is Japan.
+
+Rethinking:  Fast and frugal in the large world
+
 ## 2.1 The garden of forking data  
+
+### 2.1.1 Counting possibilities
+
+Figure 2.2. The 64 possible paths generate by assuming the bag contains one blue and three white marbles.
+
+Figure 2.3. After emliniating paths inconsistent with the observed sequence, only 3 of the 64 paths remain.
+
+Figure 2.4. The garden of forking data, showing for each possible composition of the bab the forking paths that are logically compatible with the data.
+
+Rethinking:  Justification
+
+### 2.1.2 Using prior information
+
+Rethinking:  Original ignorance
+
+### 2.1.3 From counts to probability
+
+R code 2.1
+
+Rethinking: Randomization
 
 ## 2.2 Building a model  
 
-## 2.3 Components of the model  
+### 2.1.1 A data story
+
+Rethinking: The value of storytelling
+
+### 2.2.2 Bayesian updating
+
+Figure 2.5. How a Bayesian model learns. Each toss of the globe produces an observations of whater (W) or land (L). The model's estimate of the proporation of water on the globe is a plausibility for every possible value. The lines and curves in this figure are these collections of plausibilites. In each plot, previous plauibilities (dashed curve) are updated in light of the latest observation to produce a new set of plauibilties (solid curves).
+
+Rethinking: Sample size and reliable inference
+
+Rethining: Deflationary statistics
+
+### 2.2.3 Evaluate
+
+## 2.3 Components of the model
+
+### 2.3.1 Likelihood
+
+R code 2.2
+
+Overthinking: Names and probability distributions
+
+Rethinking: A central role for likelihood
+
+### 2.3.2 Parameters
+
+Rethinking: Data or parameter
+
+### 2.3.3 Prior
+
+Overthinking: Prior as probability distribution
+
+Rethinking: Prior, prior pants on fire
+
+### 2.3.4 Posterior
+
+Figure 2.6. the posterior distribution, as a produce of the prior distribution and likelihood. Top row: A flat prior constructs a posterior that is simply proportional to the likelihood. Middle row: A step prior, assigneding zero probability to all values less than 0.5, resulting in a truncated posterior. Bottom row: A peaked prior that shifts and skew the posterior, relative to the likelihood.
+
+Rethinking: Bayesian data analysis isn't about Bayes' theorem
 
 ## 2.4 Making the model go  
+
+Rethinking: How you fit the model is part of the model
+
+### 2.4.1 Grid approximation
+
+R code 2.3
+
+R code 2.4
+
+Figure 2.7. Computing posterior distribution by grid approximation. In each plot, the posterior distribution for the globe toss data and model is approximated with a finite number of evenly spaced points. With only 5 points (left), the approximation is terribel. But with 20 points (right), the approximation is already quite good. Compare to the analytically solved, exact posterior distributin in Figure 2.5 (page 30).
+
+R code 2.5
+
+Overthinking: Vectorization
+
+### 2.4.2 Quadratic appoximation
+
+R code 2.6
+
+R code 2.7
+
+Figure 2.8 Accuracy of the quadratic approximation. In each plot, the exact posterior distribution is plotted in blue, and teh quadratic approximation is plotted as the black curve. Left: The globe tossing data with n = 9 tosses and w = 6 waters. Middle: Double the amount of data, with the same fraction of water, n = 18 and w = 12. Right: Four times as much data, n = 36 and w = 24.
+
+Rethinking: Maximum likelihood estimation
+
+Overthinking: The Hessians are coming
+
+### 2.4.3 Markov chain Monte Carlo
 
 ## 2.5 Summary   
 
 ## 2.6 Practice   
+
+2E1
+
+2E2
+
+2E3
+
+2E4
+
+2M1
+
+2M2
+
+2M3
+
+2M4
+
+2M5
+
+2M6
+
+2M7
+
+2H1
+
+2H2
+
+2H3
+
+2H4
