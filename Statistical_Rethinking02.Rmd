@@ -16,7 +16,7 @@ by Richard McElreath
 
 # 2.0 Small Worlds and Large Worlds  
 
-Figure 2.1. Illustration of MartinBehaim's 1492 globe, showing the small world that Colombo anticipated. Europe lies on the right-hand side. Asia lies on the left. The big island labeled "Cipangu" is Japan.
+Figure 2.1. Illustration of Martin Behaim's 1492 globe, showing the small world that Colombo anticipated. Europe lies on the right-hand side. Asia lies on the left. The big island labeled "Cipangu" is Japan.
 
 Rethinking:  Fast and frugal in the large world
 
@@ -26,7 +26,7 @@ Rethinking:  Fast and frugal in the large world
 
 Figure 2.2. The 64 possible paths generate by assuming the bag contains one blue and three white marbles.
 
-Figure 2.3. After emliniating paths inconsistent with the observed sequence, only 3 of the 64 paths remain.
+Figure 2.3. After eliminating paths inconsistent with the observed sequence, only 3 of the 64 paths remain.
 
 Figure 2.4. The garden of forking data, showing for each possible composition of the bab the forking paths that are logically compatible with the data.
 
@@ -50,11 +50,11 @@ Rethinking: The value of storytelling
 
 ### 2.2.2 Bayesian updating
 
-Figure 2.5. How a Bayesian model learns. Each toss of the globe produces an observations of whater (W) or land (L). The model's estimate of the proporation of water on the globe is a plausibility for every possible value. The lines and curves in this figure are these collections of plausibilites. In each plot, previous plauibilities (dashed curve) are updated in light of the latest observation to produce a new set of plauibilties (solid curves).
+Figure 2.5. How a Bayesian model learns. Each toss of the globe produces an observations of water (W) or land (L). The model's estimate of the proportion of water on the globe is a plausibility for every possible value. The lines and curves in this figure are these collections of plausibilities. In each plot, previous plausibilities (dashed curve) are updated in light of the latest observation to produce a new set of plausibilities (solid curves).
 
 Rethinking: Sample size and reliable inference
 
-Rethining: Deflationary statistics
+Rethinking: Deflationary statistics
 
 ### 2.2.3 Evaluate
 
@@ -80,7 +80,7 @@ Rethinking: Prior, prior pants on fire
 
 ### 2.3.4 Posterior
 
-Figure 2.6. the posterior distribution, as a produce of the prior distribution and likelihood. Top row: A flat prior constructs a posterior that is simply proportional to the likelihood. Middle row: A step prior, assigneding zero probability to all values less than 0.5, resulting in a truncated posterior. Bottom row: A peaked prior that shifts and skew the posterior, relative to the likelihood.
+Figure 2.6. the posterior distribution, as a produce of the prior distribution and likelihood. Top row: A flat prior constructs a posterior that is simply proportional to the likelihood. Middle row: A step prior, assigning zero probability to all values less than 0.5, resulting in a truncated posterior. Bottom row: A peaked prior that shifts and skew the posterior, relative to the likelihood.
 
 Rethinking: Bayesian data analysis isn't about Bayes' theorem
 
@@ -94,19 +94,19 @@ R code 2.3
 
 R code 2.4
 
-Figure 2.7. Computing posterior distribution by grid approximation. In each plot, the posterior distribution for the globe toss data and model is approximated with a finite number of evenly spaced points. With only 5 points (left), the approximation is terribel. But with 20 points (right), the approximation is already quite good. Compare to the analytically solved, exact posterior distributin in Figure 2.5 (page 30).
+Figure 2.7. Computing posterior distribution by grid approximation. In each plot, the posterior distribution for the globe toss data and model is approximated with a finite number of evenly spaced points. With only 5 points (left), the approximation is terrible. But with 20 points (right), the approximation is already quite good. Compare to the analytically solved, exact posterior distribution in Figure 2.5 (page 30).
 
 R code 2.5
 
 Overthinking: Vectorization
 
-### 2.4.2 Quadratic appoximation
+### 2.4.2 Quadratic approximation
 
 R code 2.6
 
 R code 2.7
 
-Figure 2.8 Accuracy of the quadratic approximation. In each plot, the exact posterior distribution is plotted in blue, and teh quadratic approximation is plotted as the black curve. Left: The globe tossing data with n = 9 tosses and w = 6 waters. Middle: Double the amount of data, with the same fraction of water, n = 18 and w = 12. Right: Four times as much data, n = 36 and w = 24.
+Figure 2.8 Accuracy of the quadratic approximation. In each plot, the exact posterior distribution is plotted in blue, and the quadratic approximation is plotted as the black curve. Left: The globe tossing data with n = 9 tosses and w = 6 waters. Middle: Double the amount of data, with the same fraction of water, n = 18 and w = 12. Right: Four times as much data, n = 36 and w = 24.
 
 Rethinking: Maximum likelihood estimation
 

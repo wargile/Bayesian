@@ -5,6 +5,11 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+```{r, comment=NA}
+library(rethinking)
+library(StanHeaders)
+```
+
 *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
 
 by Richard McElreath
