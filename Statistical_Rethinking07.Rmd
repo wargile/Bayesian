@@ -128,6 +128,38 @@ Figure 7.7. Triptych plot of predicted blooms across water treatments, without (
 
 ## 7.4 Interactions in design formulas  
 
+R code 7.29
+
+R code 7.30
+
+R code 7.31
+
+R code 7.32
+
+R code 7.33
+
 ## 7.5 Summary  
 
 ## 7.6 Practice  
+
+7E1
+
+7E2
+
+7E3
+
+7M1
+
+7M2
+
+7M3
+
+7H1
+
+7H2
+
+7H3
+
+7H4
+
+R code 7.34
