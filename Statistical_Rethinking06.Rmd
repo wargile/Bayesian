@@ -143,8 +143,82 @@ Rethinking: Diverse prediction framework
 
 ## 6.5 Using information criteria  
 
+### 6.5.1 Model comparison
 
+R code 6.21
+
+R code 6.22
+
+#### 6.5.1.1 Comparing WAIC values
+
+R code 6.23
+
+R code 6.24
+
+R code 6.25
+
+R code 6.26
+
+Rethinking: How big a difference in WAIC is "significant"?
+
+Rethinking: WAIC metaphors
+
+#### 6.5.1.2 Comparing estimates
+
+R code 6.27
+
+R code 6.28
+
+Figure 6.12. Comparing the posterior densities of parameters for the four model fits to the primate milk data. Each point is a MAP estiatme, and each black line segment is a 89% percentile interval. Estimates are grouped by parameter identify, and each row in a group is a model.
+
+Rethinking: Barplots suck
+
+### 6.5.2 Model averaging
+
+R code 6.29
+
+Figure 6.13. Model averaged posterior predictive distribution for the primate milk analysis. The dashed regression line and dashed 89% percentile interval corresponed to the minimum-WAIC model, m6.14. The solid line and shaded 89% region correspond to the model averaged predictions.
+
+R code 6.30
+
+Rethinking: The Curse of Tippecanoe
 
 ## 6.6 Summary  
 
 ## 6.7 Practice  
+
+6E1
+
+6E2
+
+6E3
+
+6E4
+
+6M1
+
+6M2
+
+6M3
+
+6M4
+
+6M5
+
+6M6
+
+R code 6.31
+
+6H1
+
+6H2
+
+6H3
+
+6H4
+
+R code 6.32
+
+6H5
+
+6H6
