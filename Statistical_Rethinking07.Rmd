@@ -103,6 +103,29 @@ R code 7.22
 
 Rethinking: Fighting with your robot
 
+### 7.3.3 Center and re-estimate
+
+R code 7.23
+
+R code 7.24
+
+#### 7.3.3.1 Estimation worked better
+
+#### 7.3.3.2 Estimates changed less across models
+
+R code 7.25
+
+R code 7.26
+
+R code 7.27
+
+### 7.3.4 Plotting implied predictions
+
+R code 7.28
+
+Figure 7.7. Triptych plot of predicted blooms across water treatments, without (top row) and with (bottom row) an interaction effect. Blue points in each plot are data. The solid line is the posterior mean and the dashed lines give 97% interval of the mean. Top row: Without the interaction, model m7.8. Each of the tree plots of blooms against shade level is for a different water level. The slope of the regression line in each case is exactly the same, because there is no interaction in this model. Bottom row: With the interaction, model m7.9. Now the slope of blooms against shade has a different value in each plot.
+
+
 ## 7.4 Interactions in design formulas  
 
 ## 7.5 Summary  
