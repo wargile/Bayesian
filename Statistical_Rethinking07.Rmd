@@ -11,11 +11,97 @@ by Richard McElreath
 
 # 7.0 Interactions  
 
+Figure 7.1. TOP: Dorsal scars for 5 adult Florida manatees. Rows of short scars, for example on the individuals Africa and Flash, are indicative of propeller laceration. BOTTOM: Three examples of damage on A.W.38 bombers returning from missions.
+
+Rethinking: Statistics all-star, Abraham Wald
+
 ## 7.1 Building an interaction  
+
+R code 7.1
+
+R code 7.2
+
+Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GDP against terrain ruggedness. The sloep is positive inside Africa, but negative outside. How cna we recover this reversal of the slope, using the combined data?
+
+### 7.1.1 Adding a dummy variable doesn't work
+
+R code 7.3
+
+R code 7.4
+
+R code 7.5
+
+R code 7.6
+
+Figure 7.3. Including a dummy variable for African nations has no effect on the slope. African nations are show in blue. Non-African nations aer shown in gray. Regression means for each subset of nations are shown in corresponding colors, along with 97% intervals shown by shading.
+
+Rethinking: Why 97%?
+
+### 7.1.2 Adding a linear interaction does work
+
+R code 7.7
+
+R code 7.8
+
+Overthinking: Conventional form of interaction
+
+R code 7.9
+
+### 7.1.3 Plotting the interaction
+
+R code 7.10
+
+R code 7.11
+
+Figure 7.4. Posterior predictions for the terrain ruggedness model, including the interaction between Africa and ruggedness. Shaded regions are 97% posterior intervals of the mean.
+
+### 7.1.4
+
+#### 7.1.4.1 Parameters change meaning
+
+R code 7.12
+
+#### 7.1.4.2 Incorporating uncertainty
+
+R code 7.13
+
+R code 7.14
+
+R code 7.15
+
+Figure 7.5. Posterior distribution of the slop relating terrain ruggedness to log-GDP. Blue: African nations. Black: non-African nations.
+
+R code 7.16
+
+Rethinking: More on the meaning of posterior probability
 
 ## 7.2 Symmetry of the linear interaction  
 
+### 7.2.1 Buridan's interaction
+
+### 7.2.2 African depends upon ruggedness
+
+R code 7.17
+
+Figure 7.6. The other side of the interaction between ruggedness and continent. Blue points are nations with above-median ruggedness. Black points are below the median. Dashed black line: relationship between continent and log-GDP, for an imaginary nation with minimum observed ruggedness (0.003). Blue line: an imaginary nation with maximum observed ruggedness (6.2).
+
 ## 7.3 Continuous interactions  
+
+### 7.3.1 The data
+
+R code 7.18
+
+### 7.3.2 The un-centered models
+
+R code 7.19
+
+R code 7.20
+
+R code 7.21
+
+R code 7.22
+
+Rethinking: Fighting with your robot
 
 ## 7.4 Interactions in design formulas  
 
