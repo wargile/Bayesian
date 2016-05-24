@@ -101,9 +101,49 @@ R code 6.14
 
 ## 6.3 Regularization  
 
+Figure 6.8. Regularizing priors, weak and strong. Three Gaussian priors of varying standard deviation. These priors reduce overfitting, but with different strength. Dashed: Normal(0, 1). Thin solid: Normal(0, 0.5). Thick solid: Normal(0, 0.2).
+
+Figure 6.9. REgularizing priors and out-of-sample deviance. The points in both plots are the same as in Figure 6.7. The lines show training (blue) and testing (black) deviance for the three regularizing priors in Figure 6.8. Dashed: Each beta-coefficient is given a Normal(0, 1) prior. Thin solid: Normal(0, 0.5). Thick solid: Normal(0, 0.2).
+
+Rethinking: Multilevel models as adaptive regularization
+
+Rethinking: Ridge regression
+
 ## 6.4 Information criteria  
 
+Figure 6.10. Deviance in-sample (blue) and out-of-sample (black), using flat priors. The vertical segments measure the distance between each pair of deviance. For both N = 20 and N = 100, this distance is approximately twice the number of parameters. The dashed lines show exactly the deviance in-sample (training) plus twie the number of parameters on the horizontal axis. These lines therefore show AIC for each model, an approximation of the out-of-sample deviance.
+
+Rethinking: Information criteria and consistency
+
+### 6.4.1 DIC
+
+### 6.4.2 WAIC
+
+Rethinking: What about BIC?
+
+Overthinking: WAIC calculations
+
+R code 6.15
+
+R code 6.16
+
+R code 6.17
+
+R code 6.18
+
+R code 6.19
+
+R code 6.20
+
+### 6.4.3 DIC and WAIC as estimates of deviance
+
+Figure 6.11. Out-of-sample deviance as estimated by DIC and WAIC. Points are average out-of-sample deviance over 10,000 simulations. The lines are average DIC (top) and WAIC (bottom) computed from the same simulations. The black points and lines come from simulations with a nearly flat Normal(0, 100) prior. The blue points and lines used a regularzing Normal(0, 0.5) prior.
+
+Rethinking: Diverse prediction framework
+
 ## 6.5 Using information criteria  
+
+
 
 ## 6.6 Summary  
 
