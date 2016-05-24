@@ -11,7 +11,47 @@ by Richard McElreath
 
 # 6.0 Overfitting, Regularization, and Information Criteria  
 
+Figure 6.1. Ptolemaic (left) and Copernican (right) models of the solar system. Both models use epicycles (circles on circles), and boht models produce exactly the sampe predictions. However, the Copernican modle requires fewer circles. (Not all Ptolemaic epicycles are visible in the figure.)
+
+Rethinking: Stargazing.
+
+Rethinking: Is AIC Bayesian?
+
 ## 6.1 The problem with parameters  
+
+### 6.1.1 More parameters always improve fit
+
+Figure 6.2. Average brain volume in cubic centimeters against body mass in kilograms, for six hominin species. What model best describes the relationship between brain size and body size?
+
+R code 6.1
+
+R code 6.2
+
+R code 6.3
+
+R code 6.4
+
+R code 6.5
+
+Figure 6.3. Polynomial linear models of increasing degree, fit to the hominin data. Each plot shows the predicted mean in black, with 89% interval of the mean shaded. R^2, is displayed above each plot. (a) First-degree polynomial. (b) Second-degree. (c) Third-degree. (d) Fourth-degree. (e) Fifth-degree. (f) Sixth-degree.
+
+Rethinking: Model fitting as compression
+
+### 6.1.2 Too few parameters hurts, too
+
+R code 6.6
+
+Figure 6.4. An underfit model of hominin brain volume. This model ignores any association between body mass and brain volume, producing a horizontal line of predictions. As a result, the model fits badly and (presumably) predicts badly.
+
+Figure 6.5. Underfitting and overfitting as under-sensitivity and over-sensitivity to sample. In both plots, a regression is fit to the seven sets of data made by dropping one row from the original data. (a) An underfit model is insensitive to the sample, changing as individual points are dropped. (b) An overfit model is sensitive to the sample, changing dramatically as points are dropped.
+
+Overthinking: Dropping rows
+
+R code 6.7
+
+R code 6.8
+
+Rethinking: Bias and variance
 
 ## 6.2 Information theory and model performance  
 
