@@ -11,9 +11,73 @@ by Richard McElreath
 
 # 9.0 Big Entropy and the Generalized Linear Model  
 
+Rethinking: Bayesian updating and maximum entropy
+
 ## 9.1 Maximum entropy  
 
+Figure 9.1. Entropy as a measure of the number of unique arrangements of a system that produce the same distribution. Plots A through E show the numbers of unique wasy to arrange 10 pebbles into each of 5 different distributions. Bottom-right: The entropy of each distribution plotted against the log number of ways per pebble to produce it.
+
+R code 9.1
+
+R code 9.2
+
+R code 9.3
+
+R code 9.4
+
+Rethinking: What good is intuition?
+
+Overthinking: The Wallis derivation
+
+### 9.1.1 Gaussian
+
+Figure 9.2. Maximum entropy and the Gaussian distribution. Left: Comparison of Gaussian (blue) and several other continuous distributions with the same variance. Right: Entropy is maximized when curvature of a generalized normal distribution matches the Gaussian, where shape is equal to 2.
+
+Overthinking: Proff of Gaussian maximum entropy
+
+### 9.1.2 Binomial
+
+Figure 9.3. Four different distributions with the same expected value, 1 blue marble in 2 draws. The outcomes on the horizontal axes correspond to 2 white marbles (ww), 1 blue and then 1 white (bw), 1 white and then 1 blue (wb, and 2 blue marbles (bb).
+
+R code 9.5
+
+R code 9.6
+
+R code 9.7
+
+R code 9.8
+
+R code 9.9
+
+R code 9.10
+
+R code 9.11
+
+R code 9.12
+
+R code 9.13
+
+Figure 9.4. Left: Distribution of entropies from randomly simulated distributions with expected value 1.4. The letters A, B, C, and D mark the entropies of individual distributions show on the right. Right: Individual probability distributions. As entropy decreases, going from A to D, the distribution becomes more uneven. The distribution marked A is the binomial distribution with np = 1.4.
+
+Rethinking: Conditional independence
+
+Overthinking: Binomial maxiumum entropy
+
 ## 9.2 Generalized linear models  
+
+Figure 9.5. Why we need link functions. The solid blue line is a linear model of a probability mass. It lincrease linearly with a predictor, x, on the horizontal axis. But when it reaches the maximum probability mass of 1, at the dashed boundary, it will happily continue upwards, as show by the dashed blue line. In reality, further increases in x could not further incrase probability, as indicated by the horizontal continuation of the solid trend.
+
+Rethinking: The scourge of Histomancy
+
+### 9.2.1 Meet the family
+
+Figure 9.6. Some of the exponential family distributions, their notation, and some of their relationships. Center: exponential distribution. Clockwise, from top-left: gamma, normal (Gaussian), binomial and Poisson distributions.
+
+Rethinking: A likelihood is a prior
+
+### 9.2.2 Linking linear models to distributions
+
+Figure 9.7. The logit link transforms a linear model (left) into a probability (right). This transformation compresses the geometry far from zero, such that a unit change on the linear scale (left) means less and less change on the probability scale (right).
 
 ## 9.3 Maximum entropy priors  
 
