@@ -17,6 +17,9 @@ by Richard McElreath
 # 3.0 Sampling the Imaginary  
 
 R code 3.1
+```{r, comment=NA}
+
+```
 
 Rethinking: The natural frequency phenomenon is not unique
 
@@ -25,42 +28,78 @@ Rethinking: Why statistics can't save bad science
 ## 3.1 Sampling from a grid-approximate posterior  
 
 R code 3.2
+```{r, comment=NA}
+
+```
 
 R code 3.3
+```{r, comment=NA}
+
+```
 
 Figure 3.1. Sampling parameter values from the posterior distribution. Left: 10,000 samples from the posterior implied by the globe tossing data and model. Right: The density of samples (vertical) at each parameter value (horizontal).
 
 R code 3.4
+```{r, comment=NA}
+
+```
 
 R code 3.5
+```{r, comment=NA}
+
+```
 
 ## 3.2 Sampling to summarize  
 
 ### 3.2.1 Intervals of defined boundaries
 
 R code 3.6
+```{r, comment=NA}
+
+```
 
 R code 3.7
+```{r, comment=NA}
+
+```
 
 Figure 3.2. Two kinds of posterior interval. Top row: Intervals of defined boundaries. Top-left: The blue area is the posterior probability below a parameter value of 0.5. Top-right: The posterior probability between 0.5 and 0.75. Bottom row: Intervals of defined mass. Bottom-left: Lower 80% posterior probability exists below a parameter value of about 0.75. Bottom-right: Middle 80% posterior probability lies between the 10% and 90% quantities.
 
 R code 3.8
+```{r, comment=NA}
+
+```
 
 Overthinking: Counting with sum
 
 ### 3.2.2 Intervals of defined mass
 
 R code 3.9
+```{r, comment=NA}
+
+```
 
 R code 3.10
+```{r, comment=NA}
+
+```
 
 R code 3.11
+```{r, comment=NA}
+
+```
 
 R code 3.12
+```{r, comment=NA}
+
+```
 
 Figure 3.3. The difference between percentile an highest posterior density confidence intervals. The posterior density here corresponds to a flat prior and observing three water samples in three total tosses of the globe. Left: 50% percentile interval. This interval assigns equal mass (25%) to both the left and right tail. As a result, it omits the most probable parameter value, p = 1. Right: 50% highest posterior density interval, HPDI. This interval finds the narrowest region with 50% of the posterior probability. Such a region always includes the most probable parameter value.
 
 R code 3.13
+```{r, comment=NA}
+
+```
 
 Rethinking: Why 95%
 
@@ -69,32 +108,65 @@ Rethinking:  What do confidence intervals mean?
 ### 3.2.3 Point estimates
 
 R code 3.14
+```{r, comment=NA}
+
+```
 
 R code 3.15
+```{r, comment=NA}
+
+```
 
 R code 3.16
+```{r, comment=NA}
+
+```
 
 Figure 3.4. Point estimates and loss functions. Left: Posterior distribution (blue) aster observing 3 water in 3 tosses of the globe. Vertical lines show the locations of the mode, median, and mean. Each point implies a different loss function. Right: Expected loss under the rule that loss is proportional to absolute distance of decision (horizontal axis) from the true value. The point marks the value of p that minimizes the expected loss, the posterior median.
 
 R code 3.17
+```{r, comment=NA}
+
+```
 
 R code 3.18
+```{r, comment=NA}
+
+```
 
 R code 3.19
+```{r, comment=NA}
+
+```
 
 ## 3.3 Sampling to simulate prediction  
 
 ### 3.3.1 Dummy data
 
 R code 3.20
+```{r, comment=NA}
+
+```
 
 R code 3.21
+```{r, comment=NA}
+
+```
 
 R code 3.22
+```{r, comment=NA}
+
+```
 
 R code 3.23
+```{r, comment=NA}
+
+```
 
 R code 3.24
+```{r, comment=NA}
+
+```
 
 Figure 3.5. Distribution of simulated sample observations form 9 tosses of the globe. These samples assume the proportion of water is 0.7.
 
@@ -109,8 +181,14 @@ Rethinking: Sampling distributions
 Figure 3.6. Simulating predictions from the total posterior. Top: The familiar posterior distribution for the globe tossing data. Ten example parameter values are marked by the vertical lines. Values with greater posterior probability indicated by the thicker lines. Middle row: Each of the ten parameter values implies a unique sampling distribution of predictions. Bottom: Combining simulated observation distributions for all parameter values (not just the ten shown), each weighted by its posterior probability, produces the posterior predictive distribution. This distribution propagates uncertainty about parameter to uncertainty about prediction.
 
 R code 3.25
+```{r, comment=NA}
+
+```
 
 R code 3.26
+```{r, comment=NA}
+
+```
 
 Figure 3.7. Alternative views of the same posterior predictive distribution (see Figure 3.6). Instead of considering the data as the model saw it, as a sum of water samples, now we view the data as both the length of the maximum run of water or land (left) and the number of switches between water and land samples (right). Observed values highlighted in blue. While the simulated predictions are consistent with the run length (3 water in a row), they are much less consistent with the frequent switches (6 switches in 9 tosses).
 
@@ -121,6 +199,9 @@ Rethinking: What does more extreme mean?
 ## 3.5 Practice 
 
 R code 3.27
+```{r, comment=NA}
+
+```
 
 3E1
 
@@ -147,10 +228,19 @@ R code 3.27
 3M5
 
 R code 3.28
+```{r, comment=NA}
+
+```
 
 R code 3.29
+```{r, comment=NA}
+
+```
 
 R code 3.30
+```{r, comment=NA}
+
+```
 
 3H1
 

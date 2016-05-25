@@ -24,14 +24,29 @@ Rethinking: Is AIC Bayesian?
 Figure 6.2. Average brain volume in cubic centimeters against body mass in kilograms, for six hominin species. What model best describes the relationship between brain size and body size?
 
 R code 6.1
+```{r, comment=NA}
+
+```
 
 R code 6.2
+```{r, comment=NA}
+
+```
 
 R code 6.3
+```{r, comment=NA}
+
+```
 
 R code 6.4
+```{r, comment=NA}
+
+```
 
 R code 6.5
+```{r, comment=NA}
+
+```
 
 Figure 6.3. Polynomial linear models of increasing degree, fit to the hominin data. Each plot shows the predicted mean in black, with 89% interval of the mean shaded. R^2, is displayed above each plot. (a) First-degree polynomial. (b) Second-degree. (c) Third-degree. (d) Fourth-degree. (e) Fifth-degree. (f) Sixth-degree.
 
@@ -40,6 +55,9 @@ Rethinking: Model fitting as compression
 ### 6.1.2 Too few parameters hurts, too
 
 R code 6.6
+```{r, comment=NA}
+
+```
 
 Figure 6.4. An underfit model of hominin brain volume. This model ignores any association between body mass and brain volume, producing a horizontal line of predictions. As a result, the model fits badly and (presumably) predicts badly.
 
@@ -48,8 +66,14 @@ Figure 6.5. Underfitting and overfitting as under-sensitivity and over-sensitivi
 Overthinking: Dropping rows
 
 R code 6.7
+```{r, comment=NA}
+
+```
 
 R code 6.8
+```{r, comment=NA}
+
+```
 
 Rethinking: Bias and variance
 
@@ -66,6 +90,9 @@ Rethinking: What is a true model?
 ### 6.2.2 Information and uncertainty
 
 R code 6.9
+```{r, comment=NA}
+
+```
 
 Overthinking: More on entropy
 
@@ -82,10 +109,16 @@ Rethinking: Divergence depends upon direction
 ### 6.2.4 From divergence to deviance
 
 R code 6.10
+```{r, comment=NA}
+
+```
 
 Overthinking: Computing deviance
 
 R code 6.11
+```{r, comment=NA}
+
+```
 
 ### 6.2.5 From deviance to out-of-sample
 
@@ -94,10 +127,19 @@ Figure 6.7. Deviance in and out of sample. In each plot, models with different n
 Overthinking: Simulated training and testing
 
 R code 6.12
+```{r, comment=NA}
+
+```
 
 R code 6.13
+```{r, comment=NA}
+
+```
 
 R code 6.14
+```{r, comment=NA}
+
+```
 
 ## 6.3 Regularization  
 
@@ -124,16 +166,34 @@ Rethinking: What about BIC?
 Overthinking: WAIC calculations
 
 R code 6.15
+```{r, comment=NA}
+
+```
 
 R code 6.16
+```{r, comment=NA}
+
+```
 
 R code 6.17
+```{r, comment=NA}
+
+```
 
 R code 6.18
+```{r, comment=NA}
+
+```
 
 R code 6.19
+```{r, comment=NA}
+
+```
 
 R code 6.20
+```{r, comment=NA}
+
+```
 
 ### 6.4.3 DIC and WAIC as estimates of deviance
 
@@ -146,18 +206,36 @@ Rethinking: Diverse prediction framework
 ### 6.5.1 Model comparison
 
 R code 6.21
+```{r, comment=NA}
+
+```
 
 R code 6.22
+```{r, comment=NA}
+
+```
 
 #### 6.5.1.1 Comparing WAIC values
 
 R code 6.23
+```{r, comment=NA}
+
+```
 
 R code 6.24
+```{r, comment=NA}
+
+```
 
 R code 6.25
+```{r, comment=NA}
+
+```
 
 R code 6.26
+```{r, comment=NA}
+
+```
 
 Rethinking: How big a difference in WAIC is "significant"?
 
@@ -166,8 +244,14 @@ Rethinking: WAIC metaphors
 #### 6.5.1.2 Comparing estimates
 
 R code 6.27
+```{r, comment=NA}
+
+```
 
 R code 6.28
+```{r, comment=NA}
+
+```
 
 Figure 6.12. Comparing the posterior densities of parameters for the four model fits to the primate milk data. Each point is a MAP estimate, and each black line segment is a 89% percentile interval. Estimates are grouped by parameter identify, and each row in a group is a model.
 
@@ -176,10 +260,16 @@ Rethinking: Barplots suck
 ### 6.5.2 Model averaging
 
 R code 6.29
+```{r, comment=NA}
+
+```
 
 Figure 6.13. Model averaged posterior predictive distribution for the primate milk analysis. The dashed regression line and dashed 89% percentile interval correspond to the minimum-WAIC model, m6.14. The solid line and shaded 89% region correspond to the model averaged predictions.
 
 R code 6.30
+```{r, comment=NA}
+
+```
 
 Rethinking: The Curse of Tippecanoe
 
@@ -208,6 +298,9 @@ Rethinking: The Curse of Tippecanoe
 6M6
 
 R code 6.31
+```{r, comment=NA}
+
+```
 
 6H1
 
@@ -218,6 +311,9 @@ R code 6.31
 6H4
 
 R code 6.32
+```{r, comment=NA}
+
+```
 
 6H5
 

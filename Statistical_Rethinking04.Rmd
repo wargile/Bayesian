@@ -23,20 +23,35 @@ Figure 4.1. The Ptolemaic Universe, in which complex motion of the planets in th
 ### 4.1.1 Normal by addition
 
 R code 4.1
+```{r, comment=NA}
+
+```
 
 Figure 4.2. Random walks on the soccer field converge to a normal distribution. The more steps are taken, the closer the match between the real empirical distribution of positions and the ideal normal distribution, superimposed in the last plot in the bottom panel.
 
 ### 4.1.2 Normal by multiplication
 
 R code 4.2
+```{r, comment=NA}
+
+```
 
 R code 4.3
+```{r, comment=NA}
+
+```
 
 R code 4.4
+```{r, comment=NA}
+
+```
 
 ### 4.1.3 Normal by log-multiplication
 
 R code 4.5
+```{r, comment=NA}
+
+```
 
 ### 4.1.4 Using Gaussian distributions
 
@@ -53,20 +68,35 @@ Overthinking: Gaussian distribution
 Overthinking: From model definition to Bayes' theorem
 
 R code 4.6
+```{r, comment=NA}
+
+```
 
 ## 4.3 A Gaussian model of height  
 
 ### 4.3.1 The data
 
 R code 4.7
+```{r, comment=NA}
+
+```
 
 R code 4.8
+```{r, comment=NA}
+
+```
 
 R code 4.9
+```{r, comment=NA}
+
+```
 
 Overthinking: Data frames
 
 R code 4.10
+```{r, comment=NA}
+
+```
 
 Overthinking: Index magic
 
@@ -75,8 +105,14 @@ Overthinking: Index magic
 Rethinking: Independent and identically distributed
 
 R code 4.11
+```{r, comment=NA}
+
+```
 
 R code 4.12
+```{r, comment=NA}
+
+```
 
 Rethinking: A farewell to epsilon
 
@@ -85,70 +121,142 @@ Overthinking: Model definition to Bayes' theorem again
 ### 4.3.3 Grid approximation of the posterior distribution
 
 R code 4.14
+```{r, comment=NA}
+
+```
 
 R code 4.15
+```{r, comment=NA}
+
+```
 
 R code 4.16
+```{r, comment=NA}
+
+```
 
 ### 4.3.4 Sampling from the posterior
 
 R code 4.17
+```{r, comment=NA}
+
+```
 
 R code 4.18
+```{r, comment=NA}
+
+```
 
 R code 4.19
+```{r, comment=NA}
+
+```
 
 R code 4.20
+```{r, comment=NA}
+
+```
 
 Overthinking: Sample size and the normality of sigma's posterior
 
 R code 4.21
+```{r, comment=NA}
+
+```
 
 R code 4.22
+```{r, comment=NA}
+
+```
 
 R code 4.23
+```{r, comment=NA}
+
+```
 
 ### 4.3.5 Fitting the model with map
 
 R code 4.24
+```{r, comment=NA}
+
+```
 
 R code 4.25
+```{r, comment=NA}
+
+```
 
 R code 4.26
+```{r, comment=NA}
+
+```
 
 R code 4.27
+```{r, comment=NA}
+
+```
 
 Overthinking: Start values for map
 
 R code 4.28
+```{r, comment=NA}
+
+```
 
 R code 4.29
+```{r, comment=NA}
+
+```
 
 Overthinking: How strong is a prior?
 
 ### 4.3.6 Sampling from a map fit
 
 R code 4.30
+```{r, comment=NA}
+
+```
 
 R code 4.31
+```{r, comment=NA}
+
+```
 
 R code 4.32
+```{r, comment=NA}
+
+```
 
 R code 4.33
+```{r, comment=NA}
+
+```
 
 Overthinking: Under the hood with multivariate sampling
 
 R code 4.34
+```{r, comment=NA}
+
+```
 
 Overthinking: Getting sigma right
 
 R code 4.35
+```{r, comment=NA}
+
+```
 
 R code 4.36
+```{r, comment=NA}
+
+```
 
 ## 4.4 Adding a predictor  
 
 R code 4.37
+```{r, comment=NA}
+
+```
 
 Rethinking: What is "regression"
 
@@ -169,12 +277,18 @@ Rethinking: What's the correct prior?
 ### 4.4.2 Fitting the model
 
 R code 4.38
+```{r, comment=NA}
+
+```
 
 Rethinking: Everything that depends upon parameters has a posterior distribution.
 
 Overthinking: Embedding linear models
 
 R code 4.39
+```{r, comment=NA}
+
+```
 
 ### 4.4.3 Interpreting the model fit
 
@@ -183,104 +297,203 @@ Rethinking: What do parameters mean?
 #### 4.4.3.1 Tables of estimates
 
 R code 4.40
+```{r, comment=NA}
+
+```
 
 R doce 4.41
+```{r, comment=NA}
+
+```
 
 R code 4.42
+```{r, comment=NA}
+
+```
 
 R code 4.43
+```{r, comment=NA}
+
+```
 
 R code 4.44
+```{r, comment=NA}
+
+```
 
 #### 4.4.3.2 Plotting posterior inference against the data
 
 R code 4.45
+```{r, comment=NA}
+
+```
 
 #### 4.4.3.3 Adding uncertainty around the mean
 
 Figure 4.4. Height in centimeteres (vertical) plotted agains weight in kilograms (horizontal), with the maximum a posteriori line for the mean height at each weight plotted in black.
 
 R code 4.46
+```{r, comment=NA}
+
+```
 
 R code 4.47
+```{r, comment=NA}
+
+```
 
 R code 4.48
+```{r, comment=NA}
+
+```
 
 R code 4.49
+```{r, comment=NA}
+
+```
 
 Figure 4.5. Samples from the quadratic approximate posterior distribution for the height/weight model, m4.3, with increasing amounts of data. In each plot, 20 lines sampled fro the posterior distribution, showing the uncertainty in the regression relationship. 
 
 #### 4.4.3.4 Plotting regression intervals and contours
 
 R code 4.50
+```{r, comment=NA}
+
+```
 
 R code 4.51
+```{r, comment=NA}
+
+```
 
 Figure 4.6. The quadratic approximate posterior distribution of the mean height, m, where weight is 50 kg. This distribution represents the relative plausibility of different values or the mean.
 
 R code 4.52
+```{r, comment=NA}
+
+```
 
 R code 4.53
+```{r, comment=NA}
+
+```
 
 R code 4.54
+```{r, comment=NA}
+
+```
 
 R code 4.55
+```{r, comment=NA}
+
+```
 
 Figure 4.7. Left: The first 100 value sin the distribution of m at each weight value. Right: The !Kung height data again, now with 89% HPDI of the mean indicated by the shaded region. Compare this region to the distributions of blue points on the left.
 
 R code 4.56
+```{r, comment=NA}
+
+```
 
 R code 4.57
+```{r, comment=NA}
+
+```
 
 Rethinking: Overconfident confidence intervals
 
 Overthinking: How link works
 
 R code 4.58
+```{r, comment=NA}
+
+```
 
 #### 4.4.3.5 Prediction intervals
 
 R code 4.59
+```{r, comment=NA}
+
+```
 
 R code 4.60
+```{r, comment=NA}
+
+```
 
 R code 4.61
+```{r, comment=NA}
+
+```
 
 Figure 4.8. 89% prediction interval for height, as a function of weight. The solid line is the MAP estimate of the mean height at each weight. The tow shaded regions show different 89% plausible regions. The narrow shaded interval around the line is the distribution of m. The wider shaded region represents the region within which the model expects to find 89% of actual heights in the population, at each weight.
 
 R code 4.62
+```{r, comment=NA}
+
+```
 
 Rethinking: Two kinds of uncertainty
 
 Overthinking: Rolling your own sim.
 
 R code 4.63
+```{r, comment=NA}
+
+```
 
 ## 4.5 Polynomial regression  
 
 R code 4.64
+```{r, comment=NA}
+
+```
 
 Rethinking: Linear, additive, funky.
 
 R code 4.65
+```{r, comment=NA}
+
+```
 
 R code 4.66
+```{r, comment=NA}
+
+```
 
 R code 4.67
+```{r, comment=NA}
+
+```
 
 R code 4.68
+```{r, comment=NA}
+
+```
 
 R code 4.69
+```{r, comment=NA}
+
+```
 
 Figure 4.9. Polynomial regression of height on weight (standardized), for the full !Kung data. In each plot, the raw data are show by the circles. The solid curves show the path of m in each model, and the shaded regions show the 89% interval of the mean (close to the solid curve) and the 89% interval of predictions (wider). (a) Linear regression. (b) A second order polynomial, a parabolic regression. (c) A third order polynomial, a cubic regression.
 
 R code 4.70
+```{r, comment=NA}
+
+```
 
 Overthinking: Converting back to natural scale.
 
 R code 4.71
+```{r, comment=NA}
+
+```
 
 R code 4.72
+```{r, comment=NA}
+
+```
 
 ## 4.6 Summary  
 
@@ -315,3 +528,6 @@ R code 4.72
 4H3
 
 R code 4.73
+```{r, comment=NA}
+
+```

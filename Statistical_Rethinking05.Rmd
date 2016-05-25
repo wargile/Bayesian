@@ -20,10 +20,19 @@ Rethinking: Causal inference.
 Figure 5.2. Divorce rate is associated with both marriage rate (left) and median age marriage (right). Both predictor variables are standardized in this example. The average marriage rate across States is 20 per 1000 adults, and the average median age at marriage is 26 years.
 
 R code 5.1
+```{r, comment=NA}
+
+```
 
 R code 5.2
+```{r, comment=NA}
+
+```
 
 R code 5.3
+```{r, comment=NA}
+
+```
 
 Rethinking: "Control" is out of control
 
@@ -34,18 +43,33 @@ Overthinking: Compact notation and the design matrix
 ### 5.1.2 Fitting the model
 
 R code 5.4
+```{r, comment=NA}
+
+```
 
 R code 5.5
+```{r, comment=NA}
+
+```
 
 ### 5.1.3 Plotting multivariate posteriors
 
 #### 5.1.3.1 Predictor residual plots
 
 R code 5.6
+```{r, comment=NA}
+
+```
 
 R code 5.7
+```{r, comment=NA}
+
+```
 
 R code 5.8
+```{r, comment=NA}
+
+```
 
 Figure 5.3. Residual marriage rate in each State, after accounting for the linear association with median age at marriage. Each gray line segment is a residual, the distance of each observed marriage rate from the expected value, attempting to predict marriage rate with median age at marriage alone. So States that lie above the black regression line have higher rates of marriage than expected, according to age at marriage. Those below the line have lower rates than expected.
 
@@ -54,92 +78,185 @@ Figure 5.4. Predictor residual plots for the divorce data. Left: States with fas
 #### 5.1.3.2 Counterfactual plots
 
 R code 5.9
+```{r, comment=NA}
+
+```
 
 Figure 5.5. Counterfactual plots for the multivariate divorce model, m5.3. Each plot shows the chagne in predicted mean across values of a single predictor, holding the other predictor constant at its mean value (zero in both cases). Shaded regions show 89% percentile intervals of the mean (dark, narrow) and 89% prediction intervals (light, wide).
 
 R code 5.10
+```{r, comment=NA}
+
+```
 
 #### 5.1.3.3 Posterior prediction plots
 
 R code 5.11
+```{r, comment=NA}
+
+```
 
 R code 5.12
+```{r, comment=NA}
+
+```
 
 Figure 5.6. Posterior predictive plots for the multivariate divorce model, m5.3. (a) Predicted divorce rate against observed, with 89% confidence intervals of the average prediction. The dashed line shows perfect prediction. (b) Average prediction error for each State, with 89% interval of the mean (black line) and 89% interval of the mean error (residuals) against number of Waffle House per capita, with superimposed regression of the two variables.
 
 R code 5.13
+```{r, comment=NA}
+
+```
 
 R code 5.14
+```{r, comment=NA}
+
+```
 
 Rethinking: Stats, huh, yeah what is good for?
 
 Overthinking: Simulating spurious association
 
 R code 5.15
+```{r, comment=NA}
+
+```
 
 ## 5.2 Masked relationship  
 
 R code 5.16
+```{r, comment=NA}
+
+```
 
 R code 5.17
+```{r, comment=NA}
+
+```
 
 R code 5.18
+```{r, comment=NA}
+
+```
 
 R code 5.19
+```{r, comment=NA}
+
+```
 
 R code 5.20
+```{r, comment=NA}
+
+```
 
 R code 5.21
+```{r, comment=NA}
+
+```
 
 R code 5.22
+```{r, comment=NA}
+
+```
 
 R code 5.23
+```{r, comment=NA}
+
+```
 
 R code 5.24
+```{r, comment=NA}
+
+```
 
 R code 5.25
+```{r, comment=NA}
+
+```
 
 Figure 5.7. Milk energy and neocortex among primates. In the top two plots, simple bivariate regressions of kilocalories per gram of milk on (left) neocortex percent and (right) log female body mass how wear and uncertain associations. However, on the bottom, a single regression with both neocortex percent and log body mass suggests strong association with both variables. Both neocortex and body mass are associate with milk energy, but in opposite directions. This masks each variable's relationship with the outcome, unless both are considered simultaneously.
 
 R code 5.26
+```{r, comment=NA}
+
+```
 
 R code 5.27
+```{r, comment=NA}
+
+```
 
 Overthinking: Simulating a masking relationship
 
 R code 5.28
+```{r, comment=NA}
+
+```
 
 ## 5.3 When adding variables hurts  
 
 ### 5.3.1 Multicollinear legs
 
 R code 5.29
+```{r, comment=NA}
+
+```
 
 R code 5.30
+```{r, comment=NA}
+
+```
 
 R code 5.31
+```{r, comment=NA}
+
+```
 
 R code 5.32
+```{r, comment=NA}
+
+```
 
 Figure 5.8. Left: Posterior distribution of the association of each leg with height, from model m5.8. Since both variables contain almost identical information, the posterior is a narrow ridge of negatively correlated values. Right: The posterior distribution of the sum of the two parameters is centered on the proper association of either leg with height.
 
 R code 5.33
+```{r, comment=NA}
+
+```
 
 R code 5.34
+```{r, comment=NA}
+
+```
 
 ### 5.3.2 Multicollinear milk
 
 R code 5.35
+```{r, comment=NA}
+
+```
 
 R code 5.36
+```{r, comment=NA}
+
+```
 
 R code 5.37
+```{r, comment=NA}
+
+```
 
 R code 5.38
+```{r, comment=NA}
+
+```
 
 Figure 5.9. A pairs plot of the total energy, percent fat, and percent lactose variables from the primate milk data. Percent fat and percent lactose are strongly negatively correlated with one another, providing mostly the same information.
 
 R code 5.39
+```{r, comment=NA}
+
+```
 
 Figure 5.10. The effect of correlated predictor variables on the narrowness of the posterior distribution. The vertical axis shows the standard deviation of the posterior distribution of the slope. The horizontal axis is the correlation between the predictor of interest and another predictor added to the model. As the correlation increases, the standard deviation inflates.
 
@@ -148,14 +265,26 @@ Rethinking: Identification guaranteed, comprehension up to you
 Overthinking: Simulating collinearity
 
 R code 5.40
+```{r, comment=NA}
+
+```
 
 ### 5.3.3 Post-treatment bias
 
 R code 5.41
+```{r, comment=NA}
+
+```
 
 R code 5.42
+```{r, comment=NA}
+
+```
 
 R code 5.43
+```{r, comment=NA}
+
+```
 
 Rethinking: Model comparison doesn't help
 
@@ -164,28 +293,58 @@ Rethinking: Model comparison doesn't help
 ### 5.4.1 Binary categories
 
 R code 5.44
+```{r, comment=NA}
+
+```
 
 R code 5.45
+```{r, comment=NA}
+
+```
 
 R code 5.46
+```{r, comment=NA}
+
+```
 
 Overthinking: Re-parameterizing the model
 
 R code 5.47
+```{r, comment=NA}
+
+```
 
 ### 5.4.2 Many categories
 
 R code 5.48
+```{r, comment=NA}
+
+```
 
 R code 5.49
+```{r, comment=NA}
+
+```
 
 R code 5.50
+```{r, comment=NA}
+
+```
 
 R code 5.51
+```{r, comment=NA}
+
+```
 
 R code 5.52
+```{r, comment=NA}
+
+```
 
 R code 5.53
+```{r, comment=NA}
+
+```
 
 Rethinking: Differences and statistical significance
 
@@ -194,8 +353,14 @@ Rethinking: Differences and statistical significance
 ### 5.4.4 Another approach: Unique intercepts
 
 R code 5.54
+```{r, comment=NA}
+
+```
 
 R code 5.55
+```{r, comment=NA}
+
+```
 
 ## 5.5 Ordinary least squares and lm  
 
@@ -204,28 +369,49 @@ R code 5.55
 ### 5.5.2 Using lm
 
 R code 5.56
+```{r, comment=NA}
+
+```
 
 #### 5.5.2.1 Intercepts are optional
 
 R code 5.57
+```{r, comment=NA}
+
+```
 
 R code 5.58
+```{r, comment=NA}
+
+```
 
 #### 5.5.2.2 Categorical variables
 
 R code 5.59
+```{r, comment=NA}
+
+```
 
 #### 5.5.2.3 Transform variables first
 
 R code 5.60
+```{r, comment=NA}
+
+```
 
 R code 5.61
+```{r, comment=NA}
+
+```
 
 #### 5.5.2.4 No estimate for sigma
 
 ### 5.5.3 Building map formulas from lm formulas
 
 R code 5.62
+```{r, comment=NA}
+
+```
 
 ## 5.6 Summary  
 

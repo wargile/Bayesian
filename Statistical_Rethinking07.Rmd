@@ -18,20 +18,38 @@ Rethinking: Statistics all-star, Abraham Wald
 ## 7.1 Building an interaction  
 
 R code 7.1
+```{r, comment=NA}
+
+```
 
 R code 7.2
+```{r, comment=NA}
+
+```
 
 Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GDP against terrain ruggedness. The slope is positive inside Africa, but negative outside. How can we recover this reversal of the slope, using the combined data?
 
 ### 7.1.1 Adding a dummy variable doesn't work
 
 R code 7.3
+```{r, comment=NA}
+
+```
 
 R code 7.4
+```{r, comment=NA}
+
+```
 
 R code 7.5
+```{r, comment=NA}
+
+```
 
 R code 7.6
+```{r, comment=NA}
+
+```
 
 Figure 7.3. Including a dummy variable for African nations has no effect on the slope. African nations are show in blue. Non-African nations are shown in gray. Regression means for each subset of nations are shown in corresponding colors, along with 97% intervals shown by shading.
 
@@ -40,18 +58,33 @@ Rethinking: Why 97%?
 ### 7.1.2 Adding a linear interaction does work
 
 R code 7.7
+```{r, comment=NA}
+
+```
 
 R code 7.8
+```{r, comment=NA}
+
+```
 
 Overthinking: Conventional form of interaction
 
 R code 7.9
+```{r, comment=NA}
+
+```
 
 ### 7.1.3 Plotting the interaction
 
 R code 7.10
+```{r, comment=NA}
+
+```
 
 R code 7.11
+```{r, comment=NA}
+
+```
 
 Figure 7.4. Posterior predictions for the terrain ruggedness model, including the interaction between Africa and ruggedness. Shaded regions are 97% posterior intervals of the mean.
 
@@ -60,18 +93,33 @@ Figure 7.4. Posterior predictions for the terrain ruggedness model, including th
 #### 7.1.4.1 Parameters change meaning
 
 R code 7.12
+```{r, comment=NA}
+
+```
 
 #### 7.1.4.2 Incorporating uncertainty
 
 R code 7.13
+```{r, comment=NA}
+
+```
 
 R code 7.14
+```{r, comment=NA}
+
+```
 
 R code 7.15
+```{r, comment=NA}
+
+```
 
 Figure 7.5. Posterior distribution of the slop relating terrain ruggedness to log-GDP. Blue: African nations. Black: non-African nations.
 
 R code 7.16
+```{r, comment=NA}
+
+```
 
 Rethinking: More on the meaning of posterior probability
 
@@ -82,6 +130,9 @@ Rethinking: More on the meaning of posterior probability
 ### 7.2.2 African depends upon ruggedness
 
 R code 7.17
+```{r, comment=NA}
+
+```
 
 Figure 7.6. The other side of the interaction between ruggedness and continent. Blue points are nations with above-median ruggedness. Black points are below the median. Dashed black line: relationship between continent and log-GDP, for an imaginary nation with minimum observed ruggedness (0.003). Blue line: an imaginary nation with maximum observed ruggedness (6.2).
 
@@ -90,53 +141,100 @@ Figure 7.6. The other side of the interaction between ruggedness and continent. 
 ### 7.3.1 The data
 
 R code 7.18
+```{r, comment=NA}
+
+```
 
 ### 7.3.2 The un-centered models
 
 R code 7.19
+```{r, comment=NA}
+
+```
 
 R code 7.20
+```{r, comment=NA}
+
+```
 
 R code 7.21
+```{r, comment=NA}
+
+```
 
 R code 7.22
+```{r, comment=NA}
+
+```
 
 Rethinking: Fighting with your robot
 
 ### 7.3.3 Center and re-estimate
 
 R code 7.23
+```{r, comment=NA}
+
+```
 
 R code 7.24
+```{r, comment=NA}
+
+```
 
 #### 7.3.3.1 Estimation worked better
 
 #### 7.3.3.2 Estimates changed less across models
 
 R code 7.25
+```{r, comment=NA}
+
+```
 
 R code 7.26
+```{r, comment=NA}
+
+```
 
 R code 7.27
+```{r, comment=NA}
+
+```
 
 ### 7.3.4 Plotting implied predictions
 
 R code 7.28
+```{r, comment=NA}
+
+```
 
 Figure 7.7. Triptych plot of predicted blooms across water treatments, without (top row) and with (bottom row) an interaction effect. Blue points in each plot are data. The solid line is the posterior mean and the dashed lines give 97% interval of the mean. Top row: Without the interaction, model m7.8. Each of the tree plots of blooms against shade level is for a different water level. The slope of the regression line in each case is exactly the same, because there is no interaction in this model. Bottom row: With the interaction, model m7.9. Now the slope of blooms against shade has a different value in each plot.
-
 
 ## 7.4 Interactions in design formulas  
 
 R code 7.29
+```{r, comment=NA}
+
+```
 
 R code 7.30
+```{r, comment=NA}
+
+```
 
 R code 7.31
+```{r, comment=NA}
+
+```
 
 R code 7.32
+```{r, comment=NA}
+
+```
 
 R code 7.33
+```{r, comment=NA}
+
+```
 
 ## 7.5 Summary  
 
@@ -163,3 +261,6 @@ R code 7.33
 7H4
 
 R code 7.34
+```{r, comment=NA}
+
+```
