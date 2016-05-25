@@ -11,7 +11,7 @@ by Richard McElreath
 
 # 6.0 Overfitting, Regularization, and Information Criteria  
 
-Figure 6.1. Ptolemaic (left) and Copernican (right) models of the solar system. Both models use epicycles (circles on circles), and boht models produce exactly the sampe predictions. However, the Copernican modle requires fewer circles. (Not all Ptolemaic epicycles are visible in the figure.)
+Figure 6.1. Ptolemaic (left) and Copernican (right) models of the solar system. Both models use epicycles (circles on circles), and both models produce exactly the sample predictions. However, the Copernican model requires fewer circles. (Not all Ptolemaic epicycles are visible in the figure.)
 
 Rethinking: Stargazing.
 
@@ -73,7 +73,7 @@ Rethinking: The benefits of maximizing uncertainty
 
 ### 6.2.3 From entropy to accuracy
 
-Figure 6.6 Information divergence of an approximating distribution q from a true distribution p. Divergence can only equal zero when q = p (dashed line). Otherwise, the divergence is positive and grow as q becomes more dissimilar from p. When we have more than one candidate approximation q, the q with the smallest divergence is the most accurate approximation, in the sense taht it induces the least additional uncertainty.
+Figure 6.6 Information divergence of an approximating distribution q from a true distribution p. Divergence can only equal zero when q = p (dashed line). Otherwise, the divergence is positive and grow as q becomes more dissimilar from p. When we have more than one candidate approximation q, the q with the smallest divergence is the most accurate approximation, in the sense that it induces the least additional uncertainty.
 
 Overthinking: Cross entropy and divergence
 
@@ -89,7 +89,7 @@ R code 6.11
 
 ### 6.2.5 From deviance to out-of-sample
 
-Figure 6.7. Deviance in and out of sample. In each plot, models with different numbers of predictor variables are shown on the orizontal axis. Deviance across 10,000 simulations is show on the vertical. Blue shows deviance in-sample, the training data. Black shows deviance out-of-sample, the test data. Points show means, and the line segments show +/- 1 stnandard deviation.
+Figure 6.7. Deviance in and out of sample. In each plot, models with different numbers of predictor variables are shown on the horizontal axis. Deviance across 10,000 simulations is show on the vertical. Blue shows deviance in-sample, the training data. Black shows deviance out-of-sample, the test data. Points show means, and the line segments show +/- 1 standard deviation.
 
 Overthinking: Simulated training and testing
 
@@ -103,7 +103,7 @@ R code 6.14
 
 Figure 6.8. Regularizing priors, weak and strong. Three Gaussian priors of varying standard deviation. These priors reduce overfitting, but with different strength. Dashed: Normal(0, 1). Thin solid: Normal(0, 0.5). Thick solid: Normal(0, 0.2).
 
-Figure 6.9. REgularizing priors and out-of-sample deviance. The points in both plots are the same as in Figure 6.7. The lines show training (blue) and testing (black) deviance for the three regularizing priors in Figure 6.8. Dashed: Each beta-coefficient is given a Normal(0, 1) prior. Thin solid: Normal(0, 0.5). Thick solid: Normal(0, 0.2).
+Figure 6.9. Regularizing priors and out-of-sample deviance. The points in both plots are the same as in Figure 6.7. The lines show training (blue) and testing (black) deviance for the three regularizing priors in Figure 6.8. Dashed: Each beta-coefficient is given a Normal(0, 1) prior. Thin solid: Normal(0, 0.5). Thick solid: Normal(0, 0.2).
 
 Rethinking: Multilevel models as adaptive regularization
 
@@ -111,7 +111,7 @@ Rethinking: Ridge regression
 
 ## 6.4 Information criteria  
 
-Figure 6.10. Deviance in-sample (blue) and out-of-sample (black), using flat priors. The vertical segments measure the distance between each pair of deviance. For both N = 20 and N = 100, this distance is approximately twice the number of parameters. The dashed lines show exactly the deviance in-sample (training) plus twie the number of parameters on the horizontal axis. These lines therefore show AIC for each model, an approximation of the out-of-sample deviance.
+Figure 6.10. Deviance in-sample (blue) and out-of-sample (black), using flat priors. The vertical segments measure the distance between each pair of deviance. For both N = 20 and N = 100, this distance is approximately twice the number of parameters. The dashed lines show exactly the deviance in-sample (training) plus twice the number of parameters on the horizontal axis. These lines therefore show AIC for each model, an approximation of the out-of-sample deviance.
 
 Rethinking: Information criteria and consistency
 
@@ -137,7 +137,7 @@ R code 6.20
 
 ### 6.4.3 DIC and WAIC as estimates of deviance
 
-Figure 6.11. Out-of-sample deviance as estimated by DIC and WAIC. Points are average out-of-sample deviance over 10,000 simulations. The lines are average DIC (top) and WAIC (bottom) computed from the same simulations. The black points and lines come from simulations with a nearly flat Normal(0, 100) prior. The blue points and lines used a regularzing Normal(0, 0.5) prior.
+Figure 6.11. Out-of-sample deviance as estimated by DIC and WAIC. Points are average out-of-sample deviance over 10,000 simulations. The lines are average DIC (top) and WAIC (bottom) computed from the same simulations. The black points and lines come from simulations with a nearly flat Normal(0, 100) prior. The blue points and lines used a regularizing Normal(0, 0.5) prior.
 
 Rethinking: Diverse prediction framework
 
@@ -169,7 +169,7 @@ R code 6.27
 
 R code 6.28
 
-Figure 6.12. Comparing the posterior densities of parameters for the four model fits to the primate milk data. Each point is a MAP estiatme, and each black line segment is a 89% percentile interval. Estimates are grouped by parameter identify, and each row in a group is a model.
+Figure 6.12. Comparing the posterior densities of parameters for the four model fits to the primate milk data. Each point is a MAP estimate, and each black line segment is a 89% percentile interval. Estimates are grouped by parameter identify, and each row in a group is a model.
 
 Rethinking: Barplots suck
 
@@ -177,7 +177,7 @@ Rethinking: Barplots suck
 
 R code 6.29
 
-Figure 6.13. Model averaged posterior predictive distribution for the primate milk analysis. The dashed regression line and dashed 89% percentile interval corresponed to the minimum-WAIC model, m6.14. The solid line and shaded 89% region correspond to the model averaged predictions.
+Figure 6.13. Model averaged posterior predictive distribution for the primate milk analysis. The dashed regression line and dashed 89% percentile interval correspond to the minimum-WAIC model, m6.14. The solid line and shaded 89% region correspond to the model averaged predictions.
 
 R code 6.30
 

@@ -21,7 +21,7 @@ R code 7.1
 
 R code 7.2
 
-Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GDP against terrain ruggedness. The sloep is positive inside Africa, but negative outside. How cna we recover this reversal of the slope, using the combined data?
+Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GDP against terrain ruggedness. The slope is positive inside Africa, but negative outside. How can we recover this reversal of the slope, using the combined data?
 
 ### 7.1.1 Adding a dummy variable doesn't work
 
@@ -33,7 +33,7 @@ R code 7.5
 
 R code 7.6
 
-Figure 7.3. Including a dummy variable for African nations has no effect on the slope. African nations are show in blue. Non-African nations aer shown in gray. Regression means for each subset of nations are shown in corresponding colors, along with 97% intervals shown by shading.
+Figure 7.3. Including a dummy variable for African nations has no effect on the slope. African nations are show in blue. Non-African nations are shown in gray. Regression means for each subset of nations are shown in corresponding colors, along with 97% intervals shown by shading.
 
 Rethinking: Why 97%?
 
