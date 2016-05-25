@@ -85,6 +85,9 @@ Rethinking: When in doubt, play with assumptions
 
 Overthinking: Parameters interacting with themselves
 
+### 9.2.3 Absolute and relative differences
+
+### 9.2.4 GLMs and information criteria
 
 ## 9.3 Maximum entropy priors  
 
