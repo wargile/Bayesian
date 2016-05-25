@@ -11,7 +11,13 @@ by Richard McElreath
 
 # 5.0 Multivariate Linear Models  
 
+Figure 5.1. the number of Waffle House diners per million people is associated with divorce rate (in the year 2009) within the United States. Each point is a State. “Southern” (former Confederate) States shown in blue. Shaded region is 89% percentile interval of the mean. These data are in data(waffleDivorice) in the rethinking package.
+
+Rethinking: Causal inference.
+
 ## 5.1 Spurious association  
+
+Figure 5.2. Divorce rate is associated with both marriage rate (left) and median age marriage (right). Both predictor variables are standard
 
 ## 5.2 Masked relationship  
 
