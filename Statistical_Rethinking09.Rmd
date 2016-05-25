@@ -79,6 +79,13 @@ Rethinking: A likelihood is a prior
 
 Figure 9.7. The logit link transforms a linear model (left) into a probability (right). This transformation compresses the geometry far from zero, such that a unit change on the linear scale (left) means less and less change on the probability scale (right).
 
+Figure 9.8. The log link transforms a linear model (left) into a strictly postative measurement (right). This transform results in an exponential scaling of the linear model, with a unit change on the linear scale mapping onto increasingly larger changes on the outcome scale.
+
+Rethinking: When in doubt, play with assumptions
+
+Overthinking: Parameters interacting with themselves
+
+
 ## 9.3 Maximum entropy priors  
 
 ## 9.4 Summary  
