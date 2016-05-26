@@ -111,10 +111,110 @@ R code 10.37
 
 ## 10.2 Poisson regression  
 
+R code 10.38
 
+### 10.2.1 Example: Oceanic tool complexity
+
+R code 10.39
+
+Figure 10.7. Locations of societs in the Kline data. The Equator and International Date Line are shown.
+
+R code 10.40
+
+R code 10.41
+
+R code 10.42
+
+R code 10.43
+
+R code 10.44
+
+Figure 10.8. Left: The distribution of plausible difference in avearge tool count between indentical islands at log-population of 8 but with different contact rates. Even though both the main effect of contact, bc, and the interaction with log-population, bpc, overalp zero, together they imply 95% plausibility that an island with high contact has more expected tools than an island with low contact. Right: Joint posterior distribution of bc and bpc, showing a strong negative correlation. Black line segments show the marginal poterior ditributins of both parameters. Neither parameter is conventually "significant," but together they imply that contact rate consistently influence prediction.
+
+R code 10.45
+
+R code 10.46
+
+R code 10.47
+
+R code 10.48
+
+Figure 10.9. Ensemble posterior predictions for the island model set. Filled points are islands with high contact rate. The blue trend and confidence region are counterfactual predictions for islands with high contact, across values of log-population on the horizontal axis. The dashed trend and gray region are predictions for low contact islands.
+
+R code 10.49
+
+R code 10.50
+
+Figure 10.10. Posterior distributions for models m10.10stan (left) and m10.stan.c (right).
+
+### 10.2.3 Example: Exposere and the offset
+
+R code 10.51
+
+R code 10.52
+
+R code 10.53
+
+R code 10.54
+
+R code 10.55
 
 ## 10.3 Other count regressions  
+
+### 10.3.1 Multinomial
+
+R code 10.56
+
+R code 10.57
+
+R code 10.58
+
+#### 10.3.1.2 Multinomial in disguise as Poisson
+
+R code 10.59
+
+R code 10.60
+
+R code 10.61
+
+R code 10.62
+
+Overthinking: Multinomial-Poisson transformation
+
+### 10.3.2 Geometric
+
+R code 10.63
+
+### 10.3.3 Negative-binomial and beta-binomial
 
 ## 10.4 Summary  
 
 ## 10.5 Practice  
+
+10E1.
+
+10E2.
+
+10E3.
+
+10E4.
+
+10M1.
+
+10M2.
+
+10M3.
+
+10M4.
+
+10M5.
+
+10M6.
+
+10H1.
+
+10H2.
+
+10H3.
+
+10H4.
