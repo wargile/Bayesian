@@ -9,6 +9,16 @@ output: html_document
 
 by Richard McElreath
 
+**TODO:**
+
+1. Finish outline with R code placeholders
+
+2. Add R code and format
+
+3. Run R code and check
+
+4. Do practice problems
+
 # 13.0 Adventures in Covariance  
 
 ## 13.1 Varying slopes by construction  
