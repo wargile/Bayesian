@@ -18,12 +18,24 @@ Rethinking: Bayesian updating and maximum entropy
 Figure 9.1. Entropy as a measure of the number of unique arrangements of a system that produce the same distribution. Plots A through E show the numbers of unique wasy to arrange 10 pebbles into each of 5 different distributions. Bottom-right: The entropy of each distribution plotted against the log number of ways per pebble to produce it.
 
 R code 9.1
+```{r, comment=NA}
+
+```
 
 R code 9.2
+```{r, comment=NA}
+
+```
 
 R code 9.3
+```{r, comment=NA}
+
+```
 
 R code 9.4
+```{r, comment=NA}
+
+```
 
 Rethinking: What good is intuition?
 
@@ -40,22 +52,49 @@ Overthinking: Proof of Gaussian maximum entropy
 Figure 9.3. Four different distributions with the same expected value, 1 blue marble in 2 draws. The outcomes on the horizontal axes correspond to 2 white marbles (ww), 1 blue and then 1 white (bw), 1 white and then 1 blue (wb, and 2 blue marbles (bb).
 
 R code 9.5
+```{r, comment=NA}
+
+```
 
 R code 9.6
+```{r, comment=NA}
+
+```
 
 R code 9.7
+```{r, comment=NA}
+
+```
 
 R code 9.8
+```{r, comment=NA}
+
+```
 
 R code 9.9
+```{r, comment=NA}
+
+```
 
 R code 9.10
+```{r, comment=NA}
+
+```
 
 R code 9.11
+```{r, comment=NA}
+
+```
 
 R code 9.12
+```{r, comment=NA}
+
+```
 
 R code 9.13
+```{r, comment=NA}
+
+```
 
 Figure 9.4. Left: Distribution of entropies from randomly simulated distributions with expected value 1.4. The letters A, B, C, and D mark the entropies of individual distributions show on the right. Right: Individual probability distributions. As entropy decreases, going from A to D, the distribution becomes more uneven. The distribution marked A is the binomial distribution with np = 1.4.
 

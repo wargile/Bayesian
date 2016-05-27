@@ -14,46 +14,103 @@ output: html_document
 Figure 10.1. Chimpanzee prosociality experiment, as seen from the perspective of the focal animal. The left and right levers are indicated in the foreground. Pulling either expands an accordion device in the center, pushing the food tryas towards both ends of the table. Both food trays close to the focal animal have food in them. Only one of the food trays on the other side contains food. The partner condition means another animal, as pictured, sits on the other end of the table. Otherwise, the other end was empty.
 
 R code 10.1
+```{r, comment=NA}
+
+```
 
 R code 10.2
+```{r, comment=NA}
+
+```
 
 R code 10.3
+```{r, comment=NA}
+
+```
 
 R code 10.4
+```{r, comment=NA}
+
+```
 
 R code 10.5
+```{r, comment=NA}
+
+```
 
 R code 10.6
+```{r, comment=NA}
+
+```
 
 R code 10.7
+```{r, comment=NA}
+
+```
 
 R code 10.8
+```{r, comment=NA}
+
+```
 
 R code 10.9
+```{r, comment=NA}
+
+```
 
 R code 10.10
+```{r, comment=NA}
+
+```
 
 R code 10.11
+```{r, comment=NA}
+
+```
 
 Figure 10.2. Model averaged posterior predictive check for the chimpanzee models. Along the horizontal axis, treatments are laid out. The vertical is the proportion of left lever pulls predicted (black) and observed (blue). Each blue trend is an individual chimpanzee. The shaded region is the 89% percentile interval of the mean prediction. 
 
 R code 10.12
+```{r, comment=NA}
+
+```
 
 R code 10.13
+```{r, comment=NA}
+
+```
 
 R code 10.14
+```{r, comment=NA}
+
+```
 
 R code 10.15
+```{r, comment=NA}
+
+```
 
 R code 10.16
+```{r, comment=NA}
+
+```
 
 R code 10.17
+```{r, comment=NA}
+
+```
 
 R code 10.18
+```{r, comment=NA}
+
+```
 
 Figure 10.3. Marginal posterior density of a[2], the intercept for actor number 2. Very many vary large values are plausible. Since actor number 2 always pulled the left-hand lever, the data cannot discriminate among these large values, as all of them guarantee pulling the left-hand lever.
 
 R code 10.19
+```{r, comment=NA}
+
+```
 
 Figure 10.4. Posterior prediction check for model m10.4, the chimpanzee model that includes a unique intercept for each individual. Each plot shows the empirical proportion of left pulls in each treatment (blue), for a single individual. The black line and shaded region show the average predicted probability and its 89% interval. Only four of the seven individuals are shown.
 
@@ -62,34 +119,70 @@ Overthinking: Using the by function
 ### 10.1.2 Aggregated binomial: Chimpanzees again, condensed
 
 R code 10.20
+```{r, comment=NA}
+
+```
 
 R code 10.21
+```{r, comment=NA}
+
+```
 
 ### 10.1.3 Aggregated binomial: Graduate school admissions
 
 R code 10.22
+```{r, comment=NA}
+
+```
 
 R code 10.23
+```{r, comment=NA}
+
+```
 
 R code 10.24
+```{r, comment=NA}
+
+```
 
 R code 10.25
+```{r, comment=NA}
+
+```
 
 R code 10.26
+```{r, comment=NA}
+
+```
 
 R code 10.27
+```{r, comment=NA}
+
+```
 
 Figure 10.5. Posterior validation for model m10.6. Blue points are observed proportions admitted for each row in the data, with points from the same department connected by a blue line. Open points, the tiny vertical black lines within them, and the crosses are expected proportions, 89% intervals of the expectation, and 89% interval of simulated samples, respectively.
 
 R code 10.28
+```{r, comment=NA}
+
+```
 
 R code 10.29
+```{r, comment=NA}
+
+```
 
 R code 10.30
+```{r, comment=NA}
+
+```
 
 Figure 10.6. Posterior validation for m10.9. The unique intercepts for each department, A through F, capture variation in overall admission rates among departments. This allows the model to compare male and female admission rates, controlling for heterogeneity across departments.
 
 R code 10.31
+```{r, comment=NA}
+
+```
 
 Rethinking: Simpson's paradox is not a paradox
 
@@ -98,92 +191,188 @@ Overthinking: WAIC and aggregated binomial models
 ### 10.1.4 Fitting binomial regressions with glm.
 
 R code 10.32
+```{r, comment=NA}
+
+```
 
 R code 10.33
+```{r, comment=NA}
+
+```
 
 R code 10.34
+```{r, comment=NA}
+
+```
 
 R code 10.35
+```{r, comment=NA}
+
+```
 
 R code 10.36
+```{r, comment=NA}
+
+```
 
 R code 10.37
+```{r, comment=NA}
+
+```
 
 ## 10.2 Poisson regression  
 
 R code 10.38
+```{r, comment=NA}
+
+```
 
 ### 10.2.1 Example: Oceanic tool complexity
 
 R code 10.39
+```{r, comment=NA}
+
+```
 
 Figure 10.7. Locations of societies in the Kline data. The Equator and International Date Line are shown.
 
 R code 10.40
+```{r, comment=NA}
+
+```
 
 R code 10.41
+```{r, comment=NA}
+
+```
 
 R code 10.42
+```{r, comment=NA}
+
+```
 
 R code 10.43
+```{r, comment=NA}
+
+```
 
 R code 10.44
+```{r, comment=NA}
+
+```
 
 Figure 10.8. Left: The distribution of plausible difference in average tool count between identical islands at log-population of 8 but with different contact rates. Even though both the main effect of contact, bc, and the interaction with log-population, bpc, overlap zero, together they imply 95% plausibility that an island with high contact has more expected tools than an island with low contact. Right: Joint posterior distribution of bc and bpc, showing a strong negative correlation. Black line segments show the marginal posterior distributions of both parameters. Neither parameter is conventionally "significant," but together they imply that contact rate consistently influence prediction.
 
 R code 10.45
+```{r, comment=NA}
+
+```
 
 R code 10.46
+```{r, comment=NA}
+
+```
 
 R code 10.47
+```{r, comment=NA}
+
+```
 
 R code 10.48
+```{r, comment=NA}
+
+```
 
 Figure 10.9. Ensemble posterior predictions for the island model set. Filled points are islands with high contact rate. The blue trend and confidence region are counterfactual predictions for islands with high contact, across values of log-population on the horizontal axis. The dashed trend and gray region are predictions for low contact islands.
 
 R code 10.49
+```{r, comment=NA}
+
+```
 
 R code 10.50
+```{r, comment=NA}
+
+```
 
 Figure 10.10. Posterior distributions for models m10.10stan (left) and m10.stan.c (right).
 
 ### 10.2.3 Example: Exposure and the offset
 
 R code 10.51
+```{r, comment=NA}
+
+```
 
 R code 10.52
+```{r, comment=NA}
+
+```
 
 R code 10.53
+```{r, comment=NA}
+
+```
 
 R code 10.54
+```{r, comment=NA}
+
+```
 
 R code 10.55
+```{r, comment=NA}
+
+```
 
 ## 10.3 Other count regressions  
 
 ### 10.3.1 Multinomial
 
 R code 10.56
+```{r, comment=NA}
+
+```
 
 R code 10.57
+```{r, comment=NA}
+
+```
 
 R code 10.58
+```{r, comment=NA}
+
+```
 
 #### 10.3.1.2 Multinomial in disguise as Poisson
 
 R code 10.59
+```{r, comment=NA}
+
+```
 
 R code 10.60
+```{r, comment=NA}
+
+```
 
 R code 10.61
+```{r, comment=NA}
+
+```
 
 R code 10.62
+```{r, comment=NA}
+
+```
 
 Overthinking: Multinomial-Poisson transformation
 
 ### 10.3.2 Geometric
 
 R code 10.63
+```{r, comment=NA}
+
+```
 
 ### 10.3.3 Negative-binomial and beta-binomial
 
