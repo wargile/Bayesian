@@ -33,7 +33,7 @@ Overthinking: The Wallis derivation
 
 Figure 9.2. Maximum entropy and the Gaussian distribution. Left: Comparison of Gaussian (blue) and several other continuous distributions with the same variance. Right: Entropy is maximized when curvature of a generalized normal distribution matches the Gaussian, where shape is equal to 2.
 
-Overthinking: Proff of Gaussian maximum entropy
+Overthinking: Proof of Gaussian maximum entropy
 
 ### 9.1.2 Binomial
 
@@ -61,11 +61,11 @@ Figure 9.4. Left: Distribution of entropies from randomly simulated distribution
 
 Rethinking: Conditional independence
 
-Overthinking: Binomial maxiumum entropy
+Overthinking: Binomial maximum entropy
 
 ## 9.2 Generalized linear models  
 
-Figure 9.5. Why we need link functions. The solid blue line is a linear model of a probability mass. It lincrease linearly with a predictor, x, on the horizontal axis. But when it reaches the maximum probability mass of 1, at the dashed boundary, it will happily continue upwards, as show by the dashed blue line. In reality, further increases in x could not further incrase probability, as indicated by the horizontal continuation of the solid trend.
+Figure 9.5. Why we need link functions. The solid blue line is a linear model of a probability mass. It increases linearly with a predictor, x, on the horizontal axis. But when it reaches the maximum probability mass of 1, at the dashed boundary, it will happily continue upwards, as show by the dashed blue line. In reality, further increases in x could not further increase probability, as indicated by the horizontal continuation of the solid trend.
 
 Rethinking: The scourge of Histomancy
 
@@ -79,7 +79,7 @@ Rethinking: A likelihood is a prior
 
 Figure 9.7. The logit link transforms a linear model (left) into a probability (right). This transformation compresses the geometry far from zero, such that a unit change on the linear scale (left) means less and less change on the probability scale (right).
 
-Figure 9.8. The log link transforms a linear model (left) into a strictly postative measurement (right). This transform results in an exponential scaling of the linear model, with a unit change on the linear scale mapping onto increasingly larger changes on the outcome scale.
+Figure 9.8. The log link transforms a linear model (left) into a strictly positative measurement (right). This transform results in an exponential scaling of the linear model, with a unit change on the linear scale mapping onto increasingly larger changes on the outcome scale.
 
 Rethinking: When in doubt, play with assumptions
 
