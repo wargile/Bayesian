@@ -19,7 +19,7 @@ Figure 8.1. Good King Markov's island kingdom. Each of the 10 islands has a popu
 
 R code 8.1
 
-Figure 8.2. Results of the king following the Metropolis algorithm. The left-hand plot shows the king's position (veritical axis) across weeks (horizontal axis). In any particular week, it's nearly impossible to say where the king will be. The right-hand plot shows the long-run behavior of the algorithm, as the time spent on each island turns out to be proportional to its population size.
+Figure 8.2. Results of the king following the Metropolis algorithm. The left-hand plot shows the king's position (vertical axis) across weeks (horizontal axis). In any particular week, it's nearly impossible to say where the king will be. The right-hand plot shows the long-run behavior of the algorithm, as the time spent on each island turns out to be proportional to its population size.
 
 ## 8.2 Markov chain Monte Carlo  
 
@@ -57,7 +57,7 @@ R code 8.9
 
 R code 8.10
 
-Figure 8.3. Pairs plot of the samples produced by Stan. The diagonal shows a density estiamte for each parameter. Below the diagonal, correlations between parameters are shown.
+Figure 8.3. Pairs plot of the samples produced by Stan. The diagonal shows a density estimate for each parameter. Below the diagonal, correlations between parameters are shown.
 
 Overthinking: Stan messages
 
@@ -79,7 +79,7 @@ Overthinking: Raw Stan model code
 
 Rethinking: Warmup is not burn-in
 
-### 8.4.2 How many chians do you need?
+### 8.4.2 How many chains do you need?
 
 Rethinking: Convergence diagnostics
 
