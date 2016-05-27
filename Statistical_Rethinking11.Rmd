@@ -9,6 +9,14 @@ output: html_document
 
 by Richard McElreath
 
+**TODO:**
+
+1. Add R code and format
+
+2. Run R code and check
+
+3. Do practice problems
+
 # 11.0 Monsters and Mixtures  
 
 ## 11.1 Ordered categorical outcomes  
@@ -75,8 +83,76 @@ Rethinking: Breaking the law
 
 ### 11.2.1 Example: Zero-inflated Poisson
 
+R code 11.20
+
+R code 11.21
+
+Figure 11.4. Left: Structure of the zero-inflated likelihood calculation. Beginning at the top, the monks drink p of the time or or instead work 1 - p of the time. Drinking monks always produce an observation y = 0. Working monds may produce either y = 0 or y > 0. Right: Frequency distribution of zero-inflated observations. The blue line segment over zero shows the y = 0 observations that arose from drinking. In real data, we typically cannot see which zeros come from which processes.
+
+R code 11.22
+
+R code 11.23
+
+Overthinking: Zero-inflated Poisson distribution function
+
+R code 11.24
+
 ## 11.3 Over-dispersed outcomes  
+
+### 11.3.1 Beta-binomial
+
+R code 11.25
+
+R code 11.26
+
+R code 11.27
+
+R code 11.28
+
+R code 11.29
+
+Figure 11.5. Left: Posterior distribution of beta distributions for m11.5. The thick curve is the posterior mean beta distribution. The lighter curves represent 100 combinations of p and Theta sampled from the posterior.
+
+R code 11.30
+
+Figure 11.5. Right: Posterior validation check for m11.5. As a result of the widely dispersed beta distributions on the left, the raw data (blue) is contained within the prediction intervals.
+
+### 11.3.2 Negative-binomial or gamma-Poisson
+
+R code 11.31
+
+### 11.3.3 Over-dispersion, entropy, and information criteria
+
+Overthinking: Continuous mixtures
 
 ## 11.4 Summary  
 
 ## 11.5 Practice  
+
+11E1.
+
+11E2.
+
+11E3.
+
+11E4.
+
+11M1.
+
+11M2.
+
+11M3.
+
+11H1.
+
+R code 11.32
+
+11H2.
+
+11H3.
+
+11H4.
+
+11H5.
+
+11H6.
