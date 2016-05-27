@@ -11,7 +11,7 @@ output: html_document
 
 ## 10.1 Binomial regression  
 
-Figure 10.1. Chimpanzee prosociality experiment, as seen from the persepectiv of the focal animal. The left and right levers are indicated in the foreground. Pulling either expands an accordion device in the center, pushing the food tryas towards both ends of the table. Both food trays close to the focal animal have food in them. Only one of the food trays on th eother side contains food. The partner condition means another animal, as pictured, sits on the other end of the table. Otherwise, the other end was empty.
+Figure 10.1. Chimpanzee prosociality experiment, as seen from the perspective of the focal animal. The left and right levers are indicated in the foreground. Pulling either expands an accordion device in the center, pushing the food tryas towards both ends of the table. Both food trays close to the focal animal have food in them. Only one of the food trays on the other side contains food. The partner condition means another animal, as pictured, sits on the other end of the table. Otherwise, the other end was empty.
 
 R code 10.1
 
@@ -35,7 +35,7 @@ R code 10.10
 
 R code 10.11
 
-Figure 10.2. Model averaged posterior predictive check for the chimpanzee models. Along the horizontal axis, treatments are laid out. The vertical is the proportion of left lever pulls predicted (black) and observed (blue). Each blue trend is an individual chimpanzee. The shaded region is the 89% percential interval of the mean prediction. 
+Figure 10.2. Model averaged posterior predictive check for the chimpanzee models. Along the horizontal axis, treatments are laid out. The vertical is the proportion of left lever pulls predicted (black) and observed (blue). Each blue trend is an individual chimpanzee. The shaded region is the 89% percentile interval of the mean prediction. 
 
 R code 10.12
 
@@ -51,7 +51,7 @@ R code 10.17
 
 R code 10.18
 
-Figure 10.3. Marginal posterior density of a[2], the intercept for actor number 2. Very many vary large valeus are plausible. Since actor number 2 alwaos pulled the left-hand lever, the data cannot discriminate among these large values, as all of them guarantee pulling the left-hand lever.
+Figure 10.3. Marginal posterior density of a[2], the intercept for actor number 2. Very many vary large values are plausible. Since actor number 2 always pulled the left-hand lever, the data cannot discriminate among these large values, as all of them guarantee pulling the left-hand lever.
 
 R code 10.19
 
@@ -79,7 +79,7 @@ R code 10.26
 
 R code 10.27
 
-Figure 10.5. Posterior validation for model m10.6. Blue points are observed proportions admitted for each row in the data, with points from the same department connected by a blue line. Open points, the tiny vertical black lines within them, and the crosses are expected proprotions, 89% intervals of the expectation, and 89% interval of simulated samples, respectively.
+Figure 10.5. Posterior validation for model m10.6. Blue points are observed proportions admitted for each row in the data, with points from the same department connected by a blue line. Open points, the tiny vertical black lines within them, and the crosses are expected proportions, 89% intervals of the expectation, and 89% interval of simulated samples, respectively.
 
 R code 10.28
 
@@ -95,7 +95,7 @@ Rethinking: Simpson's paradox is not a paradox
 
 Overthinking: WAIC and aggregated binomial models
 
-### 10.1.4 Fittting binomial regressions with glm.
+### 10.1.4 Fitting binomial regressions with glm.
 
 R code 10.32
 
@@ -117,7 +117,7 @@ R code 10.38
 
 R code 10.39
 
-Figure 10.7. Locations of societs in the Kline data. The Equator and International Date Line are shown.
+Figure 10.7. Locations of societies in the Kline data. The Equator and International Date Line are shown.
 
 R code 10.40
 
@@ -129,7 +129,7 @@ R code 10.43
 
 R code 10.44
 
-Figure 10.8. Left: The distribution of plausible difference in avearge tool count between indentical islands at log-population of 8 but with different contact rates. Even though both the main effect of contact, bc, and the interaction with log-population, bpc, overalp zero, together they imply 95% plausibility that an island with high contact has more expected tools than an island with low contact. Right: Joint posterior distribution of bc and bpc, showing a strong negative correlation. Black line segments show the marginal poterior ditributins of both parameters. Neither parameter is conventually "significant," but together they imply that contact rate consistently influence prediction.
+Figure 10.8. Left: The distribution of plausible difference in average tool count between identical islands at log-population of 8 but with different contact rates. Even though both the main effect of contact, bc, and the interaction with log-population, bpc, overlap zero, together they imply 95% plausibility that an island with high contact has more expected tools than an island with low contact. Right: Joint posterior distribution of bc and bpc, showing a strong negative correlation. Black line segments show the marginal posterior distributions of both parameters. Neither parameter is conventionally "significant," but together they imply that contact rate consistently influence prediction.
 
 R code 10.45
 
@@ -147,7 +147,7 @@ R code 10.50
 
 Figure 10.10. Posterior distributions for models m10.10stan (left) and m10.stan.c (right).
 
-### 10.2.3 Example: Exposere and the offset
+### 10.2.3 Example: Exposure and the offset
 
 R code 10.51
 
