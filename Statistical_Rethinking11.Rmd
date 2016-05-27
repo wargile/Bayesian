@@ -31,6 +31,8 @@ R code 11.4
 
 Figure 11.1. Re-descibing a discrete distribution using log-cumulative odds. Right: Logarithm of cumulative odds of each response. Note that the log-cumulative-odds of response value 7 is infinity, so it is not shown.
 
+Figure 11.2. Cumulative probability and ordered likelihood. The horzontal axis displays possible observable outcomes, from 1 through 7. The vertical axis displays cumulative probability. The gray bars over each outcome show cumulative probability. These keep growing with each successive outcome value. The blue line segments show the discrete probability of each individual otucome. These are the likelihoods that go into Bayes' theorem.
+
 R code 11.5
 
 R code 11.6
@@ -41,7 +43,37 @@ R code 11.8
 
 ### 11.1.3 Adding predictor variables
 
+R code 11.9
+
+R code 11.10
+
+R code 11.11
+
+R code 11.12
+
+R code 11.13
+
+R code 11.14
+
+R code 11.15
+
+R code 11.16
+
+R code 11.17
+
+R code 11.18
+
+R code 11.19
+
+Figure 11.3. Posterior predictions of the ordered categorical model with interactions, m11.3. Each plot shows how the distribution of predicted responses varies by intention. Left: Effect of intention when action and contact are both zero. The other two plots each change either action or contact to one.
+
+Rethinking: Staring into the abyss
+
 ## 11.2 Zero-inflated outcomes  
+
+Rethinking: Breaking the law
+
+### 11.2.1 Example: Zero-inflated Poisson
 
 ## 11.3 Over-dispersed outcomes  
 
