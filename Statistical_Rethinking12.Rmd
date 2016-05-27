@@ -14,6 +14,10 @@ library(StanHeaders)
 
 by Richard McElreath
 
+**TODO:**
+
+1. Do practice problems
+
 # 12.0 Multilevel Models  
 
 Rethinking:  A model by any other name
