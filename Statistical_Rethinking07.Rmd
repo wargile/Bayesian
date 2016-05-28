@@ -9,6 +9,19 @@ output: html_document
 
 by Richard McElreath
 
+**TODO:**
+
+1. Add R code and format
+
+2. Run R code and check
+
+3. Do practice problems
+
+```{r, comment=NA}
+library(rethinking)
+library(StanHeaders)
+```
+
 # 7.0 Interactions  
 
 Figure 7.1. TOP: Dorsal scars for 5 adult Florida manatees. Rows of short scars, for example on the individuals Africa and Flash, are indicative of propeller laceration. BOTTOM: Three examples of damage on A.W.38 bombers returning from missions.
@@ -17,38 +30,93 @@ Rethinking: Statistics all-star, Abraham Wald
 
 ## 7.1 Building an interaction  
 
-R code 7.1
 ```{r, comment=NA}
+library(rethinking)
+data(rugged)
+d <- rugged
 
+# make log version of outcome
+d$log_gdp <- log( d$rgdppc_2000 )
+
+# extract countries with GDP data
+dd <- d[ complete.cases(d$rgdppc_2000) , ]
+
+# split countries into Africa and not-Africa
+d.A1 <- dd[ dd$cont_africa==1 , ] # Africa
+d.A0 <- dd[ dd$cont_africa==0 , ] # not Africa
 ```
 
-R code 7.2
 ```{r, comment=NA}
+# African nations
+m7.1 <- map(
+    alist(
+        log_gdp ~ dnorm( mu , sigma ) ,
+        mu <- a + bR*rugged ,
+        a ~ dnorm( 8 , 100 ) ,
+        bR ~ dnorm( 0 , 1 ) ,
+        sigma ~ dunif( 0 , 10 )
+    ) ,
+    data=d.A1 )
 
+# non-African nations
+m7.2 <- map(
+    alist(
+        log_gdp ~ dnorm( mu , sigma ) ,
+        mu <- a + bR*rugged ,
+        a ~ dnorm( 8 , 100 ) ,
+        bR ~ dnorm( 0 , 1 ) ,
+        sigma ~ dunif( 0 , 10 )
+    ) ,
+    data=d.A0 )
 ```
 
 Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GDP against terrain ruggedness. The slope is positive inside Africa, but negative outside. How can we recover this reversal of the slope, using the combined data?
 
 ### 7.1.1 Adding a dummy variable doesn't work
 
-R code 7.3
 ```{r, comment=NA}
-
+m7.3 <- map(
+    alist(
+        log_gdp ~ dnorm( mu , sigma ) ,
+        mu <- a + bR*rugged ,
+        a ~ dnorm( 8 , 100 ) ,
+        bR ~ dnorm( 0 , 1 ) ,
+        sigma ~ dunif( 0 , 10 )
+    ) ,
+    data=dd )
 ```
 
-R code 7.4
 ```{r, comment=NA}
-
+m7.4 <- map(
+    alist(
+        log_gdp ~ dnorm( mu , sigma ) ,
+        mu <- a + bR*rugged + bA*cont_africa ,
+        a ~ dnorm( 8 , 100 ) ,
+        bR ~ dnorm( 0 , 1 ) ,
+        bA ~ dnorm( 0 , 1 ) ,
+        sigma ~ dunif( 0 , 10 )
+    ) ,
+    data=dd )
 ```
 
-R code 7.5
 ```{r, comment=NA}
-
+compare( m7.3 , m7.4 )
 ```
 
-R code 7.6
 ```{r, comment=NA}
+rugged.seq <- seq(from=-1,to=8,by=0.25)
 
+# compute mu over samples, fixing cont_africa=0
+mu.NotAfrica <- link( m7.4 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
+
+# compute mu over samples, fixing cont_africa=1
+mu.Africa <- link( m7.4 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
+
+# summarize to means and intervals
+mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
+mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
+mu.Africa.mean <- apply( mu.Africa , 2 , mean )
+mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
 ```
 
 Figure 7.3. Including a dummy variable for African nations has no effect on the slope. African nations are show in blue. Non-African nations are shown in gray. Regression means for each subset of nations are shown in corresponding colors, along with 97% intervals shown by shading.
@@ -57,33 +125,73 @@ Rethinking: Why 97%?
 
 ### 7.1.2 Adding a linear interaction does work
 
-R code 7.7
 ```{r, comment=NA}
-
+m7.5 <- map(
+    alist(
+        log_gdp ~ dnorm( mu , sigma ) ,
+        mu <- a + gamma*rugged + bA*cont_africa ,
+        gamma <- bR + bAR*cont_africa ,
+        a ~ dnorm( 8 , 100 ) ,
+        bA ~ dnorm( 0 , 1 ) ,
+        bR ~ dnorm( 0 , 1 ) ,
+        bAR ~ dnorm( 0 , 1 ) ,
+        sigma ~ dunif( 0 , 10 )
+    ) ,
+    data=dd )
 ```
 
-R code 7.8
 ```{r, comment=NA}
-
+compare( m7.3 , m7.4 , m7.5 )
 ```
 
 Overthinking: Conventional form of interaction
 
-R code 7.9
 ```{r, comment=NA}
-
+m7.5b <- map(
+    alist(
+        log_gdp ~ dnorm( mu , sigma ) ,
+        mu <- a + bR*rugged + bAR*rugged*cont_africa + bA*cont_africa,
+        a ~ dnorm( 8 , 100 ) ,
+        bA ~ dnorm( 0 , 1 ) ,
+        bR ~ dnorm( 0 , 1 ) ,
+        bAR ~ dnorm( 0 , 1 ) ,
+        sigma ~ dunif( 0 , 10 )
+    ) ,
+    data=dd )
 ```
 
 ### 7.1.3 Plotting the interaction
 
-R code 7.10
 ```{r, comment=NA}
+rugged.seq <- seq(from=-1,to=8,by=0.25)
 
+mu.Africa <- link( m7.5 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
+mu.Africa.mean <- apply( mu.Africa , 2 , mean )
+mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
+
+mu.NotAfrica <- link( m7.5 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
+mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
+mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
 ```
 
-R code 7.11
 ```{r, comment=NA}
+# plot African nations with regression
+d.A1 <- dd[dd$cont_africa==1,]
+plot( log(rgdppc_2000) ~ rugged , data=d.A1 ,
+    col=rangi2 , ylab="log GDP year 2000" ,
+    xlab="Terrain Ruggedness Index" )
+mtext( "African nations" , 3 )
+lines( rugged.seq , mu.Africa.mean , col=rangi2 )
+shade( mu.Africa.PI , rugged.seq , col=col.alpha(rangi2,0.3) )
 
+# plot non-African nations with regression
+d.A0 <- dd[dd$cont_africa==0,]
+plot( log(rgdppc_2000) ~ rugged , data=d.A0 ,
+    col="black" , ylab="log GDP year 2000" ,
+    xlab="Terrain Ruggedness Index" )
+mtext( "Non-African nations" , 3 )
+lines( rugged.seq , mu.NotAfrica.mean )
+shade( mu.NotAfrica.PI , rugged.seq )
 ```
 
 Figure 7.4. Posterior predictions for the terrain ruggedness model, including the interaction between Africa and ruggedness. Shaded regions are 97% posterior intervals of the mean.
@@ -92,33 +200,34 @@ Figure 7.4. Posterior predictions for the terrain ruggedness model, including th
 
 #### 7.1.4.1 Parameters change meaning
 
-R code 7.12
 ```{r, comment=NA}
-
+precis(m7.5)
 ```
 
 #### 7.1.4.2 Incorporating uncertainty
 
-R code 7.13
 ```{r, comment=NA}
-
+post <- extract.samples( m7.5 )
+gamma.Africa <- post$bR + post$bAR*1
+gamma.notAfrica <- post$bR + post$bAR*0
 ```
 
-R code 7.14
 ```{r, comment=NA}
-
+mean( gamma.Africa)
+mean( gamma.notAfrica )
 ```
 
-R code 7.15
 ```{r, comment=NA}
-
+dens( gamma.Africa , xlim=c(-0.5,0.6) , ylim=c(0,5.5) ,
+    xlab="gamma" , col=rangi2 )
+dens( gamma.notAfrica , add=TRUE )
 ```
 
 Figure 7.5. Posterior distribution of the slop relating terrain ruggedness to log-GDP. Blue: African nations. Black: non-African nations.
 
-R code 7.16
 ```{r, comment=NA}
-
+diff <- gamma.Africa - gamma.notAfrica
+sum( diff < 0 ) / length( diff )
 ```
 
 Rethinking: More on the meaning of posterior probability
@@ -129,9 +238,33 @@ Rethinking: More on the meaning of posterior probability
 
 ### 7.2.2 African depends upon ruggedness
 
-R code 7.17
 ```{r, comment=NA}
+# get minimum and maximum rugged values
+q.rugged <- range(dd$rugged)
 
+# compute lines and confidence intervals
+mu.ruggedlo <- link( m7.5 ,
+    data=data.frame(rugged=q.rugged[1],cont_africa=0:1) )
+mu.ruggedlo.mean <- apply( mu.ruggedlo , 2 , mean )
+mu.ruggedlo.PI <- apply( mu.ruggedlo , 2 , PI )
+
+mu.ruggedhi <- link( m7.5 ,
+    data=data.frame(rugged=q.rugged[2],cont_africa=0:1) )
+mu.ruggedhi.mean <- apply( mu.ruggedhi , 2 , mean )
+mu.ruggedhi.PI <- apply( mu.ruggedhi , 2 , PI )
+
+# plot it all, splitting points at median
+med.r <- median(dd$rugged)
+ox <- ifelse( dd$rugged > med.r , 0.05 , -0.05 )
+plot( dd$cont_africa + ox , log(dd$rgdppc_2000) ,
+    col=ifelse(dd$rugged>med.r,rangi2,"black") ,
+    xlim=c(-0.25,1.25) , xaxt="n" , ylab="log GDP year 2000" ,
+    xlab="Continent" )
+axis( 1 , at=c(0,1) , labels=c("other","Africa") )
+lines( 0:1 , mu.ruggedlo.mean , lty=2 )
+shade( mu.ruggedlo.PI , 0:1 )
+lines( 0:1 , mu.ruggedhi.mean , col=rangi2 )
+shade( mu.ruggedhi.PI , 0:1 , col=col.alpha(rangi2,0.25) )
 ```
 
 Figure 7.6. The other side of the interaction between ruggedness and continent. Blue points are nations with above-median ruggedness. Black points are below the median. Dashed black line: relationship between continent and log-GDP, for an imaginary nation with minimum observed ruggedness (0.003). Blue line: an imaginary nation with maximum observed ruggedness (6.2).
@@ -140,100 +273,174 @@ Figure 7.6. The other side of the interaction between ruggedness and continent. 
 
 ### 7.3.1 The data
 
-R code 7.18
 ```{r, comment=NA}
-
+library(rethinking)
+data(tulips)
+d <- tulips
+str(d)
 ```
 
 ### 7.3.2 The un-centered models
 
-R code 7.19
 ```{r, comment=NA}
-
+m7.6 <- map(
+    alist(
+        blooms ~ dnorm( mu , sigma ) ,
+        mu <- a + bW*water + bS*shade ,
+        a ~ dnorm( 0 , 100 ) ,
+        bW ~ dnorm( 0 , 100 ) ,
+        bS ~ dnorm( 0 , 100 ) ,
+        sigma ~ dunif( 0 , 100 )
+    ) ,
+    data=d )
+m7.7 <- map(
+    alist(
+        blooms ~ dnorm( mu , sigma ) ,
+        mu <- a + bW*water + bS*shade + bWS*water*shade ,
+        a ~ dnorm( 0 , 100 ) ,
+        bW ~ dnorm( 0 , 100 ) ,
+        bS ~ dnorm( 0 , 100 ) ,
+        bWS ~ dnorm( 0 , 100 ) ,
+        sigma ~ dunif( 0 , 100 )
+    ) ,
+    data=d )
 ```
 
-R code 7.20
 ```{r, comment=NA}
-
+m7.6 <- map(
+    alist(
+        blooms ~ dnorm( mu , sigma ) ,
+        mu <- a + bW*water + bS*shade ,
+        a ~ dnorm( 0 , 100 ) ,
+        bW ~ dnorm( 0 , 100 ) ,
+        bS ~ dnorm( 0 , 100 ) ,
+        sigma ~ dunif( 0 , 100 )
+    ) ,
+    data=d ,
+    method="Nelder-Mead" ,
+    control=list(maxit=1e4) )
+m7.7 <- map(
+    alist(
+        blooms ~ dnorm( mu , sigma ) ,
+        mu <- a + bW*water + bS*shade + bWS*water*shade ,
+        a ~ dnorm( 0 , 100 ) ,
+        bW ~ dnorm( 0 , 100 ) ,
+        bS ~ dnorm( 0 , 100 ) ,
+        bWS ~ dnorm( 0 , 100 ) ,
+        sigma ~ dunif( 0 , 100 )
+    ) ,
+    data=d ,
+    method="Nelder-Mead" ,
+    control=list(maxit=1e4) )
 ```
 
-R code 7.21
 ```{r, comment=NA}
-
+coeftab(m7.6,m7.7)
 ```
 
-R code 7.22
 ```{r, comment=NA}
-
+compare( m7.6 , m7.7 )
 ```
 
 Rethinking: Fighting with your robot
 
 ### 7.3.3 Center and re-estimate
 
-R code 7.23
 ```{r, comment=NA}
-
+d$shade.c <- d$shade - mean(d$shade)
+d$water.c <- d$water - mean(d$water)
 ```
 
-R code 7.24
 ```{r, comment=NA}
-
+m7.8 <- map(
+    alist(
+        blooms ~ dnorm( mu , sigma ) ,
+        mu <- a + bW*water.c + bS*shade.c ,
+        a ~ dnorm( 130 , 100 ) ,
+        bW ~ dnorm( 0 , 100 ) ,
+        bS ~ dnorm( 0 , 100 ) ,
+        sigma ~ dunif( 0 , 100 )
+    ) ,
+    data=d ,
+    start=list(a=mean(d$blooms),bW=0,bS=0,sigma=sd(d$blooms)) )
+m7.9 <- map(
+    alist(
+        blooms ~ dnorm( mu , sigma ) ,
+        mu <- a + bW*water.c + bS*shade.c + bWS*water.c*shade.c ,
+        a ~ dnorm( 130 , 100 ) ,
+        bW ~ dnorm( 0 , 100 ) ,
+        bS ~ dnorm( 0 , 100 ) ,
+        bWS ~ dnorm( 0 , 100 ) ,
+        sigma ~ dunif( 0 , 100 )
+    ) ,
+    data=d ,
+    start=list(a=mean(d$blooms),bW=0,bS=0,bWS=0,sigma=sd(d$blooms)) )
+coeftab(m7.8,m7.9)
 ```
 
 #### 7.3.3.1 Estimation worked better
 
 #### 7.3.3.2 Estimates changed less across models
 
-R code 7.25
 ```{r, comment=NA}
-
+k <- coef(m7.7)
+k[1] + k[2]*2 + k[3]*2 + k[4]*2*2
 ```
 
-R code 7.26
 ```{r, comment=NA}
-
+k <- coef(m7.9)
+k[1] + k[2]*0 + k[3]*0 + k[4]*0*0
 ```
 
-R code 7.27
 ```{r, comment=NA}
-
+precis(m7.9)
 ```
 
 ### 7.3.4 Plotting implied predictions
 
-R code 7.28
 ```{r, comment=NA}
+# make a plot window with three panels in a single row
+par(mfrow=c(1,3)) # 1 row, 3 columns
 
+# loop over values of water.c and plot predictions
+shade.seq <- -1:1
+for ( w in -1:1 ) {
+    dt <- d[d$water.c==w,]
+    plot( blooms ~ shade.c , data=dt , col=rangi2 ,
+        main=paste("water.c =",w) , xaxp=c(-1,1,2) , ylim=c(0,362) ,
+        xlab="shade (centered)" )
+    mu <- link( m7.9 , data=data.frame(water.c=w,shade.c=shade.seq) )
+    mu.mean <- apply( mu , 2 , mean )
+    mu.PI <- apply( mu , 2 , PI , prob=0.97 )
+    lines( shade.seq , mu.mean )
+    lines( shade.seq , mu.PI[1,] , lty=2 )
+    lines( shade.seq , mu.PI[2,] , lty=2 )
+}
 ```
 
 Figure 7.7. Triptych plot of predicted blooms across water treatments, without (top row) and with (bottom row) an interaction effect. Blue points in each plot are data. The solid line is the posterior mean and the dashed lines give 97% interval of the mean. Top row: Without the interaction, model m7.8. Each of the tree plots of blooms against shade level is for a different water level. The slope of the regression line in each case is exactly the same, because there is no interaction in this model. Bottom row: With the interaction, model m7.9. Now the slope of blooms against shade has a different value in each plot.
 
 ## 7.4 Interactions in design formulas  
 
-R code 7.29
 ```{r, comment=NA}
-
+m7.x <- lm( y ~ x + z + x*z , data=d )
 ```
 
-R code 7.30
 ```{r, comment=NA}
-
+m7.x <- lm( y ~ x*z , data=d )
 ```
 
-R code 7.31
 ```{r, comment=NA}
-
+m7.x <- lm( y ~ x + x*z - z , data=d )
 ```
 
-R code 7.32
 ```{r, comment=NA}
-
+m7.x <- lm( y ~ x*z*w , data=d )
 ```
 
-R code 7.33
 ```{r, comment=NA}
-
+x <- z <- w <- 1
+colnames( model.matrix(~x*z*w) )
 ```
 
 ## 7.5 Summary  
@@ -260,7 +467,6 @@ R code 7.33
 
 7H4
 
-R code 7.34
 ```{r, comment=NA}
-
+d$lang.per.cap <- d$num.lang / d$k.pop
 ```

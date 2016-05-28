@@ -5,6 +5,14 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+**TODO:**
+
+1. Add R code and format
+
+2. Run R code and check
+
+3. Do practice problems
+
 ```{r, comment=NA}
 library(rethinking)
 library(StanHeaders)
@@ -24,7 +32,6 @@ Rethinking: Causal inference.
 
 Figure 5.2. Divorce rate is associated with both marriage rate (left) and median age marriage (right). Both predictor variables are standardized in this example. The average marriage rate across States is 20 per 1000 adults, and the average median age at marriage is 26 years.
 
-R code 5.1
 ```{r, comment=NA}
 # load data
 library(rethinking)
@@ -46,7 +53,6 @@ m5.1 <- map(
     ) , data = d )
 ```
 
-R code 5.2
 ```{r, comment=NA}
 # compute percentile interval of mean
 MAM.seq <- seq( from=-3 , to=3.5 , length.out=30 )
@@ -59,7 +65,6 @@ abline( m5.1 )
 shade( mu.PI , MAM.seq )
 ```
 
-R code 5.3
 ```{r, comment=NA}
 d$Marriage.s <- (d$Marriage - mean(d$Marriage))/sd(d$Marriage)
 m5.2 <- map(
@@ -80,7 +85,6 @@ Overthinking: Compact notation and the design matrix
 
 ### 5.1.2 Fitting the model
 
-R code 5.4
 ```{r, comment=NA}
 m5.3 <- map(
     alist(
@@ -95,7 +99,6 @@ m5.3 <- map(
 precis( m5.3 )
 ```
 
-R code 5.5
 ```{r, comment=NA}
 plot( precis(m5.3) )
 ```
@@ -104,7 +107,6 @@ plot( precis(m5.3) )
 
 #### 5.1.3.1 Predictor residual plots
 
-R code 5.6
 ```{r, comment=NA}
 m5.4 <- map(
     alist(
@@ -117,7 +119,6 @@ m5.4 <- map(
     data = d )
 ```
 
-R code 5.7
 ```{r, comment=NA}
 # compute expected value at MAP, for each State
 mu <- coef(m5.4)['a'] + coef(m5.4)['b']*d$MedianAgeMarriage.s
@@ -125,7 +126,6 @@ mu <- coef(m5.4)['a'] + coef(m5.4)['b']*d$MedianAgeMarriage.s
 m.resid <- d$Marriage.s - mu
 ```
 
-R code 5.8
 ```{r, comment=NA}
 plot( Marriage.s ~ MedianAgeMarriage.s , d , col=rangi2 )
 abline( m5.4 )
@@ -144,7 +144,6 @@ Figure 5.4. Predictor residual plots for the divorce data. Left: States with fas
 
 #### 5.1.3.2 Counterfactual plots
 
-R code 5.9
 ```{r, comment=NA}
 # prepare new counterfactual data
 A.avg <- mean( d$MedianAgeMarriage.s )
@@ -173,7 +172,6 @@ shade( R.PI , R.seq )
 
 Figure 5.5. Counterfactual plots for the multivariate divorce model, m5.3. Each plot shows the chagne in predicted mean across values of a single predictor, holding the other predictor constant at its mean value (zero in both cases). Shaded regions show 89% percentile intervals of the mean (dark, narrow) and 89% prediction intervals (light, wide).
 
-R code 5.10
 ```{r, comment=NA}
 R.avg <- mean( d$Marriage.s )
 A.seq <- seq( from=-3 , to=3.5 , length.out=30 )
@@ -198,7 +196,6 @@ shade( A.PI , A.seq )
 
 #### 5.1.3.3 Posterior prediction plots
 
-R code 5.11
 ```{r, comment=NA}
 # call link without specifying new data
 # so it uses original data
@@ -214,7 +211,6 @@ divorce.sim <- sim( m5.3 , n=1e4 )
 divorce.PI <- apply( divorce.sim , 2 , PI )
 ```
 
-R code 5.12
 ```{r, comment=NA}
 plot( mu.mean ~ d$Divorce , col=rangi2 , ylim=range(mu.PI) ,
     xlab="Observed divorce" , ylab="Predicted divorce" )
@@ -226,12 +222,10 @@ for ( i in 1:nrow(d) )
 
 Figure 5.6. Posterior predictive plots for the multivariate divorce model, m5.3. (a) Predicted divorce rate against observed, with 89% confidence intervals of the average prediction. The dashed line shows perfect prediction. (b) Average prediction error for each State, with 89% interval of the mean (black line) and 89% interval of the mean error (residuals) against number of Waffle House per capita, with superimposed regression of the two variables.
 
-R code 5.13
 ```{r, comment=NA}
 identify( x=d$Divorce , y=mu.mean , labels=d$Loc , cex=0.8 )
 ```
 
-R code 5.14
 ```{r, comment=NA}
 # compute residuals
 divorce.resid <- d$Divorce - mu.mean
@@ -252,7 +246,6 @@ Rethinking: Stats, huh, yeah what is good for?
 
 Overthinking: Simulating spurious association
 
-R code 5.15
 ```{r, comment=NA}
 N <- 100                         # number of cases
 x_real <- rnorm( N )             # x_real as Gaussian with mean 0 and stddev 1
@@ -263,7 +256,6 @@ d <- data.frame(y,x_real,x_spur) # bind all together in data frame
 
 ## 5.2 Masked relationship  
 
-R code 5.16
 ```{r, comment=NA}
 library(rethinking)
 data(milk)
@@ -271,7 +263,6 @@ d <- milk
 str(d)
 ```
 
-R code 5.17
 ```{r, comment=NA}
 m5.5 <- map(
     alist(
@@ -284,17 +275,14 @@ m5.5 <- map(
     data=d )
 ```
 
-R code 5.18
 ```{r, comment=NA}
 d$neocortex.perc
 ```
 
-R code 5.19
 ```{r, comment=NA}
 dcc <- d[ complete.cases(d) , ]
 ```
 
-R code 5.20
 ```{r, comment=NA}
 m5.5 <- map(
     alist(
@@ -307,17 +295,14 @@ m5.5 <- map(
     data=dcc )
 ```
 
-R code 5.21
 ```{r, comment=NA}
 precis( m5.5 , digits=3 )
 ```
 
-R code 5.22
 ```{r, comment=NA}
 coef(m5.5)["bn"] * ( 76 - 55 )
 ```
 
-R code 5.23
 ```{r, comment=NA}
 np.seq <- 0:100
 pred.data <- data.frame( neocortex.perc=np.seq )
@@ -332,12 +317,10 @@ lines( np.seq , mu.PI[1,] , lty=2 )
 lines( np.seq , mu.PI[2,] , lty=2 )
 ```
 
-R code 5.24
 ```{r, comment=NA}
 dcc$log.mass <- log(dcc$mass)
 ```
 
-R code 5.25
 ```{r, comment=NA}
 m5.6 <- map(
     alist(
@@ -353,7 +336,6 @@ precis(m5.6)
 
 Figure 5.7. Milk energy and neocortex among primates. In the top two plots, simple bivariate regressions of kilocalories per gram of milk on (left) neocortex percent and (right) log female body mass how wear and uncertain associations. However, on the bottom, a single regression with both neocortex percent and log body mass suggests strong association with both variables. Both neocortex and body mass are associate with milk energy, but in opposite directions. This masks each variable's relationship with the outcome, unless both are considered simultaneously.
 
-R code 5.26
 ```{r, comment=NA}
 m5.7 <- map(
     alist(
@@ -368,7 +350,6 @@ m5.7 <- map(
 precis(m5.7)
 ```
 
-R code 5.27
 ```{r, comment=NA}
 mean.log.mass <- mean( log(dcc$mass) )
 np.seq <- 0:100
@@ -389,7 +370,6 @@ lines( np.seq , mu.PI[2,] , lty=2 )
 
 Overthinking: Simulating a masking relationship
 
-R code 5.28
 ```{r, comment=NA}
 N <- 100                         # number of cases
 rho <- 0.7                       # correlation btw x_pos and x_neg
@@ -404,7 +384,6 @@ d <- data.frame(y,x_pos,x_neg)   # bind all together in data frame
 
 ### 5.3.1 Multicollinear legs
 
-R code 5.29
 ```{r, comment=NA}
 N <- 100                          # number of individuals
 height <- rnorm(N,10,2)           # sim total height of each
@@ -417,7 +396,6 @@ leg_right <- leg_prop*height +    # sim right leg as proportion + error
 d <- data.frame(height,leg_left,leg_right)
 ```
 
-R code 5.30
 ```{r, comment=NA}
 m5.8 <- map(
     alist(
@@ -432,12 +410,10 @@ m5.8 <- map(
 precis(m5.8)
 ```
 
-R code 5.31
 ```{r, comment=NA}
 plot(precis(m5.8))
 ```
 
-R code 5.32
 ```{r, comment=NA}
 post <- extract.samples(m5.8)
 plot( bl ~ br , post , col=col.alpha(rangi2,0.1) , pch=16 )
@@ -445,13 +421,11 @@ plot( bl ~ br , post , col=col.alpha(rangi2,0.1) , pch=16 )
 
 Figure 5.8. Left: Posterior distribution of the association of each leg with height, from model m5.8. Since both variables contain almost identical information, the posterior is a narrow ridge of negatively correlated values. Right: The posterior distribution of the sum of the two parameters is centered on the proper association of either leg with height.
 
-R code 5.33
 ```{r, comment=NA}
 sum_blbr <- post$bl + post$br
 dens( sum_blbr , col=rangi2 , lwd=2 , xlab="sum of bl and br" )
 ```
 
-R code 5.34
 ```{r, comment=NA}
 m5.9 <- map(
     alist(
@@ -467,14 +441,12 @@ precis(m5.9)
 
 ### 5.3.2 Multicollinear milk
 
-R code 5.35
 ```{r, comment=NA}
 library(rethinking)
 data(milk)
 d <- milk
 ```
 
-R code 5.36
 ```{r, comment=NA}
 # kcal.per.g regressed on perc.fat
 m5.10 <- map(
@@ -502,7 +474,6 @@ precis( m5.10 , digits=3 )
 precis( m5.11 , digits=3 )
 ```
 
-R code 5.37
 ```{r, comment=NA}
 m5.12 <- map(
     alist(
@@ -517,7 +488,6 @@ m5.12 <- map(
 precis( m5.12 , digits=3 )
 ```
 
-R code 5.38
 ```{r, comment=NA}
 pairs( ~ kcal.per.g + perc.fat + perc.lactose ,
     data=d , col=rangi2 )
@@ -525,7 +495,6 @@ pairs( ~ kcal.per.g + perc.fat + perc.lactose ,
 
 Figure 5.9. A pairs plot of the total energy, percent fat, and percent lactose variables from the primate milk data. Percent fat and percent lactose are strongly negatively correlated with one another, providing mostly the same information.
 
-R code 5.39
 ```{r, comment=NA}
 cor( d$perc.fat , d$perc.lactose )
 ```
@@ -536,7 +505,6 @@ Rethinking: Identification guaranteed, comprehension up to you
 
 Overthinking: Simulating collinearity
 
-R code 5.40
 ```{r, comment=NA}
 library(rethinking)
 data(milk)
@@ -558,7 +526,6 @@ plot( stddev ~ r.seq , type="l" , col=rangi2, lwd=2 , xlab="correlation" )
 
 ### 5.3.3 Post-treatment bias
 
-R code 5.41
 ```{r, comment=NA}
 # number of plants
 N <- 100
@@ -575,7 +542,6 @@ h1 <- h0 + rnorm(N, 5 - 3*fungus)
 d <- data.frame( h0=h0 , h1=h1 , treatment=treatment , fungus=fungus )
 ```
 
-R code 5.42
 ```{r, comment=NA}
 m5.13 <- map(
     alist(
@@ -589,7 +555,6 @@ m5.13 <- map(
 precis(m5.13)
 ```
 
-R code 5.43
 ```{r, comment=NA}
 m5.14 <- map(
     alist(
@@ -609,14 +574,12 @@ Rethinking: Model comparison doesn't help
 
 ### 5.4.1 Binary categories
 
-R code 5.44
 ```{r, comment=NA}
 data(Howell1)
 d <- Howell1
 str(d)
 ```
 
-R code 5.45
 ```{r, comment=NA}
 m5.15 <- map(
     alist(
@@ -630,7 +593,6 @@ m5.15 <- map(
 precis(m5.15)
 ```
 
-R code 5.46
 ```{r, comment=NA}
 post <- extract.samples(m5.15)
 mu.male <- post$a + post$bm
@@ -639,7 +601,6 @@ PI(mu.male)
 
 Overthinking: Re-parameterizing the model
 
-R code 5.47
 ```{r, comment=NA}
 m5.15b <- map(
     alist(
@@ -654,25 +615,21 @@ m5.15b <- map(
 
 ### 5.4.2 Many categories
 
-R code 5.48
 ```{r, comment=NA}
 data(milk)
 d <- milk
 unique(d$clade)
 ```
 
-R code 5.49
 ```{r, comment=NA}
 ( d$clade.NWM <- ifelse( d$clade=="New World Monkey" , 1 , 0 ) )
 ```
 
-R code 5.50
 ```{r, comment=NA}
 d$clade.OWM <- ifelse( d$clade=="Old World Monkey" , 1 , 0 )
 d$clade.S <- ifelse( d$clade=="Strepsirrhine" , 1 , 0 )
 ```
 
-R code 5.51
 ```{r, comment=NA}
 m5.16 <- map(
     alist(
@@ -688,7 +645,6 @@ m5.16 <- map(
 precis(m5.16)
 ```
 
-R code 5.52
 ```{r, comment=NA}
 # sample posterior
 post <- extract.samples(m5.16)
@@ -703,7 +659,6 @@ mu.S <- post$a + post$b.S
 precis( data.frame(mu.ape,mu.NWM,mu.OWM,mu.S) )
 ```
 
-R code 5.53
 ```{r, comment=NA}
 diff.NWM.OWM <- mu.NWM - mu.OWM
 quantile( diff.NWM.OWM , probs=c(0.025,0.5,0.975) )
@@ -715,11 +670,11 @@ Rethinking: Differences and statistical significance
 
 ### 5.4.4 Another approach: Unique intercepts
 
-R code 5.54
 ```{r, comment=NA}
 ( d$clade_id <- coerce_index(d$clade) )
+```
 
-## R code 5.55
+```{r, comment=NA}
 m5.16_alt <- map(
     alist(
         kcal.per.g ~ dnorm( mu , sigma ) ,
@@ -731,18 +686,12 @@ m5.16_alt <- map(
 precis( m5.16_alt , depth=2 )
 ```
 
-R code 5.55
-```{r, comment=NA}
-
-```
-
 ## 5.5 Ordinary least squares and lm  
 
 ### 5.5.1 Design formulas
 
 ### 5.5.2 Using lm
 
-R code 5.56
 ```{r, comment=NA}
 m5.17 <- lm( y ~ 1 + x , data=d )
 m5.18 <- lm( y ~ 1 + x + z + w , data=d )
@@ -750,13 +699,11 @@ m5.18 <- lm( y ~ 1 + x + z + w , data=d )
 
 #### 5.5.2.1 Intercepts are optional
 
-R code 5.57
 ```{r, comment=NA}
 m5.17 <- lm( y ~ 1 + x , data=d )
 m5.19 <- lm( y ~ x , data=d )
 ```
 
-R code 5.58
 ```{r, comment=NA}
 m5.20 <- lm( y ~ 0 + x , data=d )
 m5.21 <- lm( y ~ x - 1 , data=d )
@@ -764,21 +711,18 @@ m5.21 <- lm( y ~ x - 1 , data=d )
 
 #### 5.5.2.2 Categorical variables
 
-R code 5.59
 ```{r, comment=NA}
 m5.22 <- lm( y ~ 1 + as.factor(season) , data=d )
 ```
 
 #### 5.5.2.3 Transform variables first
 
-R code 5.60
 ```{r, comment=NA}
 d$x2 <- d$x^2
 d$x3 <- d$x^3
 m5.23 <- lm( y ~ 1 + x + x2 + x3 , data=d )
 ```
 
-R code 5.61
 ```{r, comment=NA}
 m5.24 <- lm( y ~ 1 + x + I(x^2) + I(x^3) , data=d )
 ```
@@ -787,7 +731,6 @@ m5.24 <- lm( y ~ 1 + x + I(x^2) + I(x^3) , data=d )
 
 ### 5.5.3 Building map formulas from lm formulas
 
-R code 5.62
 ```{r, comment=NA}
 data(cars)
 glimmer( dist ~ speed , data=cars )

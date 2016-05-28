@@ -5,6 +5,19 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+**TODO:**
+
+1. Format R code
+
+2. Run R code and check
+
+3. Do practice problems
+
+```{r, comment=NA}
+library(rethinking)
+library(StanHeaders)
+```
+
 *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
 
 # 10.0 Counting and Classification  

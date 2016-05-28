@@ -5,6 +5,12 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+**TODO:**
+
+1. Run R code and check
+
+2. Do practice problems
+
 ```{r, comment=NA}
 library(rethinking)
 library(StanHeaders)
@@ -65,7 +71,6 @@ Rethinking: Deflationary statistics
 
 ### 2.3.1 Likelihood
 
-R code 2.2
 ```{r, comment=NA}
 dbinom(6, size = 9, prob = 0.5)
 ```
@@ -96,7 +101,6 @@ Rethinking: How you fit the model is part of the model
 
 ### 2.4.1 Grid approximation
 
-R code 2.3
 ```{r, comment=NA}
 # define grid
 p_grid <- seq(from = 0, to = 1, length.out = 20)
@@ -114,7 +118,6 @@ unstd.posterior <- likelihood*prior
 posterior <- unstd.posterior/sum(unstd.posterior)
 ```
 
-R code 2.4
 ```{r, comment=NA}
 plot(p_grid, posterior, type = "b",
      xlab = "probability of water", ylab = "posterior probability")
@@ -123,7 +126,6 @@ mtext("20 points")
 
 Figure 2.7. Computing posterior distribution by grid approximation. In each plot, the posterior distribution for the globe toss data and model is approximated with a finite number of evenly spaced points. With only 5 points (left), the approximation is terrible. But with 20 points (right), the approximation is already quite good. Compare to the analytically solved, exact posterior distribution in Figure 2.5 (page 30).
 
-R code 2.5
 ```{r, comment=NA}
 prior <- ifelse(p_grid < 0.5, 0, 1)
 prior <- exp(-5*abs(p_grid - 0.5))
@@ -133,7 +135,6 @@ Overthinking: Vectorization
 
 ### 2.4.2 Quadratic approximation
 
-R code 2.6
 ```{r, comment=NA}
 globe.qa <- map(
   alist(
@@ -147,7 +148,6 @@ globe.qa <- map(
 precis(globe.qa)
 ```
 
-R code 2.7
 ```{r, comment=NA}
 # analytical calculation
 w <- 6

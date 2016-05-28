@@ -5,6 +5,14 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+**TODO:**
+
+1. Format R code
+
+2. Run R code and check
+
+3. Do practice problems
+
 ```{r, comment=NA}
 library(rethinking)
 library(StanHeaders)
@@ -22,7 +30,6 @@ Figure 4.1. The Ptolemaic Universe, in which complex motion of the planets in th
 
 ### 4.1.1 Normal by addition
 
-R code 4.1
 ```{r, comment=NA}
 pos <- replicate( 1000 , sum( runif(16,-1,1) ) )
 ```
@@ -31,18 +38,15 @@ Figure 4.2. Random walks on the soccer field converge to a normal distribution. 
 
 ### 4.1.2 Normal by multiplication
 
-R code 4.2
 ```{r, comment=NA}
 prod( 1 + runif(12,0,0.1) )
 ```
 
-R code 4.3
 ```{r, comment=NA}
 growth <- replicate( 10000 , prod( 1 + runif(12,0,0.1) ) )
 dens( growth , norm.comp=TRUE )
 ```
 
-R code 4.4
 ```{r, comment=NA}
 big <- replicate( 10000 , prod( 1 + runif(12,0,0.5) ) )
 small <- replicate( 10000 , prod( 1 + runif(12,0,0.01) ) )
@@ -50,7 +54,6 @@ small <- replicate( 10000 , prod( 1 + runif(12,0,0.01) ) )
 
 ### 4.1.3 Normal by log-multiplication
 
-R code 4.5
 ```{r, comment=NA}
 log.big <- replicate( 10000 , log(prod(1 + runif(12,0,0.5))) )
 ```
@@ -69,7 +72,6 @@ Overthinking: Gaussian distribution
 
 Overthinking: From model definition to Bayes' theorem
 
-R code 4.6
 ```{r, comment=NA}
 w <- 6; n <- 9;
 p_grid <- seq(from=0,to=1,length.out=100)
@@ -81,26 +83,22 @@ posterior <- posterior/sum(posterior)
 
 ### 4.3.1 The data
 
-R code 4.7
 ```{r, comment=NA}
 library(rethinking)
 data(Howell1)
 d <- Howell1
 ```
 
-R code 4.8
 ```{r, comment=NA}
 str( d )
 ```
 
-R code 4.9
 ```{r, comment=NA}
 d$height
 ```
 
 Overthinking: Data frames
 
-R code 4.10
 ```{r, comment=NA}
 d2 <- d[ d$age >= 18 , ]
 ```
@@ -111,12 +109,10 @@ Overthinking: Index magic
 
 Rethinking: Independent and identically distributed
 
-R code 4.11
 ```{r, comment=NA}
 curve( dnorm( x , 178 , 20 ) , from=100 , to=250 )
 ```
 
-R code 4.12
 ```{r, comment=NA}
 curve( dunif( x , 0 , 50 ) , from=-10 , to=60 )
 ```
@@ -135,7 +131,6 @@ dens( prior_h )
 
 ### 4.3.3 Grid approximation of the posterior distribution
 
-R code 4.14
 ```{r, comment=NA}
 mu.list <- seq( from=140, to=160 , length.out=200 )
 sigma.list <- seq( from=4 , to=9 , length.out=200 )
@@ -150,19 +145,16 @@ post$prod <- post$LL + dnorm( post$mu , 178 , 20 , TRUE ) +
 post$prob <- exp( post$prod - max(post$prod) )
 ```
 
-R code 4.15
 ```{r, comment=NA}
 contour_xyz( post$mu , post$sigma , post$prob )
 ```
 
-R code 4.16
 ```{r, comment=NA}
 image_xyz( post$mu , post$sigma , post$prob )
 ```
 
 ### 4.3.4 Sampling from the posterior
 
-R code 4.17
 ```{r, comment=NA}
 sample.rows <- sample( 1:nrow(post) , size=1e4 , replace=TRUE ,
     prob=post$prob )
@@ -170,18 +162,15 @@ sample.mu <- post$mu[ sample.rows ]
 sample.sigma <- post$sigma[ sample.rows ]
 ```
 
-R code 4.18
 ```{r, comment=NA}
 plot( sample.mu , sample.sigma , cex=0.5 , pch=16 , col=col.alpha(rangi2,0.1) )
 ```
 
-R code 4.19
 ```{r, comment=NA}
 dens( sample.mu )
 dens( sample.sigma )
 ```
 
-R code 4.20
 ```{r, comment=NA}
 HPDI( sample.mu )
 HPDI( sample.sigma )
@@ -189,12 +178,10 @@ HPDI( sample.sigma )
 
 Overthinking: Sample size and the normality of sigma's posterior
 
-R code 4.21
 ```{r, comment=NA}
 d3 <- sample( d2$height , size=20 )
 ```
 
-R code 4.22
 ```{r, comment=NA}
 mu.list <- seq( from=150, to=170 , length.out=200 )
 sigma.list <- seq( from=4 , to=20 , length.out=200 )
@@ -214,14 +201,12 @@ plot( sample2.mu , sample2.sigma , cex=0.5 ,
     xlab="mu" , ylab="sigma" , pch=16 )
 ```
 
-R code 4.23
 ```{r, comment=NA}
 dens( sample2.sigma , norm.comp=TRUE )
 ```
 
 ### 4.3.5 Fitting the model with map
 
-R code 4.24
 ```{r, comment=NA}
 library(rethinking)
 data(Howell1)
@@ -229,7 +214,6 @@ d <- Howell1
 d2 <- d[ d$age >= 18 , ]
 ```
 
-R code 4.25
 ```{r, comment=NA}
 flist <- alist(
     height ~ dnorm( mu , sigma ) ,
@@ -238,19 +222,16 @@ flist <- alist(
 )
 ```
 
-R code 4.26
 ```{r, comment=NA}
 m4.1 <- map( flist , data=d2 )
 ```
 
-R code 4.27
 ```{r, comment=NA}
 precis( m4.1 )
 ```
 
 Overthinking: Start values for map
 
-R code 4.28
 ```{r, comment=NA}
 start <- list(
     mu=mean(d2$height),
@@ -258,7 +239,6 @@ start <- list(
 )
 ```
 
-R code 4.29
 ```{r, comment=NA}
 m4.2 <- map(
         alist(
@@ -274,32 +254,27 @@ Overthinking: How strong is a prior?
 
 ### 4.3.6 Sampling from a map fit
 
-R code 4.30
 ```{r, comment=NA}
 vcov( m4.1 )
 ```
 
-R code 4.31
 ```{r, comment=NA}
 diag( vcov( m4.1 ) )
 cov2cor( vcov( m4.1 ) )
 ```
 
-R code 4.32
 ```{r, comment=NA}
 library(rethinking)
 post <- extract.samples( m4.1 , n=1e4 )
 head(post)
 ```
 
-R code 4.33
 ```{r, comment=NA}
 precis(post)
 ```
 
 Overthinking: Under the hood with multivariate sampling
 
-R code 4.34
 ```{r, comment=NA}
 library(MASS)
 post <- mvrnorm( n=1e4 , mu=coef(m4.1) , Sigma=vcov(m4.1) )
@@ -307,7 +282,6 @@ post <- mvrnorm( n=1e4 , mu=coef(m4.1) , Sigma=vcov(m4.1) )
 
 Overthinking: Getting sigma right
 
-R code 4.35
 ```{r, comment=NA}
 m4.1_logsigma <- map(
         alist(
@@ -317,7 +291,6 @@ m4.1_logsigma <- map(
         ) , data=d2 )
 ```
 
-R code 4.36
 ```{r, comment=NA}
 post <- extract.samples( m4.1_logsigma )
 sigma <- exp( post$log_sigma )
@@ -325,7 +298,6 @@ sigma <- exp( post$log_sigma )
 
 ## 4.4 Adding a predictor  
 
-R code 4.37
 ```{r, comment=NA}
 plot( d2$height ~ d2$weight )
 ```
@@ -348,7 +320,6 @@ Rethinking: What's the correct prior?
 
 ### 4.4.2 Fitting the model
 
-R code 4.38
 ```{r, comment=NA}
 # load data again, since it's a long way back
 library(rethinking)
@@ -372,7 +343,6 @@ Rethinking: Everything that depends upon parameters has a posterior distribution
 
 Overthinking: Embedding linear models
 
-R code 4.39
 ```{r, comment=NA}
 m4.3 <- map(
     alist(
@@ -390,22 +360,18 @@ Rethinking: What do parameters mean?
 
 #### 4.4.3.1 Tables of estimates
 
-R code 4.40
 ```{r, comment=NA}
 precis( m4.3 )
 ```
 
-R doce 4.41
 ```{r, comment=NA}
 precis( m4.3 , corr=TRUE )
 ```
 
-R code 4.42
 ```{r, comment=NA}
 d2$weight.c <- d2$weight - mean(d2$weight)
 ```
 
-R code 4.43
 ```{r, comment=NA}
 m4.4 <- map(
     alist(
@@ -418,14 +384,12 @@ m4.4 <- map(
     data=d2 )
 ```
 
-R code 4.44
 ```{r, comment=NA}
 precis( m4.4 , corr=TRUE )
 ```
 
 #### 4.4.3.2 Plotting posterior inference against the data
 
-R code 4.45
 ```{r, comment=NA}
 plot( height ~ weight , data=d2 )
 abline( a=coef(m4.3)["a"] , b=coef(m4.3)["b"] )
@@ -435,17 +399,14 @@ abline( a=coef(m4.3)["a"] , b=coef(m4.3)["b"] )
 
 Figure 4.4. Height in centimeteres (vertical) plotted agains weight in kilograms (horizontal), with the maximum a posteriori line for the mean height at each weight plotted in black.
 
-R code 4.46
 ```{r, comment=NA}
 post <- extract.samples( m4.3 )
 ```
 
-R code 4.47
 ```{r, comment=NA}
 post[1:5,]
 ```
 
-R code 4.48
 ```{r, comment=NA}
 N <- 10
 dN <- d2[ 1:N , ]
@@ -459,7 +420,6 @@ mN <- map(
     ) , data=dN )
 ```
 
-R code 4.49
 ```{r, comment=NA}
 # extract 20 samples from the posterior
 post <- extract.samples( mN , n=20 )
@@ -479,30 +439,25 @@ Figure 4.5. Samples from the quadratic approximate posterior distribution for th
 
 #### 4.4.3.4 Plotting regression intervals and contours
 
-R code 4.50
 ```{r, comment=NA}
 mu_at_50 <- post$a + post$b * 50
 ```
 
-R code 4.51
 ```{r, comment=NA}
 dens( mu_at_50 , col=rangi2 , lwd=2 , xlab="mu|weight=50" )
 ```
 
 Figure 4.6. The quadratic approximate posterior distribution of the mean height, m, where weight is 50 kg. This distribution represents the relative plausibility of different values or the mean.
 
-R code 4.52
 ```{r, comment=NA}
 HPDI( mu_at_50 , prob=0.89 )
 ```
 
-R code 4.53
 ```{r, comment=NA}
 mu <- link( m4.3 )
 str(mu)
 ```
 
-R code 4.54
 ```{r, comment=NA}
 # define sequence of weights to compute predictions for
 # these values will be on the horizontal axis
@@ -515,7 +470,6 @@ mu <- link( m4.3 , data=data.frame(weight=weight.seq) )
 str(mu)
 ```
 
-R code 4.55
 ```{r, comment=NA}
 # use type="n" to hide raw data
 plot( height ~ weight , d2 , type="n" )
@@ -527,14 +481,12 @@ for ( i in 1:100 )
 
 Figure 4.7. Left: The first 100 value sin the distribution of m at each weight value. Right: The !Kung height data again, now with 89% HPDI of the mean indicated by the shaded region. Compare this region to the distributions of blue points on the left.
 
-R code 4.56
 ```{r, comment=NA}
 # summarize the distribution of mu
 mu.mean <- apply( mu , 2 , mean )
 mu.HPDI <- apply( mu , 2 , HPDI , prob=0.89 )
 ```
 
-R code 4.57
 ```{r, comment=NA}
 # plot raw data
 # fading out points to make line and interval more visible
@@ -551,7 +503,6 @@ Rethinking: Overconfident confidence intervals
 
 Overthinking: How link works
 
-R code 4.58
 ```{r, comment=NA}
 post <- extract.samples(m4.3)
 mu.link <- function(weight) post$a + post$b*weight
@@ -563,18 +514,15 @@ mu.HPDI <- apply( mu , 2 , HPDI , prob=0.89 )
 
 #### 4.4.3.5 Prediction intervals
 
-R code 4.59
 ```{r, comment=NA}
 sim.height <- sim( m4.3 , data=list(weight=weight.seq) )
 str(sim.height)
 ```
 
-R code 4.60
 ```{r, comment=NA}
 height.PI <- apply( sim.height , 2 , PI , prob=0.89 )
 ```
 
-R code 4.61
 ```{r, comment=NA}
 # plot raw data
 plot( height ~ weight , d2 , col=col.alpha(rangi2,0.5) )
@@ -591,7 +539,6 @@ shade( height.PI , weight.seq )
 
 Figure 4.8. 89% prediction interval for height, as a function of weight. The solid line is the MAP estimate of the mean height at each weight. The tow shaded regions show different 89% plausible regions. The narrow shaded interval around the line is the distribution of m. The wider shaded region represents the region within which the model expects to find 89% of actual heights in the population, at each weight.
 
-R code 4.62
 ```{r, comment=NA}
 sim.height <- sim( m4.3 , data=list(weight=weight.seq) , n=1e4 )
 height.PI <- apply( sim.height , 2 , PI , prob=0.89 )
@@ -601,7 +548,6 @@ Rethinking: Two kinds of uncertainty
 
 Overthinking: Rolling your own sim.
 
-R code 4.63
 ```{r, comment=NA}
 post <- extract.samples(m4.3)
 weight.seq <- 25:70
@@ -615,7 +561,6 @@ height.PI <- apply( sim.height , 2 , PI , prob=0.89 )
 
 ## 4.5 Polynomial regression  
 
-R code 4.64
 ```{r, comment=NA}
 library(rethinking)
 data(Howell1)
@@ -625,12 +570,10 @@ str(d)
 
 Rethinking: Linear, additive, funky.
 
-R code 4.65
 ```{r, comment=NA}
 d$weight.s <- ( d$weight - mean(d$weight) )/sd(d$weight)
 ```
 
-R code 4.66
 ```{r, comment=NA}
 d$weight.s2 <- d$weight.s^2
 m4.5 <- map(
@@ -645,12 +588,10 @@ m4.5 <- map(
     data=d )
 ```
 
-R code 4.67
 ```{r, comment=NA}
 precis( m4.5 )
 ```
 
-R code 4.68
 ```{r, comment=NA}
 weight.seq <- seq( from=-2.2 , to=2 , length.out=30 )
 pred_dat <- list( weight.s=weight.seq , weight.s2=weight.seq^2 )
@@ -661,7 +602,6 @@ sim.height <- sim( m4.5 , data=pred_dat )
 height.PI <- apply( sim.height , 2 , PI , prob=0.89 )
 ```
 
-R code 4.69
 ```{r, comment=NA}
 plot( height ~ weight.s , d , col=col.alpha(rangi2,0.5) )
 lines( weight.seq , mu.mean )
@@ -671,7 +611,6 @@ shade( height.PI , weight.seq )
 
 Figure 4.9. Polynomial regression of height on weight (standardized), for the full !Kung data. In each plot, the raw data are show by the circles. The solid curves show the path of m in each model, and the shaded regions show the 89% interval of the mean (close to the solid curve) and the 89% interval of predictions (wider). (a) Linear regression. (b) A second order polynomial, a parabolic regression. (c) A third order polynomial, a cubic regression.
 
-R code 4.70
 ```{r, comment=NA}
 d$weight.s3 <- d$weight.s^3
 m4.6 <- map(
@@ -689,12 +628,10 @@ m4.6 <- map(
 
 Overthinking: Converting back to natural scale.
 
-R code 4.71
 ```{r, comment=NA}
 plot( height ~ weight.s , d , col=col.alpha(rangi2,0.5) , xaxt="n" )
 ```
 
-R code 4.72
 ```{r, comment=NA}
 at <- c(-2,-1,0,1,2)
 labels <- at*sd(d$weight) + mean(d$weight)
@@ -733,7 +670,6 @@ axis( side=1 , at=at , labels=round(labels,1) )
 
 4H3
 
-R code 4.73
 ```{r, comment=NA}
 plot( height ~ weight , data=Howell1 ,
     col=col.alpha(rangi2,0.4) )

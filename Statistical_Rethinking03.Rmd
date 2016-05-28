@@ -5,6 +5,12 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+**TODO:**
+
+1. Run R code and check
+
+2. Do practice problems
+
 ```{r, comment=NA}
 library(rethinking)
 library(StanHeaders)

@@ -415,580 +415,144 @@
 ## R code 6.32
 
 ## R code 7.1
-library(rethinking)
-data(rugged)
-d <- rugged
-
-# make log version of outcome
-d$log_gdp <- log( d$rgdppc_2000 )
-
-# extract countries with GDP data
-dd <- d[ complete.cases(d$rgdppc_2000) , ]
-
-# split countries into Africa and not-Africa
-d.A1 <- dd[ dd$cont_africa==1 , ] # Africa
-d.A0 <- dd[ dd$cont_africa==0 , ] # not Africa
 
 ## R code 7.2
-# African nations
-m7.1 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d.A1 )
-
-# non-African nations
-m7.2 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d.A0 )
 
 ## R code 7.3
-m7.3 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
 
 ## R code 7.4
-m7.4 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged + bA*cont_africa ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        bA ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
 
 ## R code 7.5
-compare( m7.3 , m7.4 )
 
 ## R code 7.6
-rugged.seq <- seq(from=-1,to=8,by=0.25)
-
-# compute mu over samples, fixing cont_africa=0
-mu.NotAfrica <- link( m7.4 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
-
-# compute mu over samples, fixing cont_africa=1
-mu.Africa <- link( m7.4 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
-
-# summarize to means and intervals
-mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
-mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
-mu.Africa.mean <- apply( mu.Africa , 2 , mean )
-mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
 
 ## R code 7.7
-m7.5 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + gamma*rugged + bA*cont_africa ,
-        gamma <- bR + bAR*cont_africa ,
-        a ~ dnorm( 8 , 100 ) ,
-        bA ~ dnorm( 0 , 1 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        bAR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
 
 ## R code 7.8
-compare( m7.3 , m7.4 , m7.5 )
 
 ## R code 7.9
-m7.5b <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged + bAR*rugged*cont_africa + bA*cont_africa,
-        a ~ dnorm( 8 , 100 ) ,
-        bA ~ dnorm( 0 , 1 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        bAR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
 
 ## R code 7.10
-rugged.seq <- seq(from=-1,to=8,by=0.25)
-
-mu.Africa <- link( m7.5 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
-mu.Africa.mean <- apply( mu.Africa , 2 , mean )
-mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
-
-mu.NotAfrica <- link( m7.5 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
-mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
-mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
 
 ## R code 7.11
-# plot African nations with regression
-d.A1 <- dd[dd$cont_africa==1,]
-plot( log(rgdppc_2000) ~ rugged , data=d.A1 ,
-    col=rangi2 , ylab="log GDP year 2000" ,
-    xlab="Terrain Ruggedness Index" )
-mtext( "African nations" , 3 )
-lines( rugged.seq , mu.Africa.mean , col=rangi2 )
-shade( mu.Africa.PI , rugged.seq , col=col.alpha(rangi2,0.3) )
-
-# plot non-African nations with regression
-d.A0 <- dd[dd$cont_africa==0,]
-plot( log(rgdppc_2000) ~ rugged , data=d.A0 ,
-    col="black" , ylab="log GDP year 2000" ,
-    xlab="Terrain Ruggedness Index" )
-mtext( "Non-African nations" , 3 )
-lines( rugged.seq , mu.NotAfrica.mean )
-shade( mu.NotAfrica.PI , rugged.seq )
 
 ## R code 7.12
-precis(m7.5)
 
 ## R code 7.13
-post <- extract.samples( m7.5 )
-gamma.Africa <- post$bR + post$bAR*1
-gamma.notAfrica <- post$bR + post$bAR*0
 
 ## R code 7.14
-mean( gamma.Africa)
-mean( gamma.notAfrica )
 
 ## R code 7.15
-dens( gamma.Africa , xlim=c(-0.5,0.6) , ylim=c(0,5.5) ,
-    xlab="gamma" , col=rangi2 )
-dens( gamma.notAfrica , add=TRUE )
 
 ## R code 7.16
-diff <- gamma.Africa - gamma.notAfrica
-sum( diff < 0 ) / length( diff )
 
 ## R code 7.17
-# get minimum and maximum rugged values
-q.rugged <- range(dd$rugged)
-
-# compute lines and confidence intervals
-mu.ruggedlo <- link( m7.5 ,
-    data=data.frame(rugged=q.rugged[1],cont_africa=0:1) )
-mu.ruggedlo.mean <- apply( mu.ruggedlo , 2 , mean )
-mu.ruggedlo.PI <- apply( mu.ruggedlo , 2 , PI )
-
-mu.ruggedhi <- link( m7.5 ,
-    data=data.frame(rugged=q.rugged[2],cont_africa=0:1) )
-mu.ruggedhi.mean <- apply( mu.ruggedhi , 2 , mean )
-mu.ruggedhi.PI <- apply( mu.ruggedhi , 2 , PI )
-
-# plot it all, splitting points at median
-med.r <- median(dd$rugged)
-ox <- ifelse( dd$rugged > med.r , 0.05 , -0.05 )
-plot( dd$cont_africa + ox , log(dd$rgdppc_2000) ,
-    col=ifelse(dd$rugged>med.r,rangi2,"black") ,
-    xlim=c(-0.25,1.25) , xaxt="n" , ylab="log GDP year 2000" ,
-    xlab="Continent" )
-axis( 1 , at=c(0,1) , labels=c("other","Africa") )
-lines( 0:1 , mu.ruggedlo.mean , lty=2 )
-shade( mu.ruggedlo.PI , 0:1 )
-lines( 0:1 , mu.ruggedhi.mean , col=rangi2 )
-shade( mu.ruggedhi.PI , 0:1 , col=col.alpha(rangi2,0.25) )
 
 ## R code 7.18
-library(rethinking)
-data(tulips)
-d <- tulips
-str(d)
 
 ## R code 7.19
-m7.6 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d )
-m7.7 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade + bWS*water*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        bWS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d )
 
 ## R code 7.20
-m7.6 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    method="Nelder-Mead" ,
-    control=list(maxit=1e4) )
-m7.7 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade + bWS*water*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        bWS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    method="Nelder-Mead" ,
-    control=list(maxit=1e4) )
 
 ## R code 7.21
-coeftab(m7.6,m7.7)
 
 ## R code 7.22
-compare( m7.6 , m7.7 )
 
 ## R code 7.23
-d$shade.c <- d$shade - mean(d$shade)
-d$water.c <- d$water - mean(d$water)
 
 ## R code 7.24
-m7.8 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water.c + bS*shade.c ,
-        a ~ dnorm( 130 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    start=list(a=mean(d$blooms),bW=0,bS=0,sigma=sd(d$blooms)) )
-m7.9 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water.c + bS*shade.c + bWS*water.c*shade.c ,
-        a ~ dnorm( 130 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        bWS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    start=list(a=mean(d$blooms),bW=0,bS=0,bWS=0,sigma=sd(d$blooms)) )
-coeftab(m7.8,m7.9)
 
 ## R code 7.25
-k <- coef(m7.7)
-k[1] + k[2]*2 + k[3]*2 + k[4]*2*2
 
 ## R code 7.26
-k <- coef(m7.9)
-k[1] + k[2]*0 + k[3]*0 + k[4]*0*0
 
 ## R code 7.27
-precis(m7.9)
 
 ## R code 7.28
-# make a plot window with three panels in a single row
-par(mfrow=c(1,3)) # 1 row, 3 columns
-
-# loop over values of water.c and plot predictions
-shade.seq <- -1:1
-for ( w in -1:1 ) {
-    dt <- d[d$water.c==w,]
-    plot( blooms ~ shade.c , data=dt , col=rangi2 ,
-        main=paste("water.c =",w) , xaxp=c(-1,1,2) , ylim=c(0,362) ,
-        xlab="shade (centered)" )
-    mu <- link( m7.9 , data=data.frame(water.c=w,shade.c=shade.seq) )
-    mu.mean <- apply( mu , 2 , mean )
-    mu.PI <- apply( mu , 2 , PI , prob=0.97 )
-    lines( shade.seq , mu.mean )
-    lines( shade.seq , mu.PI[1,] , lty=2 )
-    lines( shade.seq , mu.PI[2,] , lty=2 )
-}
 
 ## R code 7.29
-m7.x <- lm( y ~ x + z + x*z , data=d )
 
 ## R code 7.30
-m7.x <- lm( y ~ x*z , data=d )
 
 ## R code 7.31
-m7.x <- lm( y ~ x + x*z - z , data=d )
 
 ## R code 7.32
-m7.x <- lm( y ~ x*z*w , data=d )
 
 ## R code 7.33
-x <- z <- w <- 1
-colnames( model.matrix(~x*z*w) )
 
 ## R code 7.34
-d$lang.per.cap <- d$num.lang / d$k.pop
 
 ## R code 8.1
-num_weeks <- 1e5
-positions <- rep(0,num_weeks)
-current <- 10
-for ( i in 1:num_weeks ) {
-    # record current position
-    positions[i] <- current
-
-    # flip coin to generate proposal
-    proposal <- current + sample( c(-1,1) , size=1 )
-    # now make sure he loops around the archipelago
-    if ( proposal < 1 ) proposal <- 10
-    if ( proposal > 10 ) proposal <- 1
-
-    # move?
-    prob_move <- proposal/current
-    current <- ifelse( runif(1) < prob_move , proposal , current )
-}
 
 ## R code 8.2
-library(rethinking)
-data(rugged)
-d <- rugged
-d$log_gdp <- log(d$rgdppc_2000)
-dd <- d[ complete.cases(d$rgdppc_2000) , ]
 
 ## R code 8.3
-m8.1 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
-        a ~ dnorm(0,100),
-        bR ~ dnorm(0,10),
-        bA ~ dnorm(0,10),
-        bAR ~ dnorm(0,10),
-        sigma ~ dunif(0,10)
-    ) ,
-    data=dd )
-precis(m8.1)
 
 ## R code 8.4
-dd.trim <- dd[ , c("log_gdp","rugged","cont_africa") ]
-str(dd.trim)
 
 ## R code 8.5
-m8.1stan <- map2stan(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged + bA*cont_africa + bAR*rugged*cont_africa ,
-        a ~ dnorm(0,100),
-        bR ~ dnorm(0,10),
-        bA ~ dnorm(0,10),
-        bAR ~ dnorm(0,10),
-        sigma ~ dcauchy(0,2)
-    ) ,
-    data=dd.trim )
 
 ## R code 8.6
-precis(m8.1stan)
 
 ## R code 8.7
-m8.1stan_4chains <- map2stan( m8.1stan , chains=4 , cores=4 )
-precis(m8.1stan_4chains)
 
 ## R code 8.8
-post <- extract.samples( m8.1stan )
-str(post)
 
 ## R code 8.9
-pairs(post)
 
 ## R code 8.10
-pairs(m8.1stan)
 
 ## R code 8.11
-show(m8.1stan)
 
 ## R code 8.12
-plot(m8.1stan)
 
 ## R code 8.13
-y <- c(-1,1)
-m8.2 <- map2stan(
-    alist(
-        y ~ dnorm( mu , sigma ) ,
-        mu <- alpha
-    ) ,
-    data=list(y=y) , start=list(alpha=0,sigma=1) ,
-    chains=2 , iter=4000 , warmup=1000 )
 
 ## R code 8.14
-precis(m8.2)
 
 ## R code 8.15
-m8.3 <- map2stan(
-    alist(
-        y ~ dnorm( mu , sigma ) ,
-        mu <- alpha ,
-        alpha ~ dnorm( 1 , 10 ) ,
-        sigma ~ dcauchy( 0 , 1 )
-    ) ,
-    data=list(y=y) , start=list(alpha=0,sigma=1) ,
-    chains=2 , iter=4000 , warmup=1000 )
-precis(m8.3)
 
 ## R code 8.16
-y <- rcauchy(1e4,0,5)
-mu <- sapply( 1:length(y) , function(i) sum(y[1:i])/i )
-plot(mu,type="l")
 
 ## R code 8.17
-y <- rnorm( 100 , mean=0 , sd=1 )
 
 ## R code 8.18
-m8.4 <- map2stan(
-    alist(
-        y ~ dnorm( mu , sigma ) ,
-        mu <- a1 + a2 ,
-        sigma ~ dcauchy( 0 , 1 )
-    ) ,
-    data=list(y=y) , start=list(a1=0,a2=0,sigma=1) ,
-    chains=2 , iter=4000 , warmup=1000 )
-precis(m8.4)
 
 ## R code 8.19
-m8.5 <- map2stan(
-    alist(
-        y ~ dnorm( mu , sigma ) ,
-        mu <- a1 + a2 ,
-        a1 ~ dnorm( 0 , 10 ) ,
-        a2 ~ dnorm( 0 , 10 ) ,
-        sigma ~ dcauchy( 0 , 1 )
-    ) ,
-    data=list(y=y) , start=list(a1=0,a2=0,sigma=1) ,
-    chains=2 , iter=4000 , warmup=1000 )
-precis(m8.5)
 
 ## R code 8.20
-mp <- map2stan(
-    alist(
-        a ~ dnorm(0,1),
-        b ~ dcauchy(0,1)
-    ),
-    data=list(y=1),
-    start=list(a=0,b=0),
-    iter=1e4, warmup=100 , WAIC=FALSE )
 
 ## R code 8.21
-N <- 100                          # number of individuals
-height <- rnorm(N,10,2)           # sim total height of each
-leg_prop <- runif(N,0.4,0.5)      # leg as proportion of height
-leg_left <- leg_prop*height +     # sim left leg as proportion + error
-    rnorm( N , 0 , 0.02 )
-leg_right <- leg_prop*height +    # sim right leg as proportion + error
-    rnorm( N , 0 , 0.02 )
-                                  # combine into data frame
-d <- data.frame(height,leg_left,leg_right)
 
 ## R code 8.22
-m5.8s <- map2stan(
-    alist(
-        height ~ dnorm( mu , sigma ) ,
-        mu <- a + bl*leg_left + br*leg_right ,
-        a ~ dnorm( 10 , 100 ) ,
-        bl ~ dnorm( 2 , 10 ) ,
-        br ~ dnorm( 2 , 10 ) ,
-        sigma ~ dcauchy( 0 , 1 )
-    ) ,
-    data=d, chains=4,
-    start=list(a=10,bl=0,br=0,sigma=1) )
 
 ## R code 8.23
-m5.8s2 <- map2stan(
-    alist(
-        height ~ dnorm( mu , sigma ) ,
-        mu <- a + bl*leg_left + br*leg_right ,
-        a ~ dnorm( 10 , 100 ) ,
-        bl ~ dnorm( 2 , 10 ) ,
-        br ~ dnorm( 2 , 10 ) & T[0,] ,
-        sigma ~ dcauchy( 0 , 1 )
-    ) ,
-    data=d, chains=4,
-    start=list(a=10,bl=0,br=0,sigma=1) )
 
 ## R code 9.1
-p <- list()
-p$A <- c(0,0,10,0,0)
-p$B <- c(0,1,8,1,0)
-p$C <- c(0,2,6,2,0)
-p$D <- c(1,2,4,2,1)
-p$E <- c(2,2,2,2,2)
 
 ## R code 9.2
-p_norm <- lapply( p , function(q) q/sum(q))
 
 ## R code 9.3
-( H <- sapply( p_norm , function(q) -sum(ifelse(q==0,0,q*log(q))) ) )
 
 ## R code 9.4
-ways <- c(1,90,1260,37800,113400)
-logwayspp <- log(ways)/10
 
 ## R code 9.5
-# build list of the candidate distributions
-p <- list()
-p[[1]] <- c(1/4,1/4,1/4,1/4)
-p[[2]] <- c(2/6,1/6,1/6,2/6)
-p[[3]] <- c(1/6,2/6,2/6,1/6)
-p[[4]] <- c(1/8,4/8,2/8,1/8)
-
-# compute expected value of each
-sapply( p , function(p) sum(p*c(0,1,1,2)) )
 
 ## R code 9.6
-# compute entropy of each distribution
-sapply( p , function(p) -sum( p*log(p) ) )
 
 ## R code 9.7
-p <- 0.7
-( A <- c( (1-p)^2 , p*(1-p) , (1-p)*p , p^2 ) )
 
 ## R code 9.8
--sum( A*log(A) )
 
 ## R code 9.9
-sim.p <- function(G=1.4) {
-    x123 <- runif(3)
-    x4 <- ( (G)*sum(x123)-x123[2]-x123[3] )/(2-G)
-    z <- sum( c(x123,x4) )
-    p <- c( x123 , x4 )/z
-    list( H=-sum( p*log(p) ) , p=p )
-}
 
 ## R code 9.10
-H <- replicate( 1e5 , sim.p(1.4) )
-dens( as.numeric(H[1,]) , adj=0.1 )
 
 ## R code 9.11
-entropies <- as.numeric(H[1,])
-distributions <- H[2,]
 
 ## R code 9.12
-max(entropies)
 
 ## R code 9.13
-distributions[ which.max(entropies) ]
 
 ## R code 10.1
 library(rethinking)

@@ -5,14 +5,20 @@ date: "May 4, 2016"
 output: html_document
 ---
 
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
+
+**TODO:**
+
+1. Run R code and check
+
+2. Do practice problems
+
 ```{r, comment=NA}
 library(rethinking)
 library(StanHeaders)
 ```
-
-*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
-
-by Richard McElreath
 
 # 6.0 Overfitting, Regularization, and Information Criteria  
 
@@ -28,7 +34,6 @@ Rethinking: Is AIC Bayesian?
 
 Figure 6.2. Average brain volume in cubic centimeters against body mass in kilograms, for six hominin species. What model best describes the relationship between brain size and body size?
 
-R code 6.1
 ```{r, comment=NA}
 sppnames <- c( "afarensis","africanus","habilis","boisei",
     "rudolfensis","ergaster","sapiens")
@@ -37,22 +42,18 @@ masskg <- c( 37.0 , 35.5 , 34.5 , 41.5 , 55.5 , 61.0 , 53.5 )
 d <- data.frame( species=sppnames , brain=brainvolcc , mass=masskg )
 ```
 
-R code 6.2
 ```{r, comment=NA}
 m6.1 <- lm( brain ~ mass , data=d )
 ```
 
-R code 6.3
 ```{r, comment=NA}
 1 - var(resid(m6.1))/var(d$brain)
 ```
 
-R code 6.4
 ```{r, comment=NA}
 m6.2 <- lm( brain ~ mass + I(mass^2) , data=d )
 ```
 
-R code 6.5
 ```{r, comment=NA}
 m6.3 <- lm( brain ~ mass + I(mass^2) + I(mass^3) , data=d )
 m6.4 <- lm( brain ~ mass + I(mass^2) + I(mass^3) + I(mass^4) ,
@@ -69,7 +70,6 @@ Rethinking: Model fitting as compression
 
 ### 6.1.2 Too few parameters hurts, too
 
-R code 6.6
 ```{r, comment=NA}
 m6.7 <- lm( brain ~ 1 , data=d )
 ```
@@ -80,12 +80,10 @@ Figure 6.5. Underfitting and overfitting as under-sensitivity and over-sensitivi
 
 Overthinking: Dropping rows
 
-R code 6.7
 ```{r, comment=NA}
 d.new <- d[ -i , ]
 ```
 
-R code 6.8
 ```{r, comment=NA}
 plot( brain ~ mass , d , col="slateblue" )
 for ( i in 1:nrow(d) ) {
@@ -109,7 +107,6 @@ Rethinking: What is a true model?
 
 ### 6.2.2 Information and uncertainty
 
-R code 6.9
 ```{r, comment=NA}
 p <- c( 0.3 , 0.7 )
 -sum( p*log(p) )
@@ -129,7 +126,6 @@ Rethinking: Divergence depends upon direction
 
 ### 6.2.4 From divergence to deviance
 
-R code 6.10
 ```{r, comment=NA}
 # fit model with lm
 m6.1 <- lm( brain ~ mass , d )
@@ -140,7 +136,6 @@ m6.1 <- lm( brain ~ mass , d )
 
 Overthinking: Computing deviance
 
-R code 6.11
 ```{r, comment=NA}
 # standardize the mass before fitting
 d$mass.s <- (d$mass-mean(d$mass))/sd(d$mass)
@@ -171,7 +166,6 @@ Figure 6.7. Deviance in and out of sample. In each plot, models with different n
 
 Overthinking: Simulated training and testing
 
-R code 6.12
 ```{r, comment=NA}
 N <- 20
 kseq <- 1:5
@@ -182,12 +176,10 @@ dev <- sapply( kseq , function(k) {
     } )
 ```
 
-R code 6.13
 ```{r, comment=NA}
 r <- mcreplicate( 1e4 , sim.train.test( N=N, k=k ) , mc.cores=4 )
 ```
 
-R code 6.14
 ```{r, comment=NA}
 plot( 1:5 , dev[1,] , ylim=c( min(dev[1:2,])-5 , max(dev[1:2,])+10 ) ,
     xlim=c(1,5.1) , xlab="number of parameters" , ylab="deviance" ,
@@ -226,7 +218,6 @@ Rethinking: What about BIC?
 
 Overthinking: WAIC calculations
 
-R code 6.15
 ```{r, comment=NA}
 data(cars)
 m <- map(
@@ -240,7 +231,6 @@ m <- map(
 post <- extract.samples(m,n=1000)
 ```
 
-R code 6.16
 ```{r, comment=NA}
 n_samples <- 1000
 ll <- sapply( 1:n_samples ,
@@ -250,23 +240,19 @@ ll <- sapply( 1:n_samples ,
     } )
 ```
 
-R code 6.17
 ```{r, comment=NA}
 n_cases <- nrow(cars)
 lppd <- sapply( 1:n_cases , function(i) log_sum_exp(ll[i,]) - log(n_samples) )
 ```
 
-R code 6.18
 ```{r, comment=NA}
 pWAIC <- sapply( 1:n_cases , function(i) var(ll[i,]) )
 ```
 
-R code 6.19
 ```{r, comment=NA}
 -2*( sum(lppd) - sum(pWAIC) )
 ```
 
-R code 6.20
 ```{r, comment=NA}
 waic_vec <- -2*( lppd - pWAIC )
 sqrt( n_cases*var(waic_vec) )
@@ -282,7 +268,6 @@ Rethinking: Diverse prediction framework
 
 ### 6.5.1 Model comparison
 
-R code 6.21
 ```{r, comment=NA}
 data(milk)
 d <- milk[ complete.cases(milk) , ]
@@ -290,7 +275,6 @@ d$neocortex <- d$neocortex.perc / 100
 dim(d)
 ```
 
-R code 6.22
 ```{r, comment=NA}
 a.start <- mean(d$kcal.per.g)
 sigma.start <- log(sd(d$kcal.per.g))
@@ -321,22 +305,18 @@ m6.14 <- map(
 
 #### 6.5.1.1 Comparing WAIC values
 
-R code 6.23
 ```{r, comment=NA}
 WAIC( m6.14 )
 ```
 
-R code 6.24
 ```{r, comment=NA}
 ( milk.models <- compare( m6.11 , m6.12 , m6.13 , m6.14 ) )
 ```
 
-R code 6.25
 ```{r, comment=NA}
 plot( milk.models , SE=TRUE , dSE=TRUE )
 ```
 
-R code 6.26
 ```{r, comment=NA}
 diff <- rnorm( 1e5 , 6.7 , 7.26 )
 sum(diff<0)/1e5
@@ -348,12 +328,10 @@ Rethinking: WAIC metaphors
 
 #### 6.5.1.2 Comparing estimates
 
-R code 6.27
 ```{r, comment=NA}
 coeftab(m6.11,m6.12,m6.13,m6.14)
 ```
 
-R code 6.28
 ```{r, comment=NA}
 plot( coeftab(m6.11,m6.12,m6.13,m6.14) )
 ```
@@ -364,7 +342,6 @@ Rethinking: Barplots suck
 
 ### 6.5.2 Model averaging
 
-R code 6.29
 ```{r, comment=NA}
 # compute counterfactual predictions
 # neocortex from 0.5 to 0.8
@@ -387,7 +364,6 @@ lines( nc.seq , mu.PI[2,] , lty=2 )
 
 Figure 6.13. Model averaged posterior predictive distribution for the primate milk analysis. The dashed regression line and dashed 89% percentile interval correspond to the minimum-WAIC model, m6.14. The solid line and shaded 89% region correspond to the model averaged predictions.
 
-R code 6.30
 ```{r, comment=NA}
 milk.ensemble <- ensemble( m6.11 , m6.12 , m6.13 , m6.14 , data=d.predict )
 mu <- apply( milk.ensemble$link , 2 , mean )
@@ -422,7 +398,6 @@ Rethinking: The Curse of Tippecanoe
 
 6M6
 
-R code 6.31
 ```{r, comment=NA}
 library(rethinking)
 data(Howell1)
@@ -442,7 +417,6 @@ d2 <- d[ -i , ]
 
 6H4
 
-R code 6.32
 ```{r, comment=NA}
 sum( dnorm( d2$height , mu , sigma , log=TRUE ) )
 ```
