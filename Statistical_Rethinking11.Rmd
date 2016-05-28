@@ -25,21 +25,21 @@ by Richard McElreath
 
 R code 11.1
 
-### 11.1.2 Desribing an ordered distribution with intercepts
+### 11.1.2 Describing an ordered distribution with intercepts
 
 R code 11.2
 
-Figure 11.1. Re-descibing a discrete distribution using log-cumulative odds. Left: Histogram of discrete response in the sample. 
+Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Left: Histogram of discrete response in the sample. 
 
 R code 11.3
 
-Figure 11.1. Re-descibing a discrete distribution using log-cumulative odds. Middle: Cumulative proportion of each response. 
+Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Middle: Cumulative proportion of each response. 
 
 R code 11.4
 
-Figure 11.1. Re-descibing a discrete distribution using log-cumulative odds. Right: Logarithm of cumulative odds of each response. Note that the log-cumulative-odds of response value 7 is infinity, so it is not shown.
+Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Right: Logarithm of cumulative odds of each response. Note that the log-cumulative-odds of response value 7 is infinity, so it is not shown.
 
-Figure 11.2. Cumulative probability and ordered likelihood. The horzontal axis displays possible observable outcomes, from 1 through 7. The vertical axis displays cumulative probability. The gray bars over each outcome show cumulative probability. These keep growing with each successive outcome value. The blue line segments show the discrete probability of each individual otucome. These are the likelihoods that go into Bayes' theorem.
+Figure 11.2. Cumulative probability and ordered likelihood. The horizontal axis displays possible observable outcomes, from 1 through 7. The vertical axis displays cumulative probability. The gray bars over each outcome show cumulative probability. These keep growing with each successive outcome value. The blue line segments show the discrete probability of each individual outcome. These are the likelihoods that go into Bayes' theorem.
 
 R code 11.5
 
@@ -87,7 +87,7 @@ R code 11.20
 
 R code 11.21
 
-Figure 11.4. Left: Structure of the zero-inflated likelihood calculation. Beginning at the top, the monks drink p of the time or or instead work 1 - p of the time. Drinking monks always produce an observation y = 0. Working monds may produce either y = 0 or y > 0. Right: Frequency distribution of zero-inflated observations. The blue line segment over zero shows the y = 0 observations that arose from drinking. In real data, we typically cannot see which zeros come from which processes.
+Figure 11.4. Left: Structure of the zero-inflated likelihood calculation. Beginning at the top, the monks drink p of the time or or instead work 1 - p of the time. Drinking monks always produce an observation y = 0. Working monks may produce either y = 0 or y > 0. Right: Frequency distribution of zero-inflated observations. The blue line segment over zero shows the y = 0 observations that arose from drinking. In real data, we typically cannot see which zeros come from which processes.
 
 R code 11.22
 
