@@ -5,10 +5,6 @@ date: "May 4, 2016"
 output: html_document
 ---
 
-*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
-
-by Richard McElreath
-
 **TODO:**
 
 1. Add R code and format
@@ -16,6 +12,15 @@ by Richard McElreath
 2. Run R code and check
 
 3. Do practice problems
+
+```{r, comment=NA}
+library(rethinking)
+library(StanHeaders)
+```
+
+*Statistical Rethinking: A Bayesian Course with Examples in R and Stan*
+
+by Richard McElreath
 
 # 11.0 Monsters and Mixtures  
 
