@@ -24,54 +24,111 @@ by Richard McElreath
 ### 11.1.1 Example: Moral intuition
 
 R code 11.1
+```{r, comment=NA}
+
+```
 
 ### 11.1.2 Describing an ordered distribution with intercepts
 
 R code 11.2
+```{r, comment=NA}
+
+```
 
 Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Left: Histogram of discrete response in the sample. 
 
 R code 11.3
+```{r, comment=NA}
+
+```
 
 Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Middle: Cumulative proportion of each response. 
 
 R code 11.4
+```{r, comment=NA}
+
+```
 
 Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Right: Logarithm of cumulative odds of each response. Note that the log-cumulative-odds of response value 7 is infinity, so it is not shown.
 
 Figure 11.2. Cumulative probability and ordered likelihood. The horizontal axis displays possible observable outcomes, from 1 through 7. The vertical axis displays cumulative probability. The gray bars over each outcome show cumulative probability. These keep growing with each successive outcome value. The blue line segments show the discrete probability of each individual outcome. These are the likelihoods that go into Bayes' theorem.
 
 R code 11.5
+```{r, comment=NA}
+
+```
 
 R code 11.6
+```{r, comment=NA}
+
+```
 
 R code 11.7
+```{r, comment=NA}
+
+```
 
 R code 11.8
+```{r, comment=NA}
+
+```
 
 ### 11.1.3 Adding predictor variables
 
 R code 11.9
+```{r, comment=NA}
+
+```
 
 R code 11.10
+```{r, comment=NA}
+
+```
 
 R code 11.11
+```{r, comment=NA}
+
+```
 
 R code 11.12
+```{r, comment=NA}
+
+```
 
 R code 11.13
+```{r, comment=NA}
+
+```
 
 R code 11.14
+```{r, comment=NA}
+
+```
 
 R code 11.15
+```{r, comment=NA}
+
+```
 
 R code 11.16
+```{r, comment=NA}
+
+```
 
 R code 11.17
+```{r, comment=NA}
+
+```
 
 R code 11.18
+```{r, comment=NA}
+
+```
 
 R code 11.19
+```{r, comment=NA}
+
+```
 
 Figure 11.3. Posterior predictions of the ordered categorical model with interactions, m11.3. Each plot shows how the distribution of predicted responses varies by intention. Left: Effect of intention when action and contact are both zero. The other two plots each change either action or contact to one.
 
@@ -84,42 +141,78 @@ Rethinking: Breaking the law
 ### 11.2.1 Example: Zero-inflated Poisson
 
 R code 11.20
+```{r, comment=NA}
+
+```
 
 R code 11.21
+```{r, comment=NA}
+
+```
 
 Figure 11.4. Left: Structure of the zero-inflated likelihood calculation. Beginning at the top, the monks drink p of the time or or instead work 1 - p of the time. Drinking monks always produce an observation y = 0. Working monks may produce either y = 0 or y > 0. Right: Frequency distribution of zero-inflated observations. The blue line segment over zero shows the y = 0 observations that arose from drinking. In real data, we typically cannot see which zeros come from which processes.
 
 R code 11.22
+```{r, comment=NA}
+
+```
 
 R code 11.23
+```{r, comment=NA}
+
+```
 
 Overthinking: Zero-inflated Poisson distribution function
 
 R code 11.24
+```{r, comment=NA}
+
+```
 
 ## 11.3 Over-dispersed outcomes  
 
 ### 11.3.1 Beta-binomial
 
 R code 11.25
+```{r, comment=NA}
+
+```
 
 R code 11.26
+```{r, comment=NA}
+
+```
 
 R code 11.27
+```{r, comment=NA}
+
+```
 
 R code 11.28
+```{r, comment=NA}
+
+```
 
 R code 11.29
+```{r, comment=NA}
+
+```
 
 Figure 11.5. Left: Posterior distribution of beta distributions for m11.5. The thick curve is the posterior mean beta distribution. The lighter curves represent 100 combinations of p and Theta sampled from the posterior.
 
 R code 11.30
+```{r, comment=NA}
+
+```
 
 Figure 11.5. Right: Posterior validation check for m11.5. As a result of the widely dispersed beta distributions on the left, the raw data (blue) is contained within the prediction intervals.
 
 ### 11.3.2 Negative-binomial or gamma-Poisson
 
 R code 11.31
+```{r, comment=NA}
+
+```
 
 ### 11.3.3 Over-dispersion, entropy, and information criteria
 
@@ -146,6 +239,9 @@ Overthinking: Continuous mixtures
 11H1.
 
 R code 11.32
+```{r, comment=NA}
+
+```
 
 11H2.
 
