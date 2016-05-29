@@ -7,7 +7,7 @@ output: html_document
 
 **TODO:**
 
-1. Add R code and format
+1. Reformat R code
 
 2. Run R code and check
 
@@ -28,111 +28,153 @@ by Richard McElreath
 
 ### 11.1.1 Example: Moral intuition
 
-R code 11.1
 ```{r, comment=NA}
-
+library(rethinking)
+data(Trolley)
+d <- Trolley
 ```
 
 ### 11.1.2 Describing an ordered distribution with intercepts
 
-R code 11.2
 ```{r, comment=NA}
-
+simplehist( d$response , xlim=c(1,7) , xlab="response" )
 ```
 
 Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Left: Histogram of discrete response in the sample. 
 
-R code 11.3
 ```{r, comment=NA}
+# discrete proportion of each response value
+pr_k <- table( d$response ) / nrow(d)
 
+# cumsum converts to cumulative proportions
+cum_pr_k <- cumsum( pr_k )
+
+# plot
+plot( 1:7 , cum_pr_k , type="b" , xlab="response" ,
+ylab="cumulative proportion" , ylim=c(0,1) )
 ```
 
 Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Middle: Cumulative proportion of each response. 
 
-R code 11.4
 ```{r, comment=NA}
-
+logit <- function(x) log(x/(1-x)) # convenience function
+( lco <- logit( cum_pr_k ) )
 ```
 
 Figure 11.1. Re-describing a discrete distribution using log-cumulative odds. Right: Logarithm of cumulative odds of each response. Note that the log-cumulative-odds of response value 7 is infinity, so it is not shown.
 
 Figure 11.2. Cumulative probability and ordered likelihood. The horizontal axis displays possible observable outcomes, from 1 through 7. The vertical axis displays cumulative probability. The gray bars over each outcome show cumulative probability. These keep growing with each successive outcome value. The blue line segments show the discrete probability of each individual outcome. These are the likelihoods that go into Bayes' theorem.
 
-R code 11.5
 ```{r, comment=NA}
-
+m11.1 <- map(
+    alist(
+        response ~ dordlogit( phi , c(a1,a2,a3,a4,a5,a6) ),
+        phi <- 0,
+        c(a1,a2,a3,a4,a5,a6) ~ dnorm(0,10)
+    ) ,
+    data=d ,
+    start=list(a1=-2,a2=-1,a3=0,a4=1,a5=2,a6=2.5) )
 ```
 
-R code 11.6
 ```{r, comment=NA}
-
+precis(m11.1)
 ```
 
-R code 11.7
 ```{r, comment=NA}
-
+logistic(coef(m11.1))
 ```
 
-R code 11.8
 ```{r, comment=NA}
+# note that data with name 'case' not allowed in Stan
+# so will pass pruned data list
+m11.1stan <- map2stan(
+    alist(
+        response ~ dordlogit( phi , cutpoints ),
+        phi <- 0,
+        cutpoints ~ dnorm(0,10)
+    ) ,
+    data=list(response=d$response),
+    start=list(cutpoints=c(-2,-1,0,1,2,2.5)) ,
+    chains=2 , cores=2 )
 
+# need depth=2 to show vector of parameters
+precis(m11.1stan,depth=2)
 ```
 
 ### 11.1.3 Adding predictor variables
 
-R code 11.9
 ```{r, comment=NA}
-
+( pk <- dordlogit( 1:7 , 0 , coef(m11.1) ) )
 ```
 
-R code 11.10
 ```{r, comment=NA}
-
+sum( pk*(1:7) )
 ```
 
-R code 11.11
 ```{r, comment=NA}
-
+( pk <- dordlogit( 1:7 , 0 , coef(m11.1)-0.5 ) )
 ```
 
-R code 11.12
 ```{r, comment=NA}
-
+sum( pk*(1:7) )
 ```
 
-R code 11.13
 ```{r, comment=NA}
-
+m11.2 <- map(
+    alist(
+        response ~ dordlogit( phi , c(a1,a2,a3,a4,a5,a6) ) ,
+        phi <- bA*action + bI*intention + bC*contact,
+        c(bA,bI,bC) ~ dnorm(0,10),
+        c(a1,a2,a3,a4,a5,a6) ~ dnorm(0,10)
+    ) ,
+    data=d ,
+    start=list(a1=-1.9,a2=-1.2,a3=-0.7,a4=0.2,a5=0.9,a6=1.8) )
 ```
 
-R code 11.14
 ```{r, comment=NA}
-
+m11.3 <- map(
+    alist(
+        response ~ dordlogit( phi , c(a1,a2,a3,a4,a5,a6) ) ,
+        phi <- bA*action + bI*intention + bC*contact +
+            bAI*action*intention + bCI*contact*intention ,
+        c(bA,bI,bC,bAI,bCI) ~ dnorm(0,10),
+        c(a1,a2,a3,a4,a5,a6) ~ dnorm(0,10)
+    ) ,
+    data=d ,
+    start=list(a1=-1.9,a2=-1.2,a3=-0.7,a4=0.2,a5=0.9,a6=1.8) )
 ```
 
-R code 11.15
 ```{r, comment=NA}
-
+coeftab(m11.1,m11.2,m11.3)
 ```
 
-R code 11.16
 ```{r, comment=NA}
-
+compare( m11.1 , m11.2 , m11.3 , refresh=0.1 )
 ```
 
-R code 11.17
 ```{r, comment=NA}
-
+post <- extract.samples( m11.3 )
 ```
 
-R code 11.18
 ```{r, comment=NA}
-
+plot( 1 , 1 , type="n" , xlab="intention" , ylab="probability" ,
+    xlim=c(0,1) , ylim=c(0,1) , xaxp=c(0,1,1) , yaxp=c(0,1,2) )
 ```
 
-R code 11.19
 ```{r, comment=NA}
-
+kA <- 0     # value for action
+kC <- 1     # value for contact
+kI <- 0:1   # values of intention to calculate over
+for ( s in 1:100 ) {
+    p <- post[s,]
+    ak <- as.numeric(p[1:6])
+    phi <- p$bA*kA + p$bI*kI + p$bC*kC +
+        p$bAI*kA*kI + p$bCI*kC*kI
+    pk <- pordlogit( 1:6 , a=ak , phi=phi )
+    for ( i in 1:6 )
+        lines( kI , pk[,i] , col=col.alpha(rangi2,0.1) )
+}
+mtext( concat( "action=",kA,", contact=",kC ) )
 ```
 
 Figure 11.3. Posterior predictions of the ordered categorical model with interactions, m11.3. Each plot shows how the distribution of predicted responses varies by intention. Left: Effect of intention when action and contact are both zero. The other two plots each change either action or contact to one.
@@ -145,78 +187,129 @@ Rethinking: Breaking the law
 
 ### 11.2.1 Example: Zero-inflated Poisson
 
-R code 11.20
 ```{r, comment=NA}
+# define parameters
+prob_drink <- 0.2 # 20% of days
+rate_work <- 1    # average 1 manuscript per day
 
+# sample one year of production
+N <- 365
+
+# simulate days monks drink
+drink <- rbinom( N , 1 , prob_drink )
+
+# simulate manuscripts completed
+y <- (1-drink)*rpois( N , rate_work )
 ```
 
-R code 11.21
 ```{r, comment=NA}
-
+simplehist( y , xlab="manuscripts completed" , lwd=4 )
+zeros_drink <- sum(drink)
+zeros_work <- sum(y==0 & drink==0)
+zeros_total <- sum(y==0)
+lines( c(0,0) , c(zeros_work,zeros_total) , lwd=4 , col=rangi2 )
 ```
 
 Figure 11.4. Left: Structure of the zero-inflated likelihood calculation. Beginning at the top, the monks drink p of the time or or instead work 1 - p of the time. Drinking monks always produce an observation y = 0. Working monks may produce either y = 0 or y > 0. Right: Frequency distribution of zero-inflated observations. The blue line segment over zero shows the y = 0 observations that arose from drinking. In real data, we typically cannot see which zeros come from which processes.
 
-R code 11.22
 ```{r, comment=NA}
-
+m11.4 <- map(
+    alist(
+        y ~ dzipois( p , lambda ),
+        logit(p) <- ap,
+        log(lambda) <- al,
+        ap ~ dnorm(0,1),
+        al ~ dnorm(0,10)
+    ) ,
+    data=list(y=y) )
+precis(m11.4)
 ```
 
-R code 11.23
 ```{r, comment=NA}
-
+logistic(-1.39) # probability drink
+exp(0.05)       # rate finish manuscripts, when not drinking
 ```
 
 Overthinking: Zero-inflated Poisson distribution function
 
-R code 11.24
 ```{r, comment=NA}
-
+dzip <- function( x , p , lambda , log=TRUE ) {
+    ll <- ifelse(
+        x==0 ,
+        p + (1-p)*exp(-lambda) ,
+        (1-p)*dpois(x,lambda,FALSE)
+    )
+    if ( log==TRUE ) ll <- log(ll)
+    return(ll)
+}
 ```
 
 ## 11.3 Over-dispersed outcomes  
 
 ### 11.3.1 Beta-binomial
 
-R code 11.25
 ```{r, comment=NA}
-
+pbar <- 0.5
+theta <- 5
+curve( dbeta2(x,pbar,theta) , from=0 , to=1 ,
+    xlab="probability" , ylab="Density" )
 ```
 
-R code 11.26
 ```{r, comment=NA}
-
+library(rethinking)
+data(UCBadmit)
+d <- UCBadmit
+m11.5 <- map2stan(
+    alist(
+        admit ~ dbetabinom(applications,pbar,theta),
+        logit(pbar) <- a,
+        a ~ dnorm(0,2),
+        theta ~ dexp(1)
+    ),
+    data=d,
+    constraints=list(theta="lower=0"),
+    start=list(theta=3),
+    iter=4000 , warmup=1000 , chains=2 , cores=2 )
 ```
 
-R code 11.27
 ```{r, comment=NA}
-
+precis(m11.5)
 ```
 
-R code 11.28
 ```{r, comment=NA}
-
+post <- extract.samples(m11.5)
+quantile( logistic(post$a) , c(0.025,0.5,0.975) )
 ```
 
-R code 11.29
 ```{r, comment=NA}
+post <- extract.samples(m11.5)
 
+# draw posterior mean beta distribution
+curve( dbeta2(x,mean(logistic(post$a)),mean(post$theta)) , from=0 , to=1 ,
+    ylab="Density" , xlab="probability admit", ylim=c(0,3) , lwd=2 )
+
+# draw 100 beta distributions sampled from posterior
+for ( i in 1:100 ) {
+    p <- logistic( post$a[i] )
+    theta <- post$theta[i]
+    curve( dbeta2(x,p,theta) , add=TRUE , col=col.alpha("black",0.2) )
+}
 ```
 
 Figure 11.5. Left: Posterior distribution of beta distributions for m11.5. The thick curve is the posterior mean beta distribution. The lighter curves represent 100 combinations of p and Theta sampled from the posterior.
 
-R code 11.30
 ```{r, comment=NA}
-
+postcheck(m11.5)
 ```
 
 Figure 11.5. Right: Posterior validation check for m11.5. As a result of the widely dispersed beta distributions on the left, the raw data (blue) is contained within the prediction intervals.
 
 ### 11.3.2 Negative-binomial or gamma-Poisson
 
-R code 11.31
 ```{r, comment=NA}
-
+mu <- 3
+theta <- 1
+curve( dgamma2(x,mu,theta) , from=0 , to=10 )
 ```
 
 ### 11.3.3 Over-dispersion, entropy, and information criteria
@@ -243,9 +336,9 @@ Overthinking: Continuous mixtures
 
 11H1.
 
-R code 11.32
 ```{r, comment=NA}
-
+library(rethinking)
+data(Hurricanes)
 ```
 
 11H2.
