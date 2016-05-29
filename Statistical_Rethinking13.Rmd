@@ -21,14 +21,160 @@ by Richard McElreath
 
 # 13.0 Adventures in Covariance  
 
+Figure 13.1. Waiting times at two cafes. Top: A busy cafe at which wait times nearly always improve in the afternoon. Bottom: An unpopular cafe where wait times are nearly always short. In a population of cafes like these, long morning waits (intercepts) covert with larger differences between morning and afternoon (slopes).
+
 ## 13.1 Varying slopes by construction  
+
+Rethinking:  Why Gaussian?
+
+### 13.1.1 Simulate the population
+
+R code 13.1
+
+R code 13.2
+
+R code 13.3
+
+R code 13.4
+
+R code 13.5
+
+R code 13.6
+
+R code 13.7
+
+R code 13.8
+
+R code 13.9
+
+Figure 13.2. 20 cafes sampled from a statistical population. The horizontal axis is the intercept (average morning wait) for each cafe. The vertical axis is the slop (average difference between afternoon and morning wait) for each cafe. The gray ellipses illustrate the multivariate Gaussian population of intercepts and slopes.
+
+### 13.1.2 Simulate observations
+
+R code 13.10
+
+Rethinking: Simulation and misspecification
+
+### 13.1.3 The varying slops model
+
+R code 13.11
+
+Figure 13.3. LKJcorr(eta) probability density. The plot shows the distribution of correlation coefficients extracted from random 2-by-2 correlation matrices, for three values of eta. When eta = 1, all correlations are equally plausible. As eta increases, extreme correlations become less plausible.
+
+R code 13.12
+
+R code 13.13
+
+Figure 13.14. Posterior distribution of the correlation between intercepts and slopes. Blue: Posterior distribution of the correlation, reliably below zero. Dashed: Prior distribution, the LKJcorr(2) density.
+
+R code 13.14
+
+R code 13.15
+
+Figure 13.5. Shrinkage in two dimensions. Left: Raw unpooled intercepts and slopes (filled blue) compared to partially pooled posterior means (open circles). The gray contours show the inferred population of varying effects. Right: The same estimates on the outcome scale.
+
+R code 13.16
+
+Overthinking: Jacobians and transforms
 
 ## 13.2 Example: Admission decisions and gender  
 
+R code 13.17
+
+### 13.2.1 Varying intercepts
+
+R code 13.18
+
+### 13.2.2 Varying effects of being male
+
+R code 13.19
+
+R code 13.20
+
+### 13.2.3 Shrinkage
+
+Figure 13.6. Left: Posterior distribution of the correlation between intercepts and slopes for the UCB admissions model, m13.3. Right: Two-dimensional shrinkage of unpolled (blue) and adaptively pooled (open) estimates.
+
+### 13.2.4 Model comparison
+
+### 13.3.5 More slopes
+
 ## 13.3 Example: Cross-classified chimpanzees with varying slopes  
 
+R code 13.22
+
+R code 13.23
+
+R code 13.24
+
+Figure 13.7. Distribution of the effective samples, n_eff, for the ordinary and non-centered parameterization of the cross-classified varying slops model, m13.6 and m13.6NC, respectively. Both models arrive at equivalent inferences, but the non-centered version samples much more efficiently.
+
+R code 13.25
+
+R code 13.26
+
+R code 13.27
+
+Overthinking: Non-centered parameterization of the multilevel model
+
+R code 13.28
+
 ## 13.4 Continuous categories and the Gaussian process  
+
+### 13.4.1 Example: Spatial autocorrelation in Oceanic tools
+
+R code 13.29
+
+R code 13.30
+
+Figure 13.8. Shape of the function relating distance to the covariance K[i, j]. The horizontal axis is distance. The vertical is the correlation, relative to maximum, between any two societies i and j. The dashed curve is the linear distance function. The solid curve is the squared distance function.
+
+R code 13.31
+
+R code 13.32
+
+R code 13.33
+
+Figure 13.9. Posterior distribution of the spatial covariance between pairs of societies. The dark curve displays the posterior median. The thin curves show 100 functions sampled from the joint posterior distribution of rho^2 and eta^2. 
+
+R code 13.34
+
+R code 13.35
+
+R code 13.36
+
+Figure 13.10. Left: Posterior median correlations among societies in geographic space.
+
+R code 13.37
+
+Figure 13.10. Right: Same posterior median correlations, now show against relationship between total tools and log population.
+
+13.4.2 Other kinds of “distance”
 
 ## 13.5 Summary  
 
 ## 13.6 Practice 
+
+13E1
+
+13E2
+
+13E3
+
+13M1
+
+13M2
+
+13M3
+
+13M4
+
+13H1
+
+13H2
+
+13H3
+
+13H4
+
+R code 13.38
