@@ -21,10 +21,80 @@ by Richard McElreath
 
 # 14.0 Missing Data and Other Opportunities  
 
+R code 14.1
+
 ## 14.1 Measurement error  
 
+R code 14.2
+
+Figure 14.1. Left: Divorce rate by median age of marriage, States of the United States. Vertical bars show plus and minus one standard deviation of the Gaussian uncertainty in measured divorce rate. Right: Divorce rate, again with standard deviations, against log population of each State. Smaller States produce more uncertain estimates.
+
+Rethinking: Generative thinking, Bayesian inference
+
+### 14.1.1 Error on the outcome
+
+R code 14.3
+
+R code 14.4
+
+Figure 14.2. Left: Shrinkage resulting from modeling the measurement error. The less error in the original measurement, the less shrinkage in the posterior estimate. Right: Comparison of regression that ignores measurement error (dashed line and gray shading) with regression that incorporates measurement error (blue line and shading). The points and line segments show the posterior means and standard deviations for each posterior divorce rate, Dest[i].
+
+### 14.1.2 Error on both outcome and predictor
+
+R code 14.5
+
+Figure 14.3. Left: Shrinkage for the predictor variable marriage rate. Notice that shrinkage is not balanced, but rather that the model believes the observed values tended to be overestimates. Right: Shrinkage of both divorce rate and marriage rate. Solid points are the observed values. Open points are posterior means. Lines connect pairs of points for the same State.
+
 ## 14.2 Missing data  
+
+### 14.2.1 Imputing neocortex
+
+R code 14.6
+
+R code 14.7
+
+R code 14.8
+
+R code 14.9
+
+Figure 14.4. Left: Inferred relationship between milk energy (vertical) and neocortex proportion (horizontal), with imputed values shown by open points. The line segments are 89% posterior intervals. Right: Inferred relationship between the two predictors, neocortex proportion and log mass. Imputed values again shown by open points.
+
+### 14.2.2 Improving the Imputation model
+
+R code 14.10
+
+Figure 14.5. Same relationship as show in Figure 14.4, but now for the imputation model that estimates the association between the predictors. The information model estimates the association between the predictors. The information in the association between predictors has been used to infer a stronger relationship between milk energy and the imputed values.
+
+### 14.2.3 Not at random
+
+Overthinking: Imputation algorithm
+
+R code 14.11
+
+R code 14.12
+
+R code 14.13
+
+R code 14.14
 
 ## 14.3 Summary  
 
 ## 14.4 Practice 
+
+14E1
+
+14E2
+
+14M1
+
+14M2
+
+14M3
+
+14H1
+
+14H2
+
+14H3
+
+R code 14.15
