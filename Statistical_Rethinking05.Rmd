@@ -338,33 +338,29 @@ precis(m5.7)
 ```
 
 ```{r, comment=NA}
-mean.log.mass <- mean( log(dcc$mass) )
+mean.log.mass <- mean(log(dcc$mass))
 np.seq <- 0:100
-pred.data <- data.frame(
-    neocortex.perc=np.seq,
-    log.mass=mean.log.mass
-)
+pred.data <- data.frame(neocortex.perc = np.seq, log.mass = mean.log.mass)
 
-mu <- link( m5.7 , data=pred.data , n=1e4 )
-mu.mean <- apply( mu , 2 , mean )
-mu.PI <- apply( mu , 2 , PI )
+mu <- link(m5.7, data = pred.data, n = 1e4)
+mu.mean <- apply(mu, 2, mean)
+mu.PI <- apply(mu, 2, PI)
 
-plot( kcal.per.g ~ neocortex.perc , data=dcc , type="n" )
-lines( np.seq , mu.mean )
-lines( np.seq , mu.PI[1,] , lty=2 )
-lines( np.seq , mu.PI[2,] , lty=2 )
+plot(kcal.per.g ~ neocortex.perc, data = dcc, type = "n")
+lines(np.seq, mu.mean)
+lines(np.seq, mu.PI[1, ], lty = 2)
+lines(np.seq, mu.PI[2, ], lty = 2)
 ```
 
 Overthinking: Simulating a masking relationship
 
 ```{r, comment=NA}
-N <- 100                         # number of cases
-rho <- 0.7                       # correlation btw x_pos and x_neg
-x_pos <- rnorm( N )              # x_pos as Gaussian
-x_neg <- rnorm( N , rho*x_pos ,  # x_neg correlated with x_pos
-    sqrt(1-rho^2) )
-y <- rnorm( N , x_pos - x_neg )  # y equally associated with x_pos, x_neg
-d <- data.frame(y,x_pos,x_neg)   # bind all together in data frame
+N <- 100                                      # number of cases
+rho <- 0.7                                    # correlation btw x_pos and x_neg
+x_pos <- rnorm(N)                             # x_pos as Gaussian
+x_neg <- rnorm(N, rho*x_pos, sqrt(1 - rho^2)) # x_neg correlated with x_pos
+y <- rnorm(N, x_pos - x_neg)                  # y equally associated with x_pos, x_neg
+d <- data.frame(y, x_pos, x_neg)              # bind all together in data frame
 ```
 
 ## 5.3 When adding variables hurts  
@@ -372,28 +368,24 @@ d <- data.frame(y,x_pos,x_neg)   # bind all together in data frame
 ### 5.3.1 Multicollinear legs
 
 ```{r, comment=NA}
-N <- 100                          # number of individuals
-height <- rnorm(N,10,2)           # sim total height of each
-leg_prop <- runif(N,0.4,0.5)      # leg as proportion of height
-leg_left <- leg_prop*height +     # sim left leg as proportion + error
-    rnorm( N , 0 , 0.02 )
-leg_right <- leg_prop*height +    # sim right leg as proportion + error
-    rnorm( N , 0 , 0.02 )
-                                  # combine into data frame
-d <- data.frame(height,leg_left,leg_right)
+N <- 100                                         # number of individuals
+height <- rnorm(N, 10, 2)                        # sim total height of each
+leg_prop <- runif(N, 0.4, 0.5)                   # leg as proportion of height
+leg_left  <- leg_prop*height + rnorm(N, 0, 0.02) # sim left leg as proportion + error
+leg_right <- leg_prop*height + rnorm(N, 0, 0.02) # sim right leg as proportion + error
+d <- data.frame(height, leg_left, leg_right)     # combine into data frame
 ```
 
 ```{r, comment=NA}
 m5.8 <- map(
-    alist(
-        height ~ dnorm( mu , sigma ) ,
-        mu <- a + bl*leg_left + br*leg_right ,
-        a ~ dnorm( 10 , 100 ) ,
-        bl ~ dnorm( 2 , 10 ) ,
-        br ~ dnorm( 2 , 10 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d )
+          alist(
+            height ~ dnorm(mu, sigma),
+            mu <- a + bl*leg_left + br*leg_right,
+            a ~ dnorm(10, 100),
+            bl ~ dnorm(2, 10),
+            br ~ dnorm(2, 10),
+            sigma ~ dunif(0, 10)
+          ), data = d)
 precis(m5.8)
 ```
 
@@ -403,26 +395,25 @@ plot(precis(m5.8))
 
 ```{r, comment=NA}
 post <- extract.samples(m5.8)
-plot( bl ~ br , post , col=col.alpha(rangi2,0.1) , pch=16 )
+plot(bl ~ br, post, col = col.alpha(rangi2, 0.1), pch = 16)
 ```
 
 Figure 5.8. Left: Posterior distribution of the association of each leg with height, from model m5.8. Since both variables contain almost identical information, the posterior is a narrow ridge of negatively correlated values. Right: The posterior distribution of the sum of the two parameters is centered on the proper association of either leg with height.
 
 ```{r, comment=NA}
 sum_blbr <- post$bl + post$br
-dens( sum_blbr , col=rangi2 , lwd=2 , xlab="sum of bl and br" )
+dens(sum_blbr, col = rangi2, lwd = 2, xlab = "sum of bl and br")
 ```
 
 ```{r, comment=NA}
 m5.9 <- map(
-    alist(
-        height ~ dnorm( mu , sigma ) ,
-        mu <- a + bl*leg_left,
-        a ~ dnorm( 10 , 100 ) ,
-        bl ~ dnorm( 2 , 10 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d )
+          alist(
+            height ~ dnorm(mu, sigma),
+            mu <- a + bl*leg_left,
+            a ~ dnorm(10, 100),
+            bl ~ dnorm(2, 10),
+            sigma ~ dunif(0, 10)
+          ), data = d)
 precis(m5.9)
 ```
 
@@ -437,28 +428,26 @@ d <- milk
 ```{r, comment=NA}
 # kcal.per.g regressed on perc.fat
 m5.10 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + bf*perc.fat ,
-        a ~ dnorm( 0.6 , 10 ) ,
-        bf ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d )
+           alist(
+             kcal.per.g ~ dnorm(mu, sigma),
+             mu <- a + bf*perc.fat,
+             a ~ dnorm(0.6, 10),
+             bf ~ dnorm(0, 1),
+             sigma ~ dunif(0, 10)
+          ), data = d)
 
 # kcal.per.g regressed on perc.lactose
 m5.11 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + bl*perc.lactose ,
-        a ~ dnorm( 0.6 , 10 ) ,
-        bl ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d )
+           alist(
+             kcal.per.g ~ dnorm(mu, sigma),
+             mu <- a + bl*perc.lactose,
+             a ~ dnorm(0.6, 10),
+             bl ~ dnorm(0, 1),
+             sigma ~ dunif(0, 10)
+          ), data = d)
 
-precis( m5.10 , digits=3 )
-precis( m5.11 , digits=3 )
+precis(m5.10, digits = 3)
+precis(m5.11, digits = 3)
 ```
 
 ```{r, comment=NA}
