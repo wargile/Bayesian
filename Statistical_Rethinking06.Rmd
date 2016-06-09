@@ -218,42 +218,41 @@ Overthinking: WAIC calculations
 
 ```{r, comment=NA}
 data(cars)
-m <- map(
-    alist(
-        dist ~ dnorm(mu,sigma),
-        mu <- a + b*speed,
-        a ~ dnorm(0,100),
-        b ~ dnorm(0,10),
-        sigma ~ dunif(0,30)
-    ) , data=cars )
-post <- extract.samples(m,n=1000)
+m <- map(alist(
+           dist ~ dnorm(mu, sigma),
+           mu <- a + b*speed,
+           a ~ dnorm(0, 100),
+           b ~ dnorm(0, 10),
+           sigma ~ dunif(0, 30)), 
+         data = cars)
+post <- extract.samples(m, n = 1000)
 ```
 
 ```{r, comment=NA}
 n_samples <- 1000
-ll <- sapply( 1:n_samples ,
-    function(s) {
-        mu <- post$a[s] + post$b[s]*cars$speed
-        dnorm( cars$dist , mu , post$sigma[s] , log=TRUE )
-    } )
+ll <- sapply(1:n_samples,
+             function(s) {
+               mu <- post$a[s] + post$b[s]*cars$speed
+               dnorm(cars$dist, mu, post$sigma[s], log = TRUE)
+             })
 ```
 
 ```{r, comment=NA}
 n_cases <- nrow(cars)
-lppd <- sapply( 1:n_cases , function(i) log_sum_exp(ll[i,]) - log(n_samples) )
+lppd <- sapply(1:n_cases, function(i) log_sum_exp(ll[i, ]) - log(n_samples))
 ```
 
 ```{r, comment=NA}
-pWAIC <- sapply( 1:n_cases , function(i) var(ll[i,]) )
+pWAIC <- sapply( 1:n_cases, function(i) var(ll[i, ]))
 ```
 
 ```{r, comment=NA}
--2*( sum(lppd) - sum(pWAIC) )
+-2*(sum(lppd) - sum(pWAIC))
 ```
 
 ```{r, comment=NA}
-waic_vec <- -2*( lppd - pWAIC )
-sqrt( n_cases*var(waic_vec) )
+waic_vec <- -2*(lppd - pWAIC)
+sqrt(n_cases*var(waic_vec))
 ```
 
 ### 6.4.3 DIC and WAIC as estimates of deviance
@@ -268,56 +267,52 @@ Rethinking: Diverse prediction framework
 
 ```{r, comment=NA}
 data(milk)
-d <- milk[ complete.cases(milk) , ]
-d$neocortex <- d$neocortex.perc / 100
+d <- milk[complete.cases(milk), ]
+d$neocortex <- d$neocortex.perc/100
 dim(d)
 ```
 
 ```{r, comment=NA}
 a.start <- mean(d$kcal.per.g)
 sigma.start <- log(sd(d$kcal.per.g))
-m6.11 <- map(
-    alist(
-        kcal.per.g ~ dnorm( a , exp(log.sigma) )
-    ) ,
-    data=d , start=list(a=a.start,log.sigma=sigma.start) )
-m6.12 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , exp(log.sigma) ) ,
-        mu <- a + bn*neocortex
-    ) ,
-    data=d , start=list(a=a.start,bn=0,log.sigma=sigma.start) )
-m6.13 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , exp(log.sigma) ) ,
-        mu <- a + bm*log(mass)
-    ) ,
-    data=d , start=list(a=a.start,bm=0,log.sigma=sigma.start) )
-m6.14 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , exp(log.sigma) ) ,
-        mu <- a + bn*neocortex + bm*log(mass)
-    ) ,
-    data=d , start=list(a=a.start,bn=0,bm=0,log.sigma=sigma.start) )
+m6.11 <- map(alist(
+               kcal.per.g ~ dnorm(a, exp(log.sigma))),
+             data = d, 
+             start = list(a = a.start, log.sigma = sigma.start))
+m6.12 <- map(alist(
+               kcal.per.g ~ dnorm(mu, exp(log.sigma)),
+               mu <- a + bn*neocortex),
+             data = d,
+             start = list(a = a.start, bn = 0, log.sigma = sigma.start))
+m6.13 <- map(alist(
+               kcal.per.g ~ dnorm(mu, exp(log.sigma)),
+               mu <- a + bm*log(mass)),
+             data = d, 
+             start = list(a = a.start, bm = 0, log.sigma = sigma.start))
+m6.14 <- map(alist(
+               kcal.per.g ~ dnorm(mu , exp(log.sigma)),
+               mu <- a + bn*neocortex + bm*log(mass)),
+             data = d, 
+             start = list(a = a.start, bn = 0, bm = 0, log.sigma = sigma.start))
 ```
 
 #### 6.5.1.1 Comparing WAIC values
 
 ```{r, comment=NA}
-WAIC( m6.14 )
+WAIC(m6.14)
 ```
 
 ```{r, comment=NA}
-( milk.models <- compare( m6.11 , m6.12 , m6.13 , m6.14 ) )
+(milk.models <- compare(m6.11, m6.12, m6.13, m6.14))
 ```
 
 ```{r, comment=NA}
-plot( milk.models , SE=TRUE , dSE=TRUE )
+plot(milk.models, SE = TRUE, dSE = TRUE)
 ```
 
 ```{r, comment=NA}
-diff <- rnorm( 1e5 , 6.7 , 7.26 )
-sum(diff<0)/1e5
+diff <- rnorm(1e5, 6.7, 7.26)
+sum(diff < 0)/1e5
 ```
 
 Rethinking: How big a difference in WAIC is "significant"?
@@ -327,11 +322,11 @@ Rethinking: WAIC metaphors
 #### 6.5.1.2 Comparing estimates
 
 ```{r, comment=NA}
-coeftab(m6.11,m6.12,m6.13,m6.14)
+coeftab(m6.11, m6.12, m6.13, m6.14)
 ```
 
 ```{r, comment=NA}
-plot( coeftab(m6.11,m6.12,m6.13,m6.14) )
+plot(coeftab(m6.11, m6.12, m6.13, m6.14))
 ```
 
 Figure 6.12. Comparing the posterior densities of parameters for the four model fits to the primate milk data. Each point is a MAP estimate, and each black line segment is a 89% percentile interval. Estimates are grouped by parameter identify, and each row in a group is a model.
@@ -343,21 +338,20 @@ Rethinking: Barplots suck
 ```{r, comment=NA}
 # compute counterfactual predictions
 # neocortex from 0.5 to 0.8
-nc.seq <- seq(from=0.5,to=0.8,length.out=30)
-d.predict <- list(
-    kcal.per.g = rep(0,30), # empty outcome
-    neocortex = nc.seq,     # sequence of neocortex
-    mass = rep(4.5,30)      # average mass
+nc.seq <- seq(from = 0.5, to = 0.8, length.out = 30)
+d.predict <- list(kcal.per.g = rep(0, 30), # empty outcome
+                  neocortex = nc.seq,      # sequence of neocortex
+                  mass = rep(4.5, 30)      # average mass
 )
-pred.m6.14 <- link( m6.14 , data=d.predict )
-mu <- apply( pred.m6.14 , 2 , mean )
-mu.PI <- apply( pred.m6.14 , 2 , PI )
+pred.m6.14 <- link(m6.14, data = d.predict)
+mu <- apply(pred.m6.14, 2, mean)
+mu.PI <- apply(pred.m6.14, 2, PI)
 
 # plot it all
-plot( kcal.per.g ~ neocortex , d , col=rangi2 )
-lines( nc.seq , mu , lty=2 )
-lines( nc.seq , mu.PI[1,] , lty=2 )
-lines( nc.seq , mu.PI[2,] , lty=2 )
+plot(kcal.per.g ~ neocortex, d, col = rangi2)
+lines(nc.seq, mu       , lty = 2)
+lines(nc.seq, mu.PI[1,], lty = 2)
+lines(nc.seq, mu.PI[2,], lty = 2)
 ```
 
 Figure 6.13. Model averaged posterior predictive distribution for the primate milk analysis. The dashed regression line and dashed 89% percentile interval correspond to the minimum-WAIC model, m6.14. The solid line and shaded 89% region correspond to the model averaged predictions.
