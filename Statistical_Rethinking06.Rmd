@@ -357,11 +357,11 @@ lines(nc.seq, mu.PI[2,], lty = 2)
 Figure 6.13. Model averaged posterior predictive distribution for the primate milk analysis. The dashed regression line and dashed 89% percentile interval correspond to the minimum-WAIC model, m6.14. The solid line and shaded 89% region correspond to the model averaged predictions.
 
 ```{r, comment=NA}
-milk.ensemble <- ensemble( m6.11 , m6.12 , m6.13 , m6.14 , data=d.predict )
-mu <- apply( milk.ensemble$link , 2 , mean )
-mu.PI <- apply( milk.ensemble$link , 2 , PI )
-lines( nc.seq , mu )
-shade( mu.PI , nc.seq )
+milk.ensemble <- ensemble(m6.11, m6.12, m6.13, m6.14, data =d.predict)
+mu <- apply(milk.ensemble$link, 2, mean)
+mu.PI <- apply(milk.ensemble$link, 2, PI)
+lines(nc.seq, mu)
+shade(mu.PI, nc.seq)
 ```
 
 Rethinking: The Curse of Tippecanoe
@@ -394,11 +394,12 @@ Rethinking: The Curse of Tippecanoe
 library(rethinking)
 data(Howell1)
 d <- Howell1
-d$age <- (d$age - mean(d$age))/sd(d$age)
-set.seed( 1000 )
-i <- sample(1:nrow(d),size=nrow(d)/2)
-d1 <- d[ i , ]
-d2 <- d[ -i , ]
+#d$age <- (d$age - mean(d$age))/sd(d$age)
+d$age <- with(d, (age - mean(age))/sd(age))
+set.seed(1000)
+i <- sample(1:nrow(d), size = nrow(d)/2)
+d1 <- d[ i, ]
+d2 <- d[-i, ]
 ```
 
 6H1
@@ -410,7 +411,7 @@ d2 <- d[ -i , ]
 6H4
 
 ```{r, comment=NA}
-sum( dnorm( d2$height , mu , sigma , log=TRUE ) )
+sum(dnorm(d2$height, mu, sigma, log = TRUE))
 ```
 
 6H5
