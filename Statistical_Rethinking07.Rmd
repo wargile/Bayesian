@@ -265,42 +265,36 @@ str(d)
 ### 7.3.2 The un-centered models
 
 ```{r, comment=NA}
-m7.6 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d )
-m7.7 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade + bWS*water*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        bWS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d )
+m7.6 <- map(alist(
+              blooms ~ dnorm(mu, sigma),
+              mu <- a + bW*water + bS*shade,
+              a ~ dnorm(0, 100),
+              bW ~ dnorm(0, 100),
+              bS ~ dnorm(0, 100),
+              sigma ~ dunif(0, 100)),
+            data = d)
+m7.7 <- map(alist(
+              blooms ~ dnorm(mu, sigma),
+              mu <- a + bW*water + bS*shade + bWS*water*shade,
+              a ~ dnorm(0, 100),
+              bW ~ dnorm(0, 100),
+              bS ~ dnorm(0, 100),
+              bWS ~ dnorm(0, 100),
+              sigma ~ dunif(0, 100)),
+           data = d)
 ```
 
 ```{r, comment=NA}
-m7.6 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    method="Nelder-Mead" ,
-    control=list(maxit=1e4) )
+m7.6 <- map(alist(
+              blooms ~ dnorm(mu, sigma),
+              mu <- a + bW*water + bS*shade,
+              a ~ dnorm(0, 100),
+              bW ~ dnorm(0, 100),
+              bS ~ dnorm(0, 100),
+              sigma ~ dunif(0, 100)),
+            data = d,
+            method = "Nelder-Mead",
+            control = list(maxit = 1e4))
 m7.7 <- map(
     alist(
         blooms ~ dnorm( mu , sigma ) ,
