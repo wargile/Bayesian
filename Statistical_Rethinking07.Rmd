@@ -11,7 +11,7 @@ by Richard McElreath
 
 **TODO:**
 
-1. Add R code and format
+1. Reformat R code
 
 2. Run R code and check
 
@@ -36,38 +36,34 @@ data(rugged)
 d <- rugged
 
 # make log version of outcome
-d$log_gdp <- log( d$rgdppc_2000 )
+d$log_gdp <- log(d$rgdppc_2000)
 
 # extract countries with GDP data
-dd <- d[ complete.cases(d$rgdppc_2000) , ]
+dd <- d[complete.cases(d$rgdppc_2000), ]
 
 # split countries into Africa and not-Africa
-d.A1 <- dd[ dd$cont_africa==1 , ] # Africa
-d.A0 <- dd[ dd$cont_africa==0 , ] # not Africa
+d.A1 <- dd[dd$cont_africa==1, ] # Africa
+d.A0 <- dd[dd$cont_africa==0, ] # not Africa
 ```
 
 ```{r, comment=NA}
 # African nations
-m7.1 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d.A1 )
+m7.1 <- map(alist(
+              log_gdp ~ dnorm(mu, sigma),
+              mu <- a + bR*rugged,
+              a ~ dnorm(8, 100),
+              bR ~ dnorm(0, 1),
+              sigma ~ dunif(0, 10)),
+           data = d.A1)
 
 # non-African nations
-m7.2 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d.A0 )
+m7.2 <- map(alist(
+              log_gdp ~ dnorm(mu, sigma),
+              mu <- a + bR*rugged,
+              a ~ dnorm(8, 100),
+              bR ~ dnorm(0, 1),
+              sigma ~ dunif(0, 10)),
+           data = d.A0)
 ```
 
 Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GDP against terrain ruggedness. The slope is positive inside Africa, but negative outside. How can we recover this reversal of the slope, using the combined data?
@@ -75,48 +71,44 @@ Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GD
 ### 7.1.1 Adding a dummy variable doesn't work
 
 ```{r, comment=NA}
-m7.3 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
+m7.3 <- map(alist(
+              log_gdp ~ dnorm(mu, sigma),
+              mu <- a + bR*rugged,
+              a ~ dnorm(8, 100),
+              bR ~ dnorm(0, 1),
+              sigma ~ dunif(0, 10)),
+           data = dd)
 ```
 
 ```{r, comment=NA}
-m7.4 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged + bA*cont_africa ,
-        a ~ dnorm( 8 , 100 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        bA ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
+m7.4 <- map(alist(
+              log_gdp ~ dnorm(mu, sigma),
+              mu <- a + bR*rugged + bA*cont_africa,
+              a ~ dnorm(8, 100),
+              bR ~ dnorm(0, 1),
+              bA ~ dnorm(0, 1),
+              sigma ~ dunif(0, 10)),
+           data = dd)
 ```
 
 ```{r, comment=NA}
-compare( m7.3 , m7.4 )
+compare(m7.3, m7.4)
 ```
 
 ```{r, comment=NA}
-rugged.seq <- seq(from=-1,to=8,by=0.25)
+rugged.seq <- seq(from = -1, to = 8, by = 0.25)
 
-# compute mu over samples, fixing cont_africa=0
-mu.NotAfrica <- link( m7.4 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
+# compute mu over samples, fixing cont_africa = 0
+mu.NotAfrica <- link(m7.4, data = data.frame(cont_africa = 0, rugged = rugged.seq))
 
-# compute mu over samples, fixing cont_africa=1
-mu.Africa <- link( m7.4 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
+# compute mu over samples, fixing cont_africa = 1
+mu.Africa <- link(m7.4, data = data.frame(cont_africa = 1, rugged = rugged.seq))
 
 # summarize to means and intervals
-mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
-mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
-mu.Africa.mean <- apply( mu.Africa , 2 , mean )
-mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
+mu.NotAfrica.mean <- apply(mu.NotAfrica, 2, mean)
+mu.NotAfrica.PI   <- apply(mu.NotAfrica, 2, PI, prob = 0.97)
+mu.Africa.mean    <- apply(mu.Africa   , 2, mean)
+mu.Africa.PI      <- apply(mu.Africa   , 2, PI, prob = 0.97)
 ```
 
 Figure 7.3. Including a dummy variable for African nations has no effect on the slope. African nations are show in blue. Non-African nations are shown in gray. Regression means for each subset of nations are shown in corresponding colors, along with 97% intervals shown by shading.
@@ -126,72 +118,66 @@ Rethinking: Why 97%?
 ### 7.1.2 Adding a linear interaction does work
 
 ```{r, comment=NA}
-m7.5 <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + gamma*rugged + bA*cont_africa ,
-        gamma <- bR + bAR*cont_africa ,
-        a ~ dnorm( 8 , 100 ) ,
-        bA ~ dnorm( 0 , 1 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        bAR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
+m7.5 <- map(alist(
+              log_gdp ~ dnorm(mu, sigma),
+              mu <- a + gamma*rugged + bA*cont_africa,
+              gamma <- bR + bAR*cont_africa,
+              a ~ dnorm(8, 100),
+              bA ~ dnorm(0, 1),
+              bR ~ dnorm(0, 1),
+              bAR ~ dnorm(0, 1),
+              sigma ~ dunif(0, 10)),
+           data = dd)
 ```
 
 ```{r, comment=NA}
-compare( m7.3 , m7.4 , m7.5 )
+compare(m7.3, m7.4, m7.5)
 ```
 
 Overthinking: Conventional form of interaction
 
 ```{r, comment=NA}
-m7.5b <- map(
-    alist(
-        log_gdp ~ dnorm( mu , sigma ) ,
-        mu <- a + bR*rugged + bAR*rugged*cont_africa + bA*cont_africa,
-        a ~ dnorm( 8 , 100 ) ,
-        bA ~ dnorm( 0 , 1 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        bAR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=dd )
+m7.5b <- map(alist(
+               log_gdp ~ dnorm(mu, sigma),
+               mu <- a + bR*rugged + bAR*rugged*cont_africa + bA*cont_africa,
+               a ~ dnorm(8, 100),
+               bA ~ dnorm(0, 1),
+               bR ~ dnorm(0, 1),
+               bAR ~ dnorm(0, 1),
+               sigma ~ dunif(0, 10)),
+             data = dd)
 ```
 
 ### 7.1.3 Plotting the interaction
 
 ```{r, comment=NA}
-rugged.seq <- seq(from=-1,to=8,by=0.25)
+rugged.seq <- seq(from = -1, to = 8, by = 0.25)
 
-mu.Africa <- link( m7.5 , data=data.frame(cont_africa=1,rugged=rugged.seq) )
-mu.Africa.mean <- apply( mu.Africa , 2 , mean )
-mu.Africa.PI <- apply( mu.Africa , 2 , PI , prob=0.97 )
+mu.Africa <- link(m7.5, data = data.frame(cont_africa = 1, rugged = rugged.seq))
+mu.Africa.mean <- apply(mu.Africa, 2, mean)
+mu.Africa.PI   <- apply(mu.Africa, 2, PI, prob = 0.97)
 
-mu.NotAfrica <- link( m7.5 , data=data.frame(cont_africa=0,rugged=rugged.seq) )
-mu.NotAfrica.mean <- apply( mu.NotAfrica , 2 , mean )
-mu.NotAfrica.PI <- apply( mu.NotAfrica , 2 , PI , prob=0.97 )
+mu.NotAfrica <- link(m7.5, data = data.frame(cont_africa = 0, rugged = rugged.seq))
+mu.NotAfrica.mean <- apply(mu.NotAfrica, 2, mean)
+mu.NotAfrica.PI   <- apply(mu.NotAfrica, 2, PI, prob = 0.97)
 ```
 
 ```{r, comment=NA}
 # plot African nations with regression
-d.A1 <- dd[dd$cont_africa==1,]
-plot( log(rgdppc_2000) ~ rugged , data=d.A1 ,
-    col=rangi2 , ylab="log GDP year 2000" ,
-    xlab="Terrain Ruggedness Index" )
-mtext( "African nations" , 3 )
-lines( rugged.seq , mu.Africa.mean , col=rangi2 )
-shade( mu.Africa.PI , rugged.seq , col=col.alpha(rangi2,0.3) )
+d.A1 <- dd[dd$cont_africa == 1, ]
+plot(log(rgdppc_2000) ~ rugged, data = d.A1, col = rangi2, 
+     xlab = "Terrain Ruggedness Index", ylab = "log GDP year 2000")
+mtext("African nations", 3)
+lines(rugged.seq, mu.Africa.mean, col = rangi2)
+shade(mu.Africa.PI, rugged.seq, col = col.alpha(rangi2, 0.3))
 
 # plot non-African nations with regression
-d.A0 <- dd[dd$cont_africa==0,]
-plot( log(rgdppc_2000) ~ rugged , data=d.A0 ,
-    col="black" , ylab="log GDP year 2000" ,
-    xlab="Terrain Ruggedness Index" )
-mtext( "Non-African nations" , 3 )
-lines( rugged.seq , mu.NotAfrica.mean )
-shade( mu.NotAfrica.PI , rugged.seq )
+d.A0 <- dd[dd$cont_africa == 0, ]
+plot(log(rgdppc_2000) ~ rugged, data = d.A0, col = "black", 
+    xlab = "Terrain Ruggedness Index", ylab = "log GDP year 2000")
+mtext("Non-African nations", 3)
+lines(rugged.seq, mu.NotAfrica.mean)
+shade(mu.NotAfrica.PI, rugged.seq)
 ```
 
 Figure 7.4. Posterior predictions for the terrain ruggedness model, including the interaction between Africa and ruggedness. Shaded regions are 97% posterior intervals of the mean.
@@ -207,27 +193,26 @@ precis(m7.5)
 #### 7.1.4.2 Incorporating uncertainty
 
 ```{r, comment=NA}
-post <- extract.samples( m7.5 )
-gamma.Africa <- post$bR + post$bAR*1
+post <- extract.samples(m7.5)
+gamma.Africa    <- post$bR + post$bAR*1
 gamma.notAfrica <- post$bR + post$bAR*0
 ```
 
 ```{r, comment=NA}
-mean( gamma.Africa)
-mean( gamma.notAfrica )
+mean(gamma.Africa)
+mean(gamma.notAfrica)
 ```
 
 ```{r, comment=NA}
-dens( gamma.Africa , xlim=c(-0.5,0.6) , ylim=c(0,5.5) ,
-    xlab="gamma" , col=rangi2 )
-dens( gamma.notAfrica , add=TRUE )
+dens(gamma.Africa, xlim = c(-0.5, 0.6), ylim = c(0, 5.5), xlab = "gamma", col = rangi2)
+dens(gamma.notAfrica, add = TRUE)
 ```
 
 Figure 7.5. Posterior distribution of the slop relating terrain ruggedness to log-GDP. Blue: African nations. Black: non-African nations.
 
 ```{r, comment=NA}
 diff <- gamma.Africa - gamma.notAfrica
-sum( diff < 0 ) / length( diff )
+sum(diff < 0)/length(diff)
 ```
 
 Rethinking: More on the meaning of posterior probability
@@ -243,28 +228,25 @@ Rethinking: More on the meaning of posterior probability
 q.rugged <- range(dd$rugged)
 
 # compute lines and confidence intervals
-mu.ruggedlo <- link( m7.5 ,
-    data=data.frame(rugged=q.rugged[1],cont_africa=0:1) )
-mu.ruggedlo.mean <- apply( mu.ruggedlo , 2 , mean )
-mu.ruggedlo.PI <- apply( mu.ruggedlo , 2 , PI )
+mu.ruggedlo <- link(m7.5, data=data.frame(rugged = q.rugged[1], cont_africa = 0:1))
+mu.ruggedlo.mean <- apply(mu.ruggedlo, 2, mean)
+mu.ruggedlo.PI   <- apply(mu.ruggedlo, 2, PI  )
 
-mu.ruggedhi <- link( m7.5 ,
-    data=data.frame(rugged=q.rugged[2],cont_africa=0:1) )
-mu.ruggedhi.mean <- apply( mu.ruggedhi , 2 , mean )
-mu.ruggedhi.PI <- apply( mu.ruggedhi , 2 , PI )
+mu.ruggedhi <- link(m7.5, data = data.frame(rugged = q.rugged[2], cont_africa = 0:1))
+mu.ruggedhi.mean <- apply(mu.ruggedhi, 2, mean)
+mu.ruggedhi.PI   <- apply(mu.ruggedhi, 2, PI  )
 
 # plot it all, splitting points at median
 med.r <- median(dd$rugged)
-ox <- ifelse( dd$rugged > med.r , 0.05 , -0.05 )
-plot( dd$cont_africa + ox , log(dd$rgdppc_2000) ,
-    col=ifelse(dd$rugged>med.r,rangi2,"black") ,
-    xlim=c(-0.25,1.25) , xaxt="n" , ylab="log GDP year 2000" ,
-    xlab="Continent" )
-axis( 1 , at=c(0,1) , labels=c("other","Africa") )
-lines( 0:1 , mu.ruggedlo.mean , lty=2 )
-shade( mu.ruggedlo.PI , 0:1 )
-lines( 0:1 , mu.ruggedhi.mean , col=rangi2 )
-shade( mu.ruggedhi.PI , 0:1 , col=col.alpha(rangi2,0.25) )
+ox <- ifelse(dd$rugged > med.r, 0.05, -0.05)
+plot(dd$cont_africa + ox, log(dd$rgdppc_2000), xlim = c(-0.25, 1.25), xaxt = "n", 
+     col = ifelse(dd$rugged>med.r, rangi2, "black"),
+     xlab = "Continent", ylab = "log GDP year 2000")
+axis(1, at = c(0, 1), labels = c("other", "Africa"))
+lines(0:1, mu.ruggedlo.mean, lty = 2)
+shade(mu.ruggedlo.PI, 0:1)
+lines(0:1, mu.ruggedhi.mean, col = rangi2)
+shade(mu.ruggedhi.PI, 0:1, col = col.alpha(rangi2, 0.25))
 ```
 
 Figure 7.6. The other side of the interaction between ruggedness and continent. Blue points are nations with above-median ruggedness. Black points are below the median. Dashed black line: relationship between continent and log-GDP, for an imaginary nation with minimum observed ruggedness (0.003). Blue line: an imaginary nation with maximum observed ruggedness (6.2).
