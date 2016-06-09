@@ -11,11 +11,9 @@ by Richard McElreath
 
 **TODO:**
 
-1. Reformat R code
+1. Run R code and check
 
-2. Run R code and check
-
-3. Do practice problems
+2. Do practice problems
 
 ```{r, comment=NA}
 library(rethinking)
