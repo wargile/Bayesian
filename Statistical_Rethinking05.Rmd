@@ -238,11 +238,11 @@ Rethinking: Stats, huh, yeah what is good for?
 Overthinking: Simulating spurious association
 
 ```{r, comment=NA}
-N <- 100                         # number of cases
-x_real <- rnorm( N )             # x_real as Gaussian with mean 0 and stddev 1
-x_spur <- rnorm( N , x_real )    # x_spur as Gaussian with mean=x_real
-y <- rnorm( N , x_real )         # y as Gaussian with mean=x_real
-d <- data.frame(y,x_real,x_spur) # bind all together in data frame
+N <- 100                           # number of cases
+x_real <- rnorm(N)                 # x_real as Gaussian with mean 0 and stddev 1
+x_spur <- rnorm(N , x_real)        # x_spur as Gaussian with mean=x_real
+y <- rnorm(N, x_real)              # y as Gaussian with mean=x_real
+d <- data.frame(y, x_real, x_spur) # bind all together in data frame
 ```
 
 ## 5.2 Masked relationship  
@@ -256,14 +256,13 @@ str(d)
 
 ```{r, comment=NA}
 m5.5 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + bn*neocortex.perc ,
-        a ~ dnorm( 0 , 100 ) ,
-        bn ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 1 )
-    ) ,
-    data=d )
+          alist(
+            kcal.per.g ~ dnorm(mu, sigma),
+            mu <- a + bn*neocortex.perc,
+            a ~ dnorm(0, 100),
+            bn ~ dnorm(0, 1),
+            sigma ~ dunif(0, 1)
+          ), data = d)
 ```
 
 ```{r, comment=NA}
@@ -271,41 +270,40 @@ d$neocortex.perc
 ```
 
 ```{r, comment=NA}
-dcc <- d[ complete.cases(d) , ]
+dcc <- d[complete.cases(d), ]
 ```
 
 ```{r, comment=NA}
 m5.5 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + bn*neocortex.perc ,
-        a ~ dnorm( 0 , 100 ) ,
-        bn ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 1 )
-    ) ,
-    data=dcc )
+          alist(
+            kcal.per.g ~ dnorm(mu, sigma),
+            mu <- a + bn*neocortex.perc,
+            a ~ dnorm(0, 100),
+            bn ~ dnorm(0, 1),
+            sigma ~ dunif(0, 1)
+          ), data = dcc)
 ```
 
 ```{r, comment=NA}
-precis( m5.5 , digits=3 )
+precis(m5.5, digits = 3)
 ```
 
 ```{r, comment=NA}
-coef(m5.5)["bn"] * ( 76 - 55 )
+coef(m5.5)["bn"] * (76 - 55)
 ```
 
 ```{r, comment=NA}
 np.seq <- 0:100
-pred.data <- data.frame( neocortex.perc=np.seq )
+pred.data <- data.frame(neocortex.perc = np.seq)
 
-mu <- link( m5.5 , data=pred.data , n=1e4 )
-mu.mean <- apply( mu , 2 , mean )
-mu.PI <- apply( mu , 2 , PI )
+mu <- link(m5.5, data = pred.data, n = 1e4)
+mu.mean <- apply(mu, 2, mean)
+mu.PI <- apply(mu, 2, PI)
 
-plot( kcal.per.g ~ neocortex.perc , data=dcc , col=rangi2 )
-lines( np.seq , mu.mean )
-lines( np.seq , mu.PI[1,] , lty=2 )
-lines( np.seq , mu.PI[2,] , lty=2 )
+plot(kcal.per.g ~ neocortex.perc, data = dcc, col = rangi2)
+lines(np.seq, mu.mean)
+lines(np.seq, mu.PI[1, ], lty = 2)
+lines(np.seq, mu.PI[2, ], lty = 2)
 ```
 
 ```{r, comment=NA}
@@ -314,14 +312,13 @@ dcc$log.mass <- log(dcc$mass)
 
 ```{r, comment=NA}
 m5.6 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + bm*log.mass ,
-        a ~ dnorm( 0 , 100 ) ,
-        bm ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 1 )
-    ) ,
-    data=dcc )
+          alist(
+            kcal.per.g ~ dnorm(mu, sigma),
+            mu <- a + bm*log.mass,
+            a ~ dnorm(0, 100),
+            bm ~ dnorm( 0, 1),
+            sigma ~ dunif(0, 1)
+          ), data = dcc)
 precis(m5.6)
 ```
 
@@ -329,15 +326,14 @@ Figure 5.7. Milk energy and neocortex among primates. In the top two plots, simp
 
 ```{r, comment=NA}
 m5.7 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + bn*neocortex.perc + bm*log.mass ,
-        a ~ dnorm( 0 , 100 ) ,
-        bn ~ dnorm( 0 , 1 ) ,
-        bm ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 1 )
-    ) ,
-    data=dcc )
+          alist(
+            kcal.per.g ~ dnorm(mu, sigma),
+            mu <- a + bn*neocortex.perc + bm*log.mass,
+            a ~ dnorm( 0, 100),
+            bn ~ dnorm(0, 1),
+            bm ~ dnorm(0, 1),
+            sigma ~ dunif(0, 1)
+          ), data = dcc)
 precis(m5.7)
 ```
 
