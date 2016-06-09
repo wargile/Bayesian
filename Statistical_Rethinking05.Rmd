@@ -7,11 +7,9 @@ output: html_document
 
 **TODO:**
 
-1. Reformat R code - restart at line 90
+1. Run R code and check
 
-2. Run R code and check
-
-3. Do practice problems
+2. Do practice problems
 
 ```{r, comment=NA}
 library(rethinking)
@@ -452,27 +450,25 @@ precis(m5.11, digits = 3)
 
 ```{r, comment=NA}
 m5.12 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + bf*perc.fat + bl*perc.lactose ,
-        a ~ dnorm( 0.6 , 10 ) ,
-        bf ~ dnorm( 0 , 1 ) ,
-        bl ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d )
-precis( m5.12 , digits=3 )
+           alist(
+             kcal.per.g ~ dnorm(mu, sigma),
+             mu <- a + bf*perc.fat + bl*perc.lactose,
+             a ~ dnorm(0.6, 10),
+             bf ~ dnorm(0, 1),
+             bl ~ dnorm(0, 1),
+             sigma ~ dunif(0, 10)
+           ), data = d)
+precis(m5.12, digits = 3)
 ```
 
 ```{r, comment=NA}
-pairs( ~ kcal.per.g + perc.fat + perc.lactose ,
-    data=d , col=rangi2 )
+pairs(~ kcal.per.g + perc.fat + perc.lactose, data = d, col = rangi2)
 ```
 
 Figure 5.9. A pairs plot of the total energy, percent fat, and percent lactose variables from the primate milk data. Percent fat and percent lactose are strongly negatively correlated with one another, providing mostly the same information.
 
 ```{r, comment=NA}
-cor( d$perc.fat , d$perc.lactose )
+cor(d$perc.fat, d$perc.lactose)
 ```
 
 Figure 5.10. The effect of correlated predictor variables on the narrowness of the posterior distribution. The vertical axis shows the standard deviation of the posterior distribution of the slope. The horizontal axis is the correlation between the predictor of interest and another predictor added to the model. As the correlation increases, the standard deviation inflates.
@@ -485,19 +481,18 @@ Overthinking: Simulating collinearity
 library(rethinking)
 data(milk)
 d <- milk
-sim.coll <- function( r=0.9 ) {
-    d$x <- rnorm( nrow(d) , mean=r*d$perc.fat ,
-        sd=sqrt( (1-r^2)*var(d$perc.fat) ) )
-    m <- lm( kcal.per.g ~ perc.fat + x , data=d )
-    sqrt( diag( vcov(m) ) )[2] # stddev of parameter
+sim.coll <- function(r = 0.9) {
+  d$x <- rnorm(nrow(d), mean = r*d$perc.fat, sd = sqrt((1 - r^2)*var(d$perc.fat)))
+  m <- lm(kcal.per.g ~ perc.fat + x, data = d)
+  sqrt(diag(vcov(m)))[2] # stddev of parameter
 }
-rep.sim.coll <- function( r=0.9 , n=100 ) {
-    stddev <- replicate( n , sim.coll(r) )
+rep.sim.coll <- function(r = 0.9, n = 100) {
+    stddev <- replicate(n, sim.coll(r))
     mean(stddev)
 }
-r.seq <- seq(from=0,to=0.99,by=0.01)
-stddev <- sapply( r.seq , function(z) rep.sim.coll(r=z,n=100) )
-plot( stddev ~ r.seq , type="l" , col=rangi2, lwd=2 , xlab="correlation" )
+r.seq <- seq(from = 0, to = 0.99, by = 0.01)
+stddev <- sapply(r.seq, function(z) rep.sim.coll(r = z, n = 100))
+plot(stddev ~ r.seq, type = "l", col = rangi2, lwd = 2, xlab = "correlation")
 ```
 
 ### 5.3.3 Post-treatment bias
@@ -507,40 +502,38 @@ plot( stddev ~ r.seq , type="l" , col=rangi2, lwd=2 , xlab="correlation" )
 N <- 100
 
 # simulate initial heights
-h0 <- rnorm(N,10,2)
+h0 <- rnorm(N, 10, 2)
 
 # assign treatments and simulate fungus and growth
-treatment <- rep( 0:1 , each=N/2 )
-fungus <- rbinom( N , size=1 , prob=0.5 - treatment*0.4 )
+treatment <- rep(0:1, each = N/2)
+fungus <- rbinom(N, size = 1, prob = 0.5 - treatment*0.4)
 h1 <- h0 + rnorm(N, 5 - 3*fungus)
 
 # compose a clean data frame
-d <- data.frame( h0=h0 , h1=h1 , treatment=treatment , fungus=fungus )
+d <- data.frame(h0 = h0, h1 = h1, treatment = treatment, fungus = fungus)
 ```
 
 ```{r, comment=NA}
 m5.13 <- map(
-    alist(
-        h1 ~ dnorm(mu,sigma),
-        mu <- a + bh*h0 + bt*treatment + bf*fungus,
-        a ~ dnorm(0,100),
-        c(bh,bt,bf) ~ dnorm(0,10),
-        sigma ~ dunif(0,10)
-    ),
-    data=d )
+           alist(
+             h1 ~ dnorm(mu, sigma),
+             mu <- a + bh*h0 + bt*treatment + bf*fungus,
+             a ~ dnorm(0, 100),
+             c(bh, bt, bf) ~ dnorm(0, 10),
+             sigma ~ dunif(0, 10)
+           ), data = d)
 precis(m5.13)
 ```
 
 ```{r, comment=NA}
 m5.14 <- map(
-    alist(
-        h1 ~ dnorm(mu,sigma),
-        mu <- a + bh*h0 + bt*treatment,
-        a ~ dnorm(0,100),
-        c(bh,bt) ~ dnorm(0,10),
-        sigma ~ dunif(0,10)
-    ),
-    data=d )
+           alist(
+             h1 ~ dnorm(mu, sigma),
+             mu <- a + bh*h0 + bt*treatment,
+             a ~ dnorm(0, 100),
+             c(bh, bt) ~ dnorm(0, 10),
+             sigma ~ dunif(0, 10)
+           ), data = d)
 precis(m5.14)
 ```
 
@@ -579,14 +572,13 @@ Overthinking: Re-parameterizing the model
 
 ```{r, comment=NA}
 m5.15b <- map(
-    alist(
-        height ~ dnorm( mu , sigma ) ,
-        mu <- af*(1-male) + am*male ,
-        af ~ dnorm( 178 , 100 ) ,
-        am ~ dnorm( 178 , 100 ) ,
-        sigma ~ dunif( 0 , 50 )
-    ) ,
-    data=d )
+            alist(
+              height ~ dnorm(mu, sigma),
+              mu <- af*(1 - male) + am*male,
+              af ~ dnorm(178, 100),
+              am ~ dnorm(178, 100),
+              sigma ~ dunif(0, 50)
+            ), data = d)
 ```
 
 ### 5.4.2 Many categories
@@ -598,26 +590,25 @@ unique(d$clade)
 ```
 
 ```{r, comment=NA}
-( d$clade.NWM <- ifelse( d$clade=="New World Monkey" , 1 , 0 ) )
+(d$clade.NWM <- ifelse(d$clade == "New World Monkey", 1, 0))
 ```
 
 ```{r, comment=NA}
-d$clade.OWM <- ifelse( d$clade=="Old World Monkey" , 1 , 0 )
-d$clade.S <- ifelse( d$clade=="Strepsirrhine" , 1 , 0 )
+d$clade.OWM <- ifelse(d$clade == "Old World Monkey", 1, 0)
+d$clade.S   <- ifelse(d$clade == "Strepsirrhine"   , 1, 0)
 ```
 
 ```{r, comment=NA}
 m5.16 <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a + b.NWM*clade.NWM + b.OWM*clade.OWM + b.S*clade.S ,
-        a ~ dnorm( 0.6 , 10 ) ,
-        b.NWM ~ dnorm( 0 , 1 ) ,
-        b.OWM ~ dnorm( 0 , 1 ) ,
-        b.S ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d )
+           alist(
+             kcal.per.g ~ dnorm(mu, sigma),
+             mu <- a + b.NWM*clade.NWM + b.OWM*clade.OWM + b.S*clade.S,
+             a ~ dnorm(0.6, 10),
+             b.NWM ~ dnorm(0, 1),
+             b.OWM ~ dnorm(0, 1),
+             b.S ~ dnorm(0, 1),
+             sigma ~ dunif(0, 10)
+           ), data = d)
 precis(m5.16)
 ```
 
@@ -629,15 +620,15 @@ post <- extract.samples(m5.16)
 mu.ape <- post$a
 mu.NWM <- post$a + post$b.NWM
 mu.OWM <- post$a + post$b.OWM
-mu.S <- post$a + post$b.S
+mu.S   <- post$a + post$b.S
 
 # summarize using precis
-precis( data.frame(mu.ape,mu.NWM,mu.OWM,mu.S) )
+precis(data.frame(mu.ape, mu.NWM, mu.OWM, mu.S))
 ```
 
 ```{r, comment=NA}
 diff.NWM.OWM <- mu.NWM - mu.OWM
-quantile( diff.NWM.OWM , probs=c(0.025,0.5,0.975) )
+quantile(diff.NWM.OWM, probs = c(0.025, 0.500, 0.975))
 ```
 
 Rethinking: Differences and statistical significance
@@ -647,19 +638,18 @@ Rethinking: Differences and statistical significance
 ### 5.4.4 Another approach: Unique intercepts
 
 ```{r, comment=NA}
-( d$clade_id <- coerce_index(d$clade) )
+(d$clade_id <- coerce_index(d$clade))
 ```
 
 ```{r, comment=NA}
 m5.16_alt <- map(
-    alist(
-        kcal.per.g ~ dnorm( mu , sigma ) ,
-        mu <- a[clade_id] ,
-        a[clade_id] ~ dnorm( 0.6 , 10 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) ,
-    data=d )
-precis( m5.16_alt , depth=2 )
+               alist(
+                 kcal.per.g ~ dnorm(mu, sigma),
+                 mu <- a[clade_id],
+                 a[clade_id] ~ dnorm(0.6, 10),
+                 sigma ~ dunif(0, 10)
+               ), data = d)
+precis(m5.16_alt, depth = 2)
 ```
 
 ## 5.5 Ordinary least squares and lm  
@@ -669,26 +659,26 @@ precis( m5.16_alt , depth=2 )
 ### 5.5.2 Using lm
 
 ```{r, comment=NA}
-m5.17 <- lm( y ~ 1 + x , data=d )
-m5.18 <- lm( y ~ 1 + x + z + w , data=d )
+m5.17 <- lm(y ~ 1 + x        , data = d)
+m5.18 <- lm(y ~ 1 + x + z + w, data = d)
 ```
 
 #### 5.5.2.1 Intercepts are optional
 
 ```{r, comment=NA}
-m5.17 <- lm( y ~ 1 + x , data=d )
-m5.19 <- lm( y ~ x , data=d )
+m5.17 <- lm(y ~ 1 + x, data = d)
+m5.19 <- lm(y ~ x    , data = d)
 ```
 
 ```{r, comment=NA}
-m5.20 <- lm( y ~ 0 + x , data=d )
-m5.21 <- lm( y ~ x - 1 , data=d )
+m5.20 <- lm(y ~ 0 + x, data = d)
+m5.21 <- lm(y ~ x - 1, data = d)
 ```
 
 #### 5.5.2.2 Categorical variables
 
 ```{r, comment=NA}
-m5.22 <- lm( y ~ 1 + as.factor(season) , data=d )
+m5.22 <- lm(y ~ 1 + as.factor(season), data = d)
 ```
 
 #### 5.5.2.3 Transform variables first
@@ -696,11 +686,11 @@ m5.22 <- lm( y ~ 1 + as.factor(season) , data=d )
 ```{r, comment=NA}
 d$x2 <- d$x^2
 d$x3 <- d$x^3
-m5.23 <- lm( y ~ 1 + x + x2 + x3 , data=d )
+m5.23 <- lm(y ~ 1 + x + x2 + x3, data = d)
 ```
 
 ```{r, comment=NA}
-m5.24 <- lm( y ~ 1 + x + I(x^2) + I(x^3) , data=d )
+m5.24 <- lm(y ~ 1 + x + I(x^2) + I(x^3), data = d)
 ```
 
 #### 5.5.2.4 No estimate for sigma
@@ -709,7 +699,7 @@ m5.24 <- lm( y ~ 1 + x + I(x^2) + I(x^3) , data=d )
 
 ```{r, comment=NA}
 data(cars)
-glimmer( dist ~ speed , data=cars )
+glimmer(dist ~ speed, data = cars)
 ```
 
 ## 5.6 Summary  
