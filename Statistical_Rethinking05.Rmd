@@ -7,7 +7,7 @@ output: html_document
 
 **TODO:**
 
-1. Add R code and format
+1. Reformat R code - restart at line 90
 
 2. Run R code and check
 
@@ -39,42 +39,43 @@ data(WaffleDivorce)
 d <- WaffleDivorce
 
 # standardize predictor
-d$MedianAgeMarriage.s <- (d$MedianAgeMarriage-mean(d$MedianAgeMarriage))/
-    sd(d$MedianAgeMarriage)
+#d$MedianAgeMarriage.s <- (d$MedianAgeMarriage - mean(d$MedianAgeMarriage))/sd(d$MedianAgeMarriage)
+d$MedianAgeMarriage.s <- with(d, (MedianAgeMarriage - mean(MedianAgeMarriage))/sd(MedianAgeMarriage))
 
 # fit model
 m5.1 <- map(
-    alist(
-        Divorce ~ dnorm( mu , sigma ) ,
-        mu <- a + bA * MedianAgeMarriage.s ,
-        a ~ dnorm( 10 , 10 ) ,
-        bA ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) , data = d )
+          alist(
+            Divorce ~ dnorm(mu, sigma),
+            mu <- a + bA*MedianAgeMarriage.s,
+            a ~ dnorm(10, 10),
+            bA ~ dnorm(0, 1),
+            sigma ~ dunif(0, 10)
+          ), data = d)
 ```
 
 ```{r, comment=NA}
 # compute percentile interval of mean
-MAM.seq <- seq( from=-3 , to=3.5 , length.out=30 )
-mu <- link( m5.1 , data=data.frame(MedianAgeMarriage.s=MAM.seq) )
-mu.PI <- apply( mu , 2 , PI )
+MAM.seq <- seq(from = -3, to = 3.5, length.out = 30)
+mu <- link(m5.1, data = data.frame(MedianAgeMarriage.s = MAM.seq))
+mu.PI <- apply(mu, 2, PI)
 
 # plot it all
-plot( Divorce ~ MedianAgeMarriage.s , data=d , col=rangi2 )
-abline( m5.1 )
-shade( mu.PI , MAM.seq )
+plot(Divorce ~ MedianAgeMarriage.s, data = d, col = rangi2)
+abline(m5.1)
+shade(mu.PI, MAM.seq)
 ```
 
 ```{r, comment=NA}
-d$Marriage.s <- (d$Marriage - mean(d$Marriage))/sd(d$Marriage)
+#d$Marriage.s <- (d$Marriage - mean(d$Marriage))/sd(d$Marriage)
+d$Marriage.s <- with(d, (Marriage - mean(Marriage))/sd(Marriage))
 m5.2 <- map(
-    alist(
-        Divorce ~ dnorm( mu , sigma ) ,
-        mu <- a + bR * Marriage.s ,
-        a ~ dnorm( 10 , 10 ) ,
-        bR ~ dnorm( 0 , 1 ) ,
-        sigma ~ dunif( 0 , 10 )
-    ) , data = d )
+          alist(
+            Divorce ~ dnorm(mu, sigma),
+            mu <- a + bR*Marriage.s,
+            a ~ dnorm(10, 10),
+            bR ~ dnorm(0, 1),
+            sigma ~ dunif(0, 10)
+          ), data = d)
 ```
 
 Rethinking: "Control" is out of control
