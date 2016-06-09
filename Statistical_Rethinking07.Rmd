@@ -11,7 +11,7 @@ by Richard McElreath
 
 **TODO:**
 
-1. Reformat R code
+1. Reformat R code - 288
 
 2. Run R code and check
 
