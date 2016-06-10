@@ -11,11 +11,9 @@ by Richard McElreath
 
 **TODO:**
 
-1. Reformat R code @ 405
+1. Run R code and check
 
-2. Run R code and check
-
-3. Do practice problems
+2. Do practice problems
 
 ```{r, comment=NA}
 library(rethinking)
@@ -54,7 +52,7 @@ m7.1 <- map(alist(
               a ~ dnorm(8, 100),
               bR ~ dnorm(0, 1),
               sigma ~ dunif(0, 10)),
-           data = d.A1)
+            data = d.A1)
 
 # non-African nations
 m7.2 <- map(alist(
@@ -63,7 +61,7 @@ m7.2 <- map(alist(
               a ~ dnorm(8, 100),
               bR ~ dnorm(0, 1),
               sigma ~ dunif(0, 10)),
-           data = d.A0)
+            data = d.A0)
 ```
 
 Figure 7.2. Separate linear regressions inside and outside of Africa, for log-GDP against terrain ruggedness. The slope is positive inside Africa, but negative outside. How can we recover this reversal of the slope, using the combined data?
@@ -77,7 +75,7 @@ m7.3 <- map(alist(
               a ~ dnorm(8, 100),
               bR ~ dnorm(0, 1),
               sigma ~ dunif(0, 10)),
-           data = dd)
+            data = dd)
 ```
 
 ```{r, comment=NA}
@@ -88,7 +86,7 @@ m7.4 <- map(alist(
               bR ~ dnorm(0, 1),
               bA ~ dnorm(0, 1),
               sigma ~ dunif(0, 10)),
-           data = dd)
+            data = dd)
 ```
 
 ```{r, comment=NA}
@@ -127,7 +125,7 @@ m7.5 <- map(alist(
               bR ~ dnorm(0, 1),
               bAR ~ dnorm(0, 1),
               sigma ~ dunif(0, 10)),
-           data = dd)
+            data = dd)
 ```
 
 ```{r, comment=NA}
@@ -174,7 +172,7 @@ shade(mu.Africa.PI, rugged.seq, col = col.alpha(rangi2, 0.3))
 # plot non-African nations with regression
 d.A0 <- dd[dd$cont_africa == 0, ]
 plot(log(rgdppc_2000) ~ rugged, data = d.A0, col = "black", 
-    xlab = "Terrain Ruggedness Index", ylab = "log GDP year 2000")
+     xlab = "Terrain Ruggedness Index", ylab = "log GDP year 2000")
 mtext("Non-African nations", 3)
 lines(rugged.seq, mu.NotAfrica.mean)
 shade(mu.NotAfrica.PI, rugged.seq)
@@ -281,7 +279,7 @@ m7.7 <- map(alist(
               bS ~ dnorm(0, 100),
               bWS ~ dnorm(0, 100),
               sigma ~ dunif(0, 100)),
-           data = d)
+            data = d)
 ```
 
 ```{r, comment=NA}
@@ -303,9 +301,9 @@ m7.7 <- map(alist(
               bS ~ dnorm(0, 100),
               bWS ~ dnorm(0, 100),
               sigma ~ dunif(0, 100)),
-           data = d,
-           method = "Nelder-Mead",
-           control = list(maxit = 1e4))
+            data = d,
+            method = "Nelder-Mead",
+            control = list(maxit = 1e4))
 ```
 
 ```{r, comment=NA}
@@ -335,11 +333,11 @@ m7.8 <- map(alist(
               bW ~ dnorm(0, 100),
               bS ~ dnorm(0, 100),
               sigma ~ dunif(0, 100)),
-           data = d,
-           start = list(a = mean(d$blooms),
-           bW = 0,
-           bS = 0,
-           sigma = sd(d$blooms)))
+            data = d,
+            start = list(a = mean(d$blooms),
+            bW = 0,
+            bS = 0,
+            sigma = sd(d$blooms)))
 m7.9 <- map(alist(
               blooms ~ dnorm(mu, sigma),
               mu <- a + bW*water.c + bS*shade.c + bWS*water.c*shade.c,
@@ -348,12 +346,12 @@ m7.9 <- map(alist(
               bS ~ dnorm(0, 100),
               bWS ~ dnorm(0, 100),
               sigma ~ dunif(0, 100)),
-           data = d,
-           start = list(a = mean(d$blooms),
-           bW = 0,
-           bS = 0,
-           bWS = 0,
-           sigma = sd(d$blooms)))
+            data = d,
+            start = list(a = mean(d$blooms),
+            bW = 0,
+            bS = 0,
+            bWS = 0,
+            sigma = sd(d$blooms)))
 coeftab(m7.8, m7.9)
 ```
 
@@ -402,24 +400,24 @@ Figure 7.7. Triptych plot of predicted blooms across water treatments, without (
 ## 7.4 Interactions in design formulas  
 
 ```{r, comment=NA}
-m7.x <- lm( y ~ x + z + x*z , data=d )
+m7.x <- lm(y ~ x + z + x*z, data = d)
 ```
 
 ```{r, comment=NA}
-m7.x <- lm( y ~ x*z , data=d )
+m7.x <- lm(y ~ x*z, data = d)
 ```
 
 ```{r, comment=NA}
-m7.x <- lm( y ~ x + x*z - z , data=d )
+m7.x <- lm(y ~ x + x*z - z, data = d)
 ```
 
 ```{r, comment=NA}
-m7.x <- lm( y ~ x*z*w , data=d )
+m7.x <- lm(y ~ x*z*w, data = d)
 ```
 
 ```{r, comment=NA}
 x <- z <- w <- 1
-colnames( model.matrix(~x*z*w) )
+colnames(model.matrix(~ x*z*w))
 ```
 
 ## 7.5 Summary  
@@ -447,5 +445,6 @@ colnames( model.matrix(~x*z*w) )
 7H4
 
 ```{r, comment=NA}
-d$lang.per.cap <- d$num.lang / d$k.pop
+#d$lang.per.cap <- d$num.lang / d$k.pop
+d$lang.per.cap <- with(d, num.lang/k.pop)
 ```
