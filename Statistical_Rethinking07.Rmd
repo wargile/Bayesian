@@ -11,7 +11,7 @@ by Richard McElreath
 
 **TODO:**
 
-1. Reformat R code - 288
+1. Reformat R code @ 405
 
 2. Run R code and check
 
@@ -295,27 +295,25 @@ m7.6 <- map(alist(
             data = d,
             method = "Nelder-Mead",
             control = list(maxit = 1e4))
-m7.7 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water + bS*shade + bWS*water*shade ,
-        a ~ dnorm( 0 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        bWS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    method="Nelder-Mead" ,
-    control=list(maxit=1e4) )
+m7.7 <- map(alist(
+              blooms ~ dnorm(mu, sigma),
+              mu <- a + bW*water + bS*shade + bWS*water*shade,
+              a ~ dnorm(0, 100),
+              bW ~ dnorm(0, 100),
+              bS ~ dnorm(0, 100),
+              bWS ~ dnorm(0, 100),
+              sigma ~ dunif(0, 100)),
+           data = d,
+           method = "Nelder-Mead",
+           control = list(maxit = 1e4))
 ```
 
 ```{r, comment=NA}
-coeftab(m7.6,m7.7)
+coeftab(m7.6, m7.7)
 ```
 
 ```{r, comment=NA}
-compare( m7.6 , m7.7 )
+compare(m7.6, m7.7)
 ```
 
 Rethinking: Fighting with your robot
@@ -323,35 +321,40 @@ Rethinking: Fighting with your robot
 ### 7.3.3 Center and re-estimate
 
 ```{r, comment=NA}
-d$shade.c <- d$shade - mean(d$shade)
-d$water.c <- d$water - mean(d$water)
+#d$shade.c <- d$shade - mean(d$shade)
+#d$water.c <- d$water - mean(d$water)
+d$shade.c <- with(d, shade - mean(shade))
+d$water.c <- with(d, water - mean(water))
 ```
 
 ```{r, comment=NA}
-m7.8 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water.c + bS*shade.c ,
-        a ~ dnorm( 130 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    start=list(a=mean(d$blooms),bW=0,bS=0,sigma=sd(d$blooms)) )
-m7.9 <- map(
-    alist(
-        blooms ~ dnorm( mu , sigma ) ,
-        mu <- a + bW*water.c + bS*shade.c + bWS*water.c*shade.c ,
-        a ~ dnorm( 130 , 100 ) ,
-        bW ~ dnorm( 0 , 100 ) ,
-        bS ~ dnorm( 0 , 100 ) ,
-        bWS ~ dnorm( 0 , 100 ) ,
-        sigma ~ dunif( 0 , 100 )
-    ) ,
-    data=d ,
-    start=list(a=mean(d$blooms),bW=0,bS=0,bWS=0,sigma=sd(d$blooms)) )
-coeftab(m7.8,m7.9)
+m7.8 <- map(alist(
+              blooms ~ dnorm(mu, sigma),
+              mu <- a + bW*water.c + bS*shade.c,
+              a ~ dnorm(130, 100),
+              bW ~ dnorm(0, 100),
+              bS ~ dnorm(0, 100),
+              sigma ~ dunif(0, 100)),
+           data = d,
+           start = list(a = mean(d$blooms),
+           bW = 0,
+           bS = 0,
+           sigma = sd(d$blooms)))
+m7.9 <- map(alist(
+              blooms ~ dnorm(mu, sigma),
+              mu <- a + bW*water.c + bS*shade.c + bWS*water.c*shade.c,
+              a ~ dnorm(130, 100),
+              bW ~ dnorm(0, 100),
+              bS ~ dnorm(0, 100),
+              bWS ~ dnorm(0, 100),
+              sigma ~ dunif(0, 100)),
+           data = d,
+           start = list(a = mean(d$blooms),
+           bW = 0,
+           bS = 0,
+           bWS = 0,
+           sigma = sd(d$blooms)))
+coeftab(m7.8, m7.9)
 ```
 
 #### 7.3.3.1 Estimation worked better
@@ -376,21 +379,21 @@ precis(m7.9)
 
 ```{r, comment=NA}
 # make a plot window with three panels in a single row
-par(mfrow=c(1,3)) # 1 row, 3 columns
+par(mfrow = c(1, 3)) # 1 row, 3 columns
 
 # loop over values of water.c and plot predictions
 shade.seq <- -1:1
-for ( w in -1:1 ) {
-    dt <- d[d$water.c==w,]
-    plot( blooms ~ shade.c , data=dt , col=rangi2 ,
-        main=paste("water.c =",w) , xaxp=c(-1,1,2) , ylim=c(0,362) ,
-        xlab="shade (centered)" )
-    mu <- link( m7.9 , data=data.frame(water.c=w,shade.c=shade.seq) )
-    mu.mean <- apply( mu , 2 , mean )
-    mu.PI <- apply( mu , 2 , PI , prob=0.97 )
-    lines( shade.seq , mu.mean )
-    lines( shade.seq , mu.PI[1,] , lty=2 )
-    lines( shade.seq , mu.PI[2,] , lty=2 )
+for(w in -1:1) {
+  dt <- d[d$water.c == w, ]
+  plot(blooms ~ shade.c, data = dt, col = rangi2,
+       main = paste("water.c =", w), xaxp = c(-1, 1, 2), ylim = c(0, 362),
+       xlab = "shade (centered)")
+  mu <- link(m7.9, data = data.frame(water.c = w, shade.c = shade.seq))
+  mu.mean <- apply(mu, 2, mean)
+  mu.PI   <- apply(mu, 2, PI, prob = 0.97)
+  lines(shade.seq, mu.mean)
+  lines(shade.seq, mu.PI[1, ], lty = 2)
+  lines(shade.seq, mu.PI[2, ], lty = 2)
 }
 ```
 
